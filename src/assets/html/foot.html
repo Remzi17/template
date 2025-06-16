@@ -1,0 +1,23 @@
+</main>
+
+@@include('footer.html')
+
+</div>
+
+@@include('popups.html')
+
+<script src="assets/js/vendor.js" defer></script>
+
+<!-- Общие скрипты -->
+<script src="assets/js/script.js" defer></script>
+
+<!-- Worker -->
+<script>
+	if (location.hostname !== 'localhost' && 'serviceWorker' in navigator) {
+		navigator.serviceWorker.register('/worker.js').catch(console.error);
+	}
+</script>
+
+</body>
+
+</html>
