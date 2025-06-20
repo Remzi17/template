@@ -27,7 +27,7 @@ export function scroll() {
 						headerScroll = (window.getComputedStyle(scrollBlock).paddingTop === '0px') ? -40 : 0;
 
 						scrollToSmoothly(
-							offset(scrollBlock).top - parseInt(headerTop.clientHeight - headerScroll),
+							offset(scrollBlock).top - parseInt(headerTop.querySelector('.header-fixed').clientHeight - headerScroll),
 							400
 						);
 

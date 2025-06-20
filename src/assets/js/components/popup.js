@@ -3,7 +3,6 @@ import { hideScrollbar, showScrollbar } from "../scripts/other/scroll";
 import { fadeIn, fadeOut } from "../scripts/other/animation";
 import { getHash } from "../scripts/other/url"
 import { clearInputs } from "../scripts/forms/validation";
-import { haveScroll } from "../scripts/other/checks";
 
 /* 
 	================================================
@@ -14,8 +13,6 @@ import { haveScroll } from "../scripts/other/checks";
 */
 
 export function popup() {
-	let popups = document.querySelectorAll('.popup');
-
 	document.querySelectorAll('[data-modal]').forEach(button => {
 		button.addEventListener('click', function () {
 			let [dataModal, dataTab] = button.getAttribute('data-modal').split('#');
@@ -71,7 +68,7 @@ export function popup() {
 		body.classList.remove(bodyOpenModalClass);
 
 		setTimeout(() => {
-			let modalInfo = document.querySelector('.modal-info');
+			let modalInfo = document.querySelector('.popup-info');
 			if (modalInfo) {
 				modalInfo.value = '';
 			}

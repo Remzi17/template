@@ -1,4 +1,4 @@
-import { html, headerTop } from "./variables";
+import { html } from "./variables";
 import { haveScroll } from "../other/checks";
 
 // Изменение ссылок в меню 
@@ -65,22 +65,3 @@ if (window.location.hostname == 'localhost' || window.location.hostname.includes
 		}
 	});
 }
-
-function setHeaderFixedHeight() {
-	document.documentElement.style.removeProperty('--headerFixedHeight');
-	void headerTop.offsetHeight;
-	requestAnimationFrame(() => {
-		document.documentElement.style.setProperty(
-			'--headerFixedHeight',
-			headerTop.offsetHeight + 'px'
-		);
-	});
-}
-
-let resizeTimer;
-window.addEventListener('resize', () => {
-	clearTimeout(resizeTimer);
-	resizeTimer = setTimeout(setHeaderFixedHeight, 1);
-});
-
-setHeaderFixedHeight();

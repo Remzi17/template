@@ -138,7 +138,6 @@ export function css() {
 export function cssLibs() {
 	return src(paths.src.cssLibsFiles)
 		.pipe(gulpif(concatLibs, concat('vendor.css')))
-		.pipe(gulpif(isBuild, cssnano()))
 		.pipe(gulpif(isBuild, csso({
 			restructure: false,
 			forceMediaMerge: false,

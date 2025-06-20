@@ -34,13 +34,11 @@ $arrow-color: $active
 	.sub-menu
 		position: relative
 		z-index: 2
-		display: grid
-		gap: 12px
 
 		background: #fff
 
-		&:not(:has(.sub-menu))
-			+scrollbar(50vh, $scrollBarWidth: 4, $padding: 'auto') 
+		// &:not(:has(.sub-menu))
+		+scrollbar(50vh, $scrollBarWidth: 4, $padding: 'auto') 
 
 		@media (min-width: #{$burgerMedia+1+px})
 			border-radius: $sub-menu-border-radius
@@ -103,12 +101,11 @@ li.menu-item-has-children
 				translate: 0 #{-$wrapper-padding}
 
 				.sub-menu-wrapper
+					position: fixed
 					left: 100% 
 					
 					padding-left: $sub-menu-items-gap
-					margin-left: #{-$sub-menu-items-gap}
-
-					translate: $sub-menu-items-gap #{-$wrapper-padding} 
+					translate: 0
 
 				.menu-item-arrow
 					&+a

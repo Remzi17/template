@@ -44,7 +44,8 @@
 
 html {
   display: flex;
-  flex-direction: column
+  flex-direction: column;
+  min-height: 100%
 }
 
 html:not(.loaded) ._dynamic_adapt_,
@@ -53,7 +54,7 @@ html:not(.loaded) [data-da*=header__mobile] {
   display: none
 }
 
-html:not(.loaded) .header-fixed {
+html:not(.loaded) .header {
   opacity: 0
 }
 
@@ -77,6 +78,33 @@ html.safari input {
   }
 }
 
+body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin: 0;
+  font-family: Montserrat;
+  color: #202020;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: clip
+}
+
+body.no-scroll {
+  overflow-y: hidden
+}
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-x: clip
+}
+
+.main {
+  flex: 1
+}
+
 .header__mobile,
 body,
 html {
@@ -87,48 +115,6 @@ html {
 body.scrollbar-auto,
 html.scrollbar-auto {
   scrollbar-gutter: auto
-}
-
-.wrapper,
-body,
-html {
-  min-height: 100%
-}
-
-body {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  margin: 0;
-  overflow-x: clip;
-  font-family: Montserrat;
-  color: #202020;
-  -webkit-tap-highlight-color: transparent
-}
-
-body.no-scroll {
-  overflow-y: hidden
-}
-
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  overflow-x: clip
-}
-
-.wrapper>* {
-  width: 100%
-}
-
-.main {
-  flex: 1 1 auto
-}
-
-.lg-on #wpadminbar,
-.lg-on [data-fixed] {
-  z-index: -1
 }
 
 a,
@@ -198,7 +184,6 @@ textarea {
   max-height: 100%;
   padding-right: 9px;
   width: calc(100% + 13px);
-  margin-right: -9px;
   overflow-y: auto;
   overflow-x: hidden
 }
@@ -278,6 +263,14 @@ picture {
   height: 100%
 }
 
+svg {
+  transition: all .4s
+}
+
+sup {
+  font-size: .5em
+}
+
 [data-digits-counter] {
   display: inline-block;
   white-space: nowrap
@@ -294,8 +287,7 @@ picture {
   overflow: visible
 }
 
-.input-wrapper,
-.input-wrapper p {
+.input-wrapper {
   display: grid
 }
 
@@ -360,14 +352,6 @@ a {
 .hover-icon:focus-visible img,
 .hover-icon:focus-visible svg {
   scale: 1.08
-}
-
-svg {
-  transition: all .4s
-}
-
-sup {
-  font-size: .5em
 }
 
 .underline {
@@ -563,7 +547,7 @@ sup {
   width: 300px;
   height: 300px;
   background: #ccc;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
   transition: all .4s
 }
@@ -695,7 +679,6 @@ sup {
   max-height: 90vh;
   padding-right: 9px;
   width: calc(100% + 13px);
-  margin-right: -9px;
   overflow-y: auto;
   overflow-x: hidden;
   width: 400px;
@@ -823,36 +806,30 @@ sup {
 .sub-menu-wrapper .sub-menu {
   position: relative;
   z-index: 2;
-  display: grid;
-  gap: 12px;
-  background: #fff
-}
-
-.sub-menu-wrapper .sub-menu:not(:has(.sub-menu)) {
+  background: #fff;
   max-height: 50vh;
   width: calc(100% + 8autopx);
-  margin-right: -4autopx;
   overflow-y: auto;
   overflow-x: hidden
 }
 
 @supports (-moz-appearance:none) {
-  .sub-menu-wrapper .sub-menu:not(:has(.sub-menu)) {
+  .sub-menu-wrapper .sub-menu {
     scrollbar-color: #f2b374 #d6d6d6;
     scrollbar-width: thin
   }
 }
 
-.sub-menu-wrapper .sub-menu:not(:has(.sub-menu))::-webkit-scrollbar {
+.sub-menu-wrapper .sub-menu::-webkit-scrollbar {
   width: 4px
 }
 
-.sub-menu-wrapper .sub-menu:not(:has(.sub-menu))::-webkit-scrollbar-track-piece {
+.sub-menu-wrapper .sub-menu::-webkit-scrollbar-track-piece {
   background-color: #d6d6d6;
   border-radius: 4px
 }
 
-.sub-menu-wrapper .sub-menu:not(:has(.sub-menu))::-webkit-scrollbar-thumb {
+.sub-menu-wrapper .sub-menu::-webkit-scrollbar-thumb {
   background-color: #f2b374;
   border-radius: 4px
 }
@@ -1095,10 +1072,10 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
   }
 
   li.menu-item-has-children.left .sub-menu-wrapper .sub-menu-wrapper {
+    position: fixed;
     left: 100%;
     padding-left: 8px;
-    margin-left: -8px;
-    translate: 8px -56px
+    translate: 0
   }
 
   li.menu-item-has-children.left .sub-menu-wrapper .menu-item-arrow+a {
@@ -1374,7 +1351,7 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
   }
 
   .input {
-    height: round(clamp(50px, 48px + .625vw, 60px), 1px)
+    height: round(clamp(48px, 45.6px + .75vw, 60px), 1px)
   }
 
   .textarea {

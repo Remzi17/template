@@ -15,7 +15,7 @@ import { windowWidth } from "../scripts/core/variables";
 export function subMenu() {
 	subMenuInit()
 
-	let mediaSwitcher = false; // проверка перехода с мобилки на десктоп и обратно
+	let mediaSwitcher = false;
 	let isResize;
 
 	function subMenuResize() {
@@ -67,7 +67,6 @@ export function subMenu() {
 				});
 
 				item.addEventListener('mouseout', function (e) {
-					// проверка ушла ли мышь в область подменю
 					timeoutId = setTimeout(() => {
 						if (!item.contains(e.relatedTarget)) {
 							item.classList.remove('active');
@@ -76,12 +75,11 @@ export function subMenu() {
 				});
 
 				item.addEventListener('focusout', function (e) {
-					// Проверяем, ушел ли фокус с элемента и подменю
 					timeoutId = setTimeout(() => {
 						if (!item.contains(document.activeElement)) {
 							item.classList.remove('active');
 						}
-					}, 500); // Задержка 500 мс
+					}, 500);
 				});
 			}
 

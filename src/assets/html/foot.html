@@ -14,7 +14,7 @@
 <!-- Worker -->
 <script>
 	if (location.hostname !== 'localhost' && 'serviceWorker' in navigator) {
-		navigator.serviceWorker.register('/worker.js').catch(console.error);
+		navigator.serviceWorker.register(new URL('worker.js', location.href)).catch(console.error);
 	}
 </script>
 

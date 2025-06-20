@@ -7,8 +7,8 @@ export const body = document.querySelector('body');
 export const html = document.querySelector('html');
 export const popup = document.querySelectorAll('.popup');
 
-export const headerTop = document.querySelector('.header-fixed') ? document.querySelector('.header-fixed') : document.querySelector('head');
-export const headerTopFixed = 'header-fixed_fixed';
+export const headerTop = document.querySelector('.header') ? document.querySelector('.header') : document.querySelector('head');
+export const headerTopFixed = 'header_fixed';
 export let fixedHeader = true;
 export let fixedElements = document.querySelectorAll('[data-fixed]');
 export let stickyObservers = new Map();

@@ -362,7 +362,7 @@ const create = () => {
 	// js скрипты
 
 	if (replaceScripts) {
-		let componentsFile = source_folder + "/assets/js/scripts/components.js";
+		let componentsFile = source_folder + "/assets/js/components.js";
 
 		fs.writeFile(componentsFile, '', cb);
 		let jsScripts = getFiles.jsScripts;
@@ -371,7 +371,7 @@ const create = () => {
 			let jsFileName = jsScripts[i].split('.');
 			jsFileName = jsFileName[0];
 
-			fs.appendFile(componentsFile, `import { ` + jsFileName + ` } from '../components/` + jsFileName + `';\n`, cb)
+			fs.appendFile(componentsFile, `import { ` + jsFileName + ` } from './components/` + jsFileName + `';\n`, cb)
 
 			i == jsScripts.length - 1 ? fs.appendFile(componentsFile, '\n', cb) : ''
 		}
@@ -469,7 +469,7 @@ const create = () => {
 	// css переменные
 	fs.writeFile(paths.src.cssvariables, '', cb);
 
-	fs.appendFile(paths.src.cssvariables, `$active: ` + variables.active + `\n$gray: ` + variables.gray + `\n$text: ` + variables.text + `\n$bg: ` + variables.bg + `\n$border-radius: ` + variables.borderRadius + `\n\n$minWidth: ` + variables.minWidth + `\n$maxWidth: ` + variables.maxWidth + `\n$containerWidth: ` + variables.containerWidth + `\n$container: ` + variables.container + `\n$firstBreakpoint: ` + variables.firstBreakpoint + `\n$section_gap: ` + variables.section_gap + ` \n$burgerMedia: ` + variables.burgerMedia + `\n\n$font: '` + variables.font, cb)
+	fs.appendFile(paths.src.cssvariables, `$active: ` + variables.active + `\n$gray: ` + variables.gray + `\n$text: ` + variables.text + `\n$bg: ` + variables.bg + `\n$border-radius: ` + variables.borderRadius + `\n\n$minWidth: ` + variables.minWidth + `\n$maxWidth: ` + variables.maxWidth + `\n$containerWidth: ` + variables.containerWidth + `\n$container: ` + variables.container + `\n$firstBreakpoint: ` + variables.firstBreakpoint + `\n$section_gap: ` + variables.section_gap + ` \n$burgerMedia: ` + variables.burgerMedia + `\n\n$font: '` + variables.font + `'`, cb)
 
 
 	if (!concatLibs) {

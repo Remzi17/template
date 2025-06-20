@@ -73,7 +73,6 @@ $container1199: 940px
 			padding-right: 0
 			padding-left: 20px
 
-
 :root
 	--active: #{$active}
 	--text: #{$text}
@@ -90,12 +89,13 @@ $container1199: 940px
 html
 	display: flex
 	flex-direction: column
+	min-height: 100%
 
 	&:not(.loaded)
 		[data-da*="header__mobile"], ._dynamic_adapt_, .sub-menu-wrapper
 			display: none
 
-		.header-fixed 
+		.header 
 			opacity: 0
 
 	&.safari
@@ -112,25 +112,17 @@ html
 	body
 		padding-right: 0 !important
 
-html, body, .header__mobile
-	scrollbar-gutter: stable
-
-	&.scrollbar-auto
-		scrollbar-gutter: auto
-
-body, html, .wrapper
-	min-height: 100%
-
 body
 	position: relative
 	display: flex
 	flex-direction: column
-	flex: 1 1 auto
+	flex: 1
 	margin: 0
-	overflow-x: clip
+
 	font-family: $font
 	color: $text
 	-webkit-tap-highlight-color: transparent
+	overflow-x: clip
 
 	&.no-scroll
 		overflow-y: hidden
@@ -138,18 +130,17 @@ body
 .wrapper
 	display: flex
 	flex-direction: column
-	flex: 1 1 auto
+	flex: 1
 	overflow-x: clip
 
-	> *
-		width: 100%
-
 .main
-	flex: 1 1 auto
+	flex: 1
 
-.lg-on [data-fixed],
-.lg-on #wpadminbar 
-	z-index: -1
+html, body, .header__mobile
+	scrollbar-gutter: stable
+
+	&.scrollbar-auto
+		scrollbar-gutter: auto
 
 a, button, li, iframe, figure,
 fieldset, dd, dt, dl,
@@ -236,6 +227,13 @@ picture
 	// 	width: 100%
 	// 	object-fit: cover
 
+
+svg
+	+t
+
+sup
+	font-size: .5em
+
 [data-digits-counter]
 	display: inline-block
 	white-space: nowrap
@@ -251,9 +249,6 @@ picture
 
 .input-wrapper
 	display: grid
-
-	p
-		display: grid
 
 .logo
 	display: flex
@@ -309,12 +304,6 @@ picture
 	+hov
 		img, svg
 			scale: 1.08
-
-svg
-	+t
-
-sup
-	font-size: .5em
 
 =underline
 	text-decoration: underline

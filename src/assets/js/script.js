@@ -1,6 +1,6 @@
 
 import './scripts/init.js';
-import './scripts/components.js';
+import './components.js';
 
 
 //

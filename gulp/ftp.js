@@ -66,8 +66,8 @@ const deploy = () => {
 
 const deployAll = () => {
 	let globs = [
-		project_folder + '/assets/**',
-		project_folder + '/*.html'
+		project_folder + '/**/*.*',
+		project_folder + '/*.*',
 	];
 
 	return gulp.src(globs, {

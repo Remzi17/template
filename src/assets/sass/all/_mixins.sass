@@ -397,7 +397,6 @@
 			padding-right: #{$scrollBarWidth + $padding + px} 
 
 		width: calc(100% + #{$scrollBarWidth + $scrollBarWidth + $padding + px})
-		margin-right: -#{$scrollBarWidth + $padding + px}
 
 	overflow-y: auto
 	overflow-x: hidden
@@ -416,7 +415,7 @@
 
 	&::-webkit-scrollbar-thumb 
 		background-color: color.adjust($active, $lightness: 10%)  
-		border-radius: 4px
+		border-radius: 4px 
 
 // Горизонтальный скроллбар
 =scrollbar-x($maxWidth, $scrollBarHeight: 4, $padding: 5)
@@ -426,7 +425,6 @@
 		@if $padding != 'auto'
 			padding-bottom: #{$scrollBarHeight + $padding + px} 
 		
- 
 	overflow-x: auto
 	overflow-y: hidden
 
