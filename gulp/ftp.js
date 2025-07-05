@@ -6,7 +6,7 @@ import ftp from 'vinyl-ftp'
 let domen;
 
 export function getLink() {
-	if (template == 'wsp') {
+	if (template == '') {
 		return '/' + project_folder + '/'
 	} else {
 		return '/www/' + project_folder + domen;
@@ -15,36 +15,36 @@ export function getLink() {
 	// return '/optiform/';
 }
 
-if (template == 'siteup') {
+if (template == '') {
 
-	domen = '.siteup.ru/';
+	domen = '';
 
 	var conn = ftp.create({
-		host: 'host.siteup.ru',
-		user: 'osmanov',
-		password: '2Z0a5T8i',
+		host: '',
+		user: '',
+		password: '',
 		parallel: 10,
 		log: gutil.log
 	});
 
-} else if (template == 'wsp') {
-	domen = 'verstka.demo-wsp.ru/';
+} else if (template == '') {
+	domen = '';
 
 	var conn = ftp.create({
-		host: '194.58.96.203',
-		user: 'verstka_remzi',
-		password: 'vE7bK0mF2h',
+		host: '',
+		user: '',
+		password: '',
 		parallel: 10,
 		log: gutil.log
 	});
 } else {
 
-	domen = '.osmanovremzi.ru/';
+	domen = '';
 
 	var conn = ftp.create({
-		host: '5.39.218.122',
-		user: 'remzi144',
-		password: 'qU1uN0vK4ytO3g',
+		host: '',
+		user: '',
+		password: '',
 		parallel: 10,
 		log: gutil.log
 	});
