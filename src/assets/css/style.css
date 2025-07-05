@@ -1,56 +1,5 @@
 @charset "UTF-8";
 
-@keyframes fadeInTop {
-  0% {
-    translate: 0 -100%
-  }
-
-  to {
-    translate: 0 0
-  }
-}
-
-@keyframes fadeOutTop {
-  0% {
-    translate: 0 0
-  }
-
-  to {
-    translate: 0 -200%
-  }
-}
-
-@keyframes fadeIn {
-  0% {
-    opacity: 0
-  }
-
-  to {
-    opacity: 1
-  }
-}
-
-@keyframes fadeOut {
-  0% {
-    opacity: 1
-  }
-
-  to {
-    opacity: 0
-  }
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0
-  }
-
-  80%,
-  to {
-    opacity: 1
-  }
-}
-
 .container {
   position: relative;
   width: 100%;
@@ -175,18 +124,10 @@ body.scrollbar-auto,
 }
 
 h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-p,
 ul,
-ol,
 dl,
 dt,
 dd,
-figure,
 fieldset,
 iframe {
   margin: 0;
@@ -332,10 +273,6 @@ svg {
   transition: all .4s
 }
 
-sup {
-  font-size: .5em
-}
-
 [data-digits-counter] {
   display: inline-block;
   white-space: nowrap
@@ -409,16 +346,6 @@ a,
   scale: 1.02
 }
 
-.hover-icon img,
-.hover-icon svg {
-  transition: all .4s
-}
-
-.hover-icon:focus-visible img,
-.hover-icon:focus-visible svg {
-  scale: 1.08
-}
-
 .underline {
   text-decoration: underline;
   -webkit-text-decoration-skip-ink: none;
@@ -451,10 +378,6 @@ a,
 [data-scrolling] * {
   -webkit-user-select: none;
   user-select: none
-}
-
-.flex {
-  display: flex
 }
 
 .flex-wrap {
@@ -1222,6 +1145,15 @@ form.form-dragover::after {
   font-size: 16px
 }
 
+.catalog__button:focus-visible {
+  color: #4888ff
+}
+
+.catalog__button:focus-visible:after,
+.catalog__button:focus-visible:before {
+  background: #4888ff
+}
+
 .catalog__button:first-child {
   border-top: 1px solid #f3f3f3
 }
@@ -1868,10 +1800,6 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
     width: calc(1360px + (100vw - 1360px)/2)
   }
 
-  .flex {
-    gap: 16px
-  }
-
   .grid {
     gap: 16px
   }
@@ -2134,9 +2062,6 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
 }
 
 @media (max-width:1500px) {
-  .flex {
-    gap: round(clamp(12px, 10.6666666667px + .3703703704vw, 16px), 1px)
-  }
 
   .grid {
     gap: round(clamp(12px, 10.6666666667px + .3703703704vw, 16px), 1px)
@@ -2794,12 +2719,7 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
 
 @media (min-width:576px) and (max-width:1199px) {
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1 {
     text-wrap: balance
   }
 }
@@ -2829,11 +2749,6 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
 
   .hover-scale:hover [class*=-img] img {
     scale: 1.02
-  }
-
-  .hover-icon:hover img,
-  .hover-icon:hover svg {
-    scale: 1.08
   }
 
   .underline:hover {
@@ -2895,6 +2810,15 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
 
   .header__menu>li.assembly>a:hover:before {
     background: #fff
+  }
+
+  .catalog__button:hover {
+    color: #4888ff
+  }
+
+  .catalog__button:hover:after,
+  .catalog__button:hover:before {
+    background: #4888ff
   }
 
   .catalog__item-list a:hover {

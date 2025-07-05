@@ -1015,6 +1015,10 @@
 			if (windowWidth > 991) {
 				catalogButton.classList.toggle('active');
 				catalog.classList.toggle('active');
+
+				catalog.querySelectorAll('.catalog__button')[1].classList.add('active');
+			} else {
+				catalog.querySelectorAll('.catalog__button')[1].classList.remove('active');
 			}
 		});
 
