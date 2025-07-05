@@ -81,9 +81,6 @@ export function css() {
 			],
 			cascade: false
 		})))
-		.pipe(gulpif(isBuild, cssnano({
-			autoprefixer: { remove: false }
-		})))
 		.pipe(gulpif(isBuild, csso({
 			restructure: false,
 			forceMediaMerge: false,

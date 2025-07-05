@@ -1,4 +1,3 @@
-import { fixedElements } from "../scripts/core/variables";
 import { headerTop, headerTopFixed } from "../scripts/core/variables";
 import { isDesktop } from "../scripts/other/checks";
 /* 
@@ -13,7 +12,6 @@ export function fixedMenu() {
 	if (!headerTop) return;
 
 	const isFixed = isDesktop() && window.scrollY > 180;
-
 	if (isFixed) {
 		headerTop.classList.add(headerTopFixed);
 	} else {

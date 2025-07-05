@@ -1,11 +1,9 @@
+import { subMenu } from './components/subMenu';
+import { tab } from './components/tab';
 import { burger } from './components/burger';
-import { popup } from './components/popup';
-import { fixedMenu } from './components/fixedmenu'
-import { gallery } from './components/gallery'
-import { subMenu } from './components/sub-menu'
+import { fixedMenu } from './components/fixedMenu';
 
-burger();
-popup();
-fixedMenu();
-gallery();
 subMenu();
+tab();
+burger();
+fixedMenu();

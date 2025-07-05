@@ -15,7 +15,8 @@ export let stickyObservers = new Map();
 
 export const menuClass = '.header__mobile';
 export const menu = document.querySelector(menuClass) ? document.querySelector(menuClass) : document.querySelector('head');
-export const menuLink = document.querySelector('.menu-link') ? document.querySelector('.menu-link') : document.querySelector('head');
+export const menuLink = document.querySelector('.header__catalog-button') ? document.querySelector('.header__catalog-button') : document.querySelector('head');
+
 export const menuActive = 'active';
 
 export const burgerMedia = 991;

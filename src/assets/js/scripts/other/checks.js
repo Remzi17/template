@@ -1,4 +1,5 @@
 import { html, body, bodyOpenModalClass, burgerMedia, windowWidth, menu, menuActive, menuLink } from '../core/variables.js'
+import { uniqArray } from '../core/helpers.js'
 
 //
 //  

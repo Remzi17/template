@@ -1,5 +1,5 @@
 
-import { body, menu, menuActive, menuLink, headerTop, bodyOpenModalClass } from "../scripts/core/variables"
+import { body, menu, menuActive, menuLink, headerTop, bodyOpenModalClass, windowWidth } from "../scripts/core/variables"
 import { throttle, closeOutClick } from '../scripts/core/helpers'
 import { isDesktop, isMobile, isSafari } from "../scripts/other/checks"
 import { changeScrollbarPadding, hideScrollbar, showScrollbar } from "../scripts/other/scroll"
@@ -18,25 +18,28 @@ export function burger() {
 		let isAnimating = false
 
 		menuLink.addEventListener('click', function (e) {
-			if (isAnimating) return
-			isAnimating = true
+			if (windowWidth <= 991) {
+				if (isAnimating) return
+				isAnimating = true
 
-			marginTop = headerTop.getBoundingClientRect().height + headerTop.getBoundingClientRect().y
-			menuLink.classList.toggle('active')
-			menu.style.marginTop = marginTop + 'px'
-			menu.classList.toggle(menuActive)
 
-			if (menu.classList.contains(menuActive)) {
-				hideScrollbar();
-			} else {
+				marginTop = headerTop.getBoundingClientRect().height
+				menuLink.classList.toggle('active')
+				menu.style.marginTop = marginTop + 'px'
+				menu.classList.toggle(menuActive)
+
+				if (menu.classList.contains(menuActive)) {
+					hideScrollbar();
+				} else {
+					setTimeout(() => {
+						showScrollbar();
+					}, 400);
+				}
+
 				setTimeout(() => {
-					showScrollbar();
-				}, 400);
+					isAnimating = false
+				}, 500)
 			}
-
-			setTimeout(() => {
-				isAnimating = false
-			}, 500)
 		})
 
 		function checkHeaderOffset() {

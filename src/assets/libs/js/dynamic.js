@@ -122,9 +122,19 @@ class TransferElements {
 					if (currentBreakpointTrigger === 'default') {
 						sourceElementsData.forEach(({ sourceElement, initialParent, initialNextSibling }) => {
 							if (initialParent) {
-								if (initialNextSibling) {
-									initialParent.insertBefore(sourceElement, initialNextSibling);
-								} else {
+								try {
+									if (initialNextSibling && initialNextSibling.parentNode === initialParent) {
+										initialParent.insertBefore(sourceElement, initialNextSibling);
+									} else {
+										initialParent.appendChild(sourceElement);
+									}
+								} catch (e) {
+									console.error('TransferElements: insertBefore failed', {
+										sourceElement,
+										initialParent,
+										initialNextSibling,
+										error: e
+									});
 									initialParent.appendChild(sourceElement);
 								}
 							}
@@ -325,11 +335,12 @@ class TransferElements {
 					childElementsOfTargetElement[targetPosition]
 				);
 
-				if (childElementOfTargetElement) {
+				if (childElementOfTargetElement && childElementOfTargetElement.parentNode === targetElement) {
 					targetElement.insertBefore(sourceElement, childElementOfTargetElement);
 				} else {
 					targetElement.append(sourceElement);
 				}
+
 			}
 		);
 	}

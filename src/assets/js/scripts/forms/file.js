@@ -1,57 +1,59 @@
 
 // Замена текста при выборе файла 
 export function formFiles() {
-	let files = document.querySelectorAll('.input-file');
-	let fileText, fileDefaultText, fileInput, filesNames, fileName;
+	document.querySelectorAll('.input-file').forEach(wrapper => {
+		const input = wrapper.querySelector('input')
+		const textEl = wrapper.querySelector('.input-file-text')
+		const defaultText = textEl.textContent
+		const form = wrapper.closest('form')
 
-	files.forEach(file => {
-		fileText = file.querySelector('.input-file-text');
-		fileDefaultText = fileText.textContent;
+		let dragCounter = 0
 
-		const handleFiles = (fileInput, fileText) => {
-			filesNames = '';
-
-			for (let i = 0; i < fileInput.files.length; i++) {
-				filesNames += fileInput.files[i].name;
-
-				if (i !== fileInput.files.length - 1) {
-					filesNames += ', ';
-				}
+		const updateFileText = () => {
+			if (!input.files.length) {
+				textEl.textContent = defaultText
+				return
 			}
 
-			fileName = fileInput.value.split('\\').pop();
-			fileText.textContent = fileName ? filesNames : fileDefaultText;
-		};
+			const names = Array.from(input.files).map(f => f.name).join(', ')
+			textEl.textContent = names
+		}
 
-		file.querySelector('input').addEventListener('change', function () {
-			handleFiles(this, fileText);
-		});
+		input.addEventListener('change', updateFileText)
 
-		file.closest('form').addEventListener('reset', function () {
-			fileText.textContent = fileDefaultText
-		});
+		form?.addEventListener('reset', () => {
+			textEl.textContent = defaultText
+		})
 
-		file.addEventListener('dragover', (e) => {
-			e.preventDefault();
-			file.classList.add('dragover');
-		});
+		form?.addEventListener('dragenter', e => {
+			e.preventDefault()
+			dragCounter++
+			form.classList.add('form-dragover')
+		})
 
-		file.addEventListener('dragleave', () => {
-			file.classList.remove('dragover');
-		});
-
-		file.addEventListener('drop', (e) => {
-			e.preventDefault();
-			file.classList.remove('dragover');
-
-			const droppedFiles = e.dataTransfer.files;
-
-			if (droppedFiles.length > 0) {
-				file.querySelector('input').files = droppedFiles;
-
-				handleFiles(file.querySelector('input'), fileText);
+		form?.addEventListener('dragleave', e => {
+			e.preventDefault()
+			dragCounter--
+			if (dragCounter === 0) {
+				form.classList.remove('form-dragover')
 			}
-		});
-	});
+		})
+
+		form?.addEventListener('dragover', e => {
+			e.preventDefault()
+		})
+
+		form?.addEventListener('drop', e => {
+			e.preventDefault()
+			dragCounter = 0
+			form.classList.remove('form-dragover')
+
+			if (e.dataTransfer.files.length) {
+				const dataTransfer = new DataTransfer()
+				Array.from(e.dataTransfer.files).forEach(f => dataTransfer.items.add(f))
+				input.files = dataTransfer.files
+				updateFileText()
+			}
+		})
+	})
 }
-

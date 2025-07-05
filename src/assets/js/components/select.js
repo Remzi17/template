@@ -16,7 +16,7 @@ export function select() {
 			currentSelect = new SlimSelect({
 				select: select,
 				settings: {
-					placeholderText: select.getAttribute('data-placeholder'),
+					placeholderText: select.getAttribute('data-placeholder') ? select.getAttribute('data-placeholder') : null,
 					// openPosition: 'auto',
 					// openPositionX: 'left',
 

@@ -14,22 +14,7 @@ $container1199: 940px
 	&-right
 		padding: 0
 
-	@media (min-width: 576px)
-		width: $container767
-		max-width: none
-		padding: 0
-
-	@media (min-width: 768px)
-		width: $container991
-
-	@media (min-width: 992px)
-		width: $container1199
-
-	@if $firstBreakpoint > 1399
-		@media (min-width: 1200px)
-			width: 1140px
-
-	@media (min-width: #{$firstBreakpoint + 1 + px})
+	@media (min-width: 1200px)
 		width: $container
 
 	&-left,
@@ -142,25 +127,34 @@ html, body, .header__mobile
 	&.scrollbar-auto
 		scrollbar-gutter: auto
 
-a, button, li, iframe, figure,
-fieldset, dd, dt, dl,
-h1, h2, h3, h4, h5, h6, p, ol, ul
-	padding: 0
+h1, h2, h3, h4, h5, h6,
+p, ul, ol, dl, dt, dd,
+figure, fieldset, iframe
 	margin: 0
-	border: none
+	padding: 0
 	font: inherit
 
-a, button, li
+li
+	padding: 0
+	list-style: none
+	font: inherit
+	cursor: pointer
+
+button
+	margin: 0
+	padding: 0
+	border: none
 	background: none
+	font: inherit
+	color: inherit
+	cursor: pointer
+
+a
 	text-decoration: none
 	color: inherit
 	font-family: inherit
 	cursor: pointer
-
-ul li
-	list-style: none
-	cursor: default
-
+	
 strong, button
 	font: inherit
 
@@ -221,9 +215,9 @@ img
 picture
 	display: flex
 	justify-content: center
-	height: 100%
-
-	// img 
+ 
+	img 
+		height: 100%
 	// 	width: 100%
 	// 	object-fit: cover
 
@@ -346,8 +340,17 @@ sup
 .flex-wrap
 	flex-wrap: wrap
 
+.col, .grid
+	display: grid
+	grid-template-columns: 100%
+	justify-items: start
+
+.grid
+	+adap('gap', 16, 12)
+
 .justify-center
 	justify-content: center
+	justify-items: center
 
 .justify-end
 	justify-content: end
@@ -369,14 +372,6 @@ sup
 .align-end
 	align-items: end
 	align-content: end
-
-.col, .grid
-	display: grid
-	grid-template-columns: 100%
-	justify-items: start
-
-.grid
-	+adap('gap', 16, 12)
 
 =swiper-controls
 	&.swiper

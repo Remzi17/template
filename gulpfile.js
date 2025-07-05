@@ -6,7 +6,7 @@ import cache from 'gulp-cached';
 import remember from 'gulp-remember';
 
 import { paths, __dirname, __filename, isDeploy } from './gulp/settings.js';
-import { html, worker, swVersion } from './gulp/html.js';
+import { html } from './gulp/html.js';
 import { css, cssLibs } from './gulp/css.js';
 import { images } from './gulp/images.js';
 import { fonts, fontcss } from './gulp/fonts.js';
@@ -53,11 +53,9 @@ function clean() {
 const build = series(
 	temp,
 	clean,
-	swVersion,
 	rollup,
 	parallel(
 		html,
-		worker,
 		css,
 		cssLibs,
 		jsLibs,
@@ -75,8 +73,6 @@ export const watch = parallel(build, watchFiles, browserSync);
 
 export {
 	html,
-	worker,
-	swVersion,
 	css,
 	cssLibs,
 	rollup,

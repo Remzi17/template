@@ -1,48 +1,48 @@
 
 export let replaceScripts = true;
 export let isDeploy = false;
-export let template = 'wsp';
+export let template = 'rem';
 export let concatLibs = true;
 export let isBuild = true;
 export let unCSS = false;
 
 export let variables = {
-	font: 'Montserrat',
-	active: '#007EC6',
-	gray: '#DFE4EC',
-	text: '#1D2428',
+	font: 'Tenor',
+	active: '#4888ff',
+	gray: '#f4f4f4',
+	text: '#343a3f',
 	bg: '#1D2428',
-	borderRadius: '20px',
+	borderRadius: '8px',
 	minWidth: '320',
 	maxWidth: '1920',
-	containerWidth: '1166',
+	containerWidth: '1360',
 	container: '#{$containerWidth+px}',
-	firstBreakpoint: '1300',
-	section_gap: 80,
-	burgerMedia: 991,
+	firstBreakpoint: '1500',
+	section_gap: 84,
+	burgerMedia: 1199,
 }
 
 export let getFiles = {
 	html: [
-		'about',
+		// 'about',
 		// 'account',
 		// 'action',
 		// 'catalog',
 		// 'categories',
-		'category',
+		// 'category',
 		// 'checkout',
-		'contact',
-		'feedback',
-		'news',
+		// 'contact',
+		// 'feedback',
+		// 'news',
 		// 'payment',
 		// 'search', 
 		// 'single-category',
-		'single-news',
+		// 'single-news',
 		// 'single-product',
 		// 'sitemap',
 		// 'vacancy',
 		// 'wishlist',
-		'text',
+		// 'text',
 	],
 	sass: [
 		// 'about',
@@ -92,13 +92,13 @@ export let getFiles = {
 		// 'pagination',
 		// 'range',
 		// 'rating',
-		// 'search',
+		'search',
 		// 'select',
 		// 'spoller',
 		// 'slider',
-		// 'sub-menu',
+		'sub-menu',
 		// 'switch',
-		'text',
+		// 'text',
 		// 'tooltip',
 		// 'video',
 	],
@@ -116,7 +116,7 @@ export let getFiles = {
 		// 'swiper',
 	],
 	jsLibs: [
-		'a_jquery',
+		// 'a_jquery',
 		'dynamic',
 		// 'date',
 
@@ -127,7 +127,7 @@ export let getFiles = {
 
 		// 'lg-video',
 
-		'mask',
+		// 'mask',
 		// 'notify',
 		// 'range',
 		// 'select',
@@ -142,14 +142,14 @@ export let getFiles = {
 		// 'gallery',
 		// 'map',
 		// 'numbers',
-		'popup',
+		// 'popup',
 		// 'rating',  
 		// 'scroll',
 		// 'showmore',
 		// 'select',
 		// 'slider',
 		// 'spoller',
-		// 'sub-menu',
+		'subMenu',
 		// 'tab',
 		// 'tooltip',
 		// 'text',

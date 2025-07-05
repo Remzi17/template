@@ -121,6 +121,7 @@ export function tab() {
 					} else {
 						fadeIn(tabsContentItem, true)
 						tabsContentItem.hidden = false;
+						tabsContentItem.classList.toggle('active')
 					}
 					if (isHash && !tabsContentItem.closest('.popup')) {
 						setHash(`tab-${tabsBlockIndex}-${index}`);
