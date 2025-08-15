@@ -1,4 +1,4 @@
-import { body, bodyOpenModalClass } from "../scripts/core/variables";
+import { body, bodyOpenModalClass } from "../scripts/variables";
 import { hideScrollbar, showScrollbar } from "../scripts/other/scroll";
 import { fadeIn, fadeOut } from "../scripts/other/animation";
 import { getHash } from "../scripts/other/url"

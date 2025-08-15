@@ -1,4 +1,4 @@
-import { html, body, bodyOpenModalClass, burgerMedia, windowWidth, menu, menuActive, menuLink } from '../core/variables.js'
+import { html, body, bodyOpenModalClass, burgerMedia, windowWidth, menu, menuActive, menuLink } from '../variables.js'
 
 //
 //  

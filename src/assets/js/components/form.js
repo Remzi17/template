@@ -1,4 +1,4 @@
-import { body } from "../scripts/core/variables";
+import { body } from "../scripts/variables";
 import { fadeIn, fadeOut } from "../scripts/other/animation";
 
 /* 
@@ -13,7 +13,7 @@ export function form() {
 	const allForms = document.querySelectorAll('form');
 
 	allForms.forEach(form => {
-		if (!form.classList.contains('wpcf7-form') && !form.classList.contains('catalog__left')) {
+		if (!form.classList.contains('wpcf7-form')) {
 			if (!form.hasAttribute('enctype')) {
 				form.setAttribute('enctype', 'multipart/form-data');
 			}

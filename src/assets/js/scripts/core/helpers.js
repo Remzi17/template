@@ -1,11 +1,23 @@
-import { windowWidth, checkWindowWidth } from "../core/variables.js";
+import { windowWidth, checkWindowWidth } from "../variables.js";
 
-// Задержка при вызове функции
-export function throttle(fn, delay) {
+// Задержка при вызове функции. Выполняется в конце
+export function debounce(fn, delay) {
 	let timer;
 	return () => {
 		clearTimeout(timer);
 		timer = setTimeout(() => fn.apply(this, arguments), delay);
+	};
+}
+
+// Задержка при вызове функции. Выполняется раз в delay мс
+export function throttle(fn, delay) {
+	let lastCall = 0;
+	return function (...args) {
+		const now = Date.now();
+		if (now - lastCall >= delay) {
+			lastCall = now;
+			fn.apply(this, args);
+		}
 	};
 }
 
@@ -16,7 +28,7 @@ export function closeOutClick(closedElement, clickedButton, clickedButtonActiveC
 		const element = document.querySelector(closedElement);
 		const withinBoundaries = e.composedPath().includes(element);
 
-		if (!withinBoundaries && button?.classList.contains(clickedButtonActiveClass) && e.target !== button) {
+		if (!withinBoundaries && button?.classList.contains(clickedButtonActiveClass) && e.target !== button && !e.target.closest('.popup')) {
 			element.classList.remove('active');
 			button.classList.remove(clickedButtonActiveClass);
 
@@ -47,7 +59,7 @@ export function scrollToSmoothly(pos, time = 400) {
 	});
 }
 
-window.addEventListener('resize', throttle(checkWindowWidth, 100));
+window.addEventListener('resize', debounce(checkWindowWidth, 100));
 
 
 //

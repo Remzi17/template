@@ -176,3 +176,7 @@
 	width: 10px;
 	height: 10px;
 }
+
+.select select {
+	pointer-events: none;
+}

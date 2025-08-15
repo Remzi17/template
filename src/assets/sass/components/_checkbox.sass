@@ -1,5 +1,5 @@
-$checkbox-width: 12px
-$checkbox-height: 12px
+$checkbox-width: 16px
+$checkbox-height: 16px
 $checkbox-gap: 16px
 
 $checkbox-active-color: #fff
@@ -17,14 +17,7 @@ $checkbox-border-radius: 2px
 
 	user-select: none
 	cursor: pointer
- 
-	&.error
-		color: #f03
-			  
-		.checkbox__input
-			&:before
-				border-color: #f03
-	 
+
 	&__input
 		position: relative
 		
@@ -35,13 +28,11 @@ $checkbox-border-radius: 2px
 		height: $checkbox-height
 
 		cursor: pointer
- 
+
 		&:before
 			content: '' 
 
-			flex: 0 0 $checkbox-width
-			width: $checkbox-width
-			height: $checkbox-height
+			aspect-ratio: 1
 
 			border: 1px solid $checkbox-border-color
 			border-radius: $checkbox-border-radius 
@@ -86,6 +77,16 @@ $checkbox-border-radius: 2px
 
 			&__input 
 				+hidden 
+				
+				&:focus-visible+.checkbox__text
+					&:after
+						content: ''
+
+						position: absolute
+						inset: 0
+						z-index: -1
+						+box-shadow-border($active)
+						border-radius: $checkbox-border-radius 
 
 				&:before
 					display: none

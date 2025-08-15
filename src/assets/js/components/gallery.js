@@ -1,5 +1,5 @@
-import { body, bodyOpenModalClass, menu, menuActive } from "../scripts/core/variables";
-import { changeScrollbarPadding, changeScrollbarGutter, hideScrollbar, showScrollbar, getScrollBarWidth } from "../scripts/other/scroll";
+import { body, bodyOpenModalClass, } from "../scripts/variables";
+import { hideScrollbar, showScrollbar } from "../scripts/other/scroll";
 
 /* 
 	================================================

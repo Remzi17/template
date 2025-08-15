@@ -66,7 +66,6 @@ export function video() {
 		}
 
 		normalizeUrl(url) {
-			// vkvideo.ru короткий формат
 			const vkShortRegex = /^https:\/\/vkvideo\.ru\/video(\d+)_(\d+)$/;
 			const vkMatch = url.match(vkShortRegex);
 			if (vkMatch) {
@@ -75,7 +74,6 @@ export function video() {
 				return `https://vkvideo.ru/video_ext.php?oid=${oid}&id=${id}&hd=2`;
 			}
 
-			// rutube.ru обычный видео-URL
 			const rutubeRegex = /^https:\/\/rutube\.ru\/video\/([a-z0-9]+)\/?$/i;
 			const rutubeMatch = url.match(rutubeRegex);
 			if (rutubeMatch) {

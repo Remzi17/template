@@ -8,7 +8,6 @@
 	width: 100%
 	padding-block: 12px
 	will-change: transform
-	background: #ccc
 			
 	&__top 
 		display: flex
@@ -22,12 +21,12 @@
 		$padding-top: 40
 		$padding-bottom: 40
 		$padding-x: 20
-		$mobile-bg: $bg
+		$mobile-bg: #fff
 
 		&__mobile 
 			position: fixed
 			right: -100vw
-			top: 0
+			top: var(--headerFixedHeight)
 			z-index: 5
 					
 			display: grid 
@@ -36,11 +35,10 @@
 			align-content: start
 			gap: 20px
 			width: min(500px, 101vw)
-			height: calc(100dvh - #{var(--headerFixedHeight)} + px)
+			height: calc(100dvh - #{var(--headerFixedHeight)})
 			padding: #{$padding-top+px} #{$padding-x+px} #{$padding-bottom+px}
 					
 			background: $mobile-bg
-			color: #fff
 					
 			opacity: 0
 			transition: right .3s, opacity .3s

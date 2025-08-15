@@ -1,6 +1,6 @@
 
-import { body, menu, menuActive, menuLink, headerTop, bodyOpenModalClass } from "../scripts/core/variables"
-import { throttle, closeOutClick } from '../scripts/core/helpers'
+import { body, menu, menuActive, menuLink, headerTop, bodyOpenModalClass } from "../scripts/variables"
+import { debounce, closeOutClick } from '../scripts/core/helpers'
 import { isDesktop, isMobile, isSafari } from "../scripts/other/checks"
 import { changeScrollbarPadding, hideScrollbar, showScrollbar } from "../scripts/other/scroll"
 
@@ -14,30 +14,41 @@ import { changeScrollbarPadding, hideScrollbar, showScrollbar } from "../scripts
 
 export function burger() {
 	if (menuLink) {
-		let marginTop = 0
 		let isAnimating = false
 
 		menuLink.addEventListener('click', function (e) {
 			if (isAnimating) return
 			isAnimating = true
 
-			marginTop = headerTop.getBoundingClientRect().height + headerTop.getBoundingClientRect().y
 			menuLink.classList.toggle('active')
-			menu.style.marginTop = marginTop + 'px'
 			menu.classList.toggle(menuActive)
 
 			if (menu.classList.contains(menuActive)) {
-				hideScrollbar();
+				hideScrollbar()
+
+				const scrollY = window.scrollY
+				const headerHeight = headerTop.offsetHeight
+
+				if (scrollY === 0) {
+					menu.style.removeProperty('top')
+				} else if (scrollY < headerHeight) {
+					menu.style.top = scrollY + 'px'
+				} else {
+					const headerRect = headerTop.getBoundingClientRect()
+					menu.style.top = headerRect.bottom + 'px'
+				}
 			} else {
 				setTimeout(() => {
-					showScrollbar();
-				}, 400);
+					showScrollbar()
+				}, 400)
 			}
 
 			setTimeout(() => {
 				isAnimating = false
 			}, 500)
 		})
+
+
 
 		function checkHeaderOffset() {
 			if (isMobile()) {
@@ -58,18 +69,14 @@ export function burger() {
 						changeScrollbarPadding(false)
 					}
 				}
-			} else {
-				if (marginTop != headerTop.getBoundingClientRect().height) {
-					menu.style.marginTop = headerTop.getBoundingClientRect().height + 'px'
-				}
 			}
 		}
 
-		window.addEventListener('resize', throttle(checkHeaderOffset, 50))
-		window.addEventListener('resize', throttle(checkHeaderOffset, 150))
+		window.addEventListener('resize', debounce(checkHeaderOffset, 50))
+		window.addEventListener('resize', debounce(checkHeaderOffset, 150))
 
 		if (document.querySelector('.header__mobile')) {
 			closeOutClick('.header__mobile', '.menu-link', 'active')
 		}
 	}
-}
+} 

@@ -163,9 +163,12 @@
 
 
 // Процент от числа percent(30, 1000)
-@function percent($px, $from)
-	$result: math.div($px, $from) * 100%
-	@return $result
+@function percent($px, $from, $digits: 2)
+	$n: 1
+	@for $i from 1 through $digits
+		$n: $n * 10
+	$result: math.div($px, $from) * 100
+	@return math.div(round($result * $n), $n) * 1%
 
 // Вычесть процент от числа minusPercent(30, 1000). Хорошо работает с миксином adap. Например, +adap('width', 400, minusPercent(30, 400))
 @function minusPercent($px, $from, $add: false) 
@@ -396,8 +399,6 @@
 		@if $padding != 'auto'
 			padding-right: #{$scrollBarWidth + $padding + px} 
 
-		width: calc(100% + #{$scrollBarWidth + $scrollBarWidth + $padding + px})
-
 	overflow-y: auto
 	overflow-x: hidden
 
@@ -465,14 +466,14 @@
 	100%
 		translate: 0 -200%
 
-@keyframes fadeIn 
+@keyframes showIn 
 	0%
 		opacity: 0
 
 	100%
 		opacity: 1
 
-@keyframes fadeOut
+@keyframes showOut
 	0%
 		opacity: 1
 

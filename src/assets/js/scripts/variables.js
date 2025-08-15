@@ -2,7 +2,7 @@
 // 
 // 
 // 
-// Переменные
+// Переменные 
 export const body = document.querySelector('body');
 export const html = document.querySelector('html');
 export const popup = document.querySelectorAll('.popup');

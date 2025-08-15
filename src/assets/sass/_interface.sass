@@ -3,6 +3,7 @@
 
 
 	
+	
 .section
 	+adap('padding-block', math.div($section_gap, 2), 24)
 
@@ -21,13 +22,15 @@
 	&-top
 		+adap('padding-top', math.div($section_gap, 2), 24)
 
+	&-big
+		+adap('padding-block', $section_gap, 40)
+
 	&-bg
 		+adap('margin-block', math.div($section_gap, 2), 24)
 		
-		background: $bg
-			
 		&+.section-bg
 			+adap('margin-top', math.div($section_gap*-1, 2), -24)
+
 
 
 

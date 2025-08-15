@@ -915,8 +915,7 @@ li.menu-item-has-children .sub-menu>li:last-child>a {
   z-index: 10;
   width: 100%;
   padding-block: 12px;
-  will-change: transform;
-  background: #ccc
+  will-change: transform
 }
 
 .header__top,

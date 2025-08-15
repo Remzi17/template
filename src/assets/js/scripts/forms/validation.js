@@ -40,7 +40,7 @@ inputs.forEach(input => {
 
 		// Валидация email
 		if (input.type === 'email') {
-			input.value = input.value.replace(/[^0-9a-zA-Zа-яА-ЯёЁ@.-]+/g, '');
+			input.value = input.value.replace(/[^0-9a-zA-Z@.-]+/g, '');
 		}
 
 		// Валидация имени
@@ -83,7 +83,11 @@ export function initFormValidation(form) {
 		let isValid = true
 
 		form.querySelectorAll('input[type="tel"]').forEach(input => {
-			if (input.value.length < 17 && input.value.length > 3) {
+			const val = input.value.trim()
+
+			const requiredLength = val.startsWith('+7') ? 17 : val.startsWith('8') ? 16 : Infinity
+
+			if (val.length < requiredLength && val.length > 3) {
 				input.setCustomValidity('Телефон должен содержать 11 цифр')
 				input.reportValidity()
 				isValid = false
@@ -92,7 +96,6 @@ export function initFormValidation(form) {
 			}
 		})
 
-		// Проверяем обязательные поля на выбор перед отправкой
 		checkRequiredChoice()
 
 		if (!isValid || !form.checkValidity()) e.preventDefault()

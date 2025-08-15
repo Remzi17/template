@@ -1,8 +1,8 @@
 import { isDesktop } from "../scripts/other/checks";
-import { throttle } from "../scripts/core/helpers";
+import { debounce } from "../scripts/core/helpers";
 import { offset } from "../scripts/core/helpers";
-import { _slideDown } from "../scripts/other/animation"
-import { windowWidth } from "../scripts/core/variables";
+import { _slideDown, _slideUp } from "../scripts/other/animation"
+import { windowWidth } from "../scripts/variables";
 
 /* 
 	================================================
@@ -20,20 +20,34 @@ export function subMenu() {
 
 	function subMenuResize() {
 
+
 		if (isDesktop()) {
+
 			subMenuInit(isResize = true)
 
 			if (!mediaSwitcher) {
-				document.querySelectorAll('.menu-item-arrow').forEach(item => {
-					item.classList.remove('active')
-					if (item.parentElement.nextElementSibling) {
-						item.parentElement.nextElementSibling.classList.remove('active');
-						item.parentElement.nextElementSibling.style.display = 'block'
+
+				document.querySelectorAll('.menu-item-has-children').forEach(item => {
+					item.classList.remove('active', 'left', 'right', 'top', 'menu-item-has-children_not-relative');
+
+					const submenu = item.querySelector('.sub-menu-wrapper');
+					if (submenu) {
+						submenu.removeAttribute('style');
+						submenu.classList.remove('active');
 					}
+
+					const arrow = item.querySelector('.menu-item-arrow');
+					if (arrow) {
+						arrow.classList.remove('active');
+					}
+
 				});
 
-				mediaSwitcher = true
+				subMenuInit(true);
+
+				mediaSwitcher = true;
 			}
+
 		} else {
 			let menuItemHasChildren = document.querySelectorAll('.menu-item-has-children');
 
@@ -46,49 +60,56 @@ export function subMenu() {
 		}
 	}
 
-	window.addEventListener('resize', throttle(subMenuResize, 100));
+	window.addEventListener('resize', debounce(subMenuResize, 100));
 
 	// инициализация подменю	
 	function subMenuInit(isResize = false) {
+
 		let menuItemHasChildren = document.querySelectorAll('.menu-item-has-children');
 
 		menuItemHasChildren.forEach(item => {
 			let timeoutId = null;
 
-			if (isDesktop()) {
-				item.addEventListener('mouseover', function (e) {
-					clearTimeout(timeoutId);
-					menuMouseOverInit(item, e, isResize);
-				});
+			item.onmouseover = null;
+			item.onmouseout = null;
+			item.onfocusin = null;
+			item.onfocusout = null;
 
-				item.addEventListener('focusin', function (e) {
-					clearTimeout(timeoutId);
-					menuMouseOverInit(item, e, isResize);
-				});
+			item.addEventListener('mouseover', function (e) {
+				if (!isDesktop()) return;
+				clearTimeout(timeoutId);
+				menuMouseOverInit(item, e, isResize);
+			});
 
-				item.addEventListener('mouseout', function (e) {
-					timeoutId = setTimeout(() => {
-						if (!item.contains(e.relatedTarget)) {
-							item.classList.remove('active');
-						}
-					}, 300);
-				});
+			item.addEventListener('focusin', function (e) {
+				if (!isDesktop()) return;
+				clearTimeout(timeoutId);
+				menuMouseOverInit(item, e, isResize);
+			});
 
-				item.addEventListener('focusout', function (e) {
-					timeoutId = setTimeout(() => {
-						if (!item.contains(document.activeElement)) {
-							item.classList.remove('active');
-						}
-					}, 500);
-				});
-			}
+			item.addEventListener('mouseout', function (e) {
+				if (!isDesktop()) return;
+				timeoutId = setTimeout(() => {
+					if (!item.contains(e.relatedTarget)) {
+						item.classList.remove('active');
+					}
+				}, 300);
+			});
+
+			item.addEventListener('focusout', function (e) {
+				if (!isDesktop()) return;
+				timeoutId = setTimeout(() => {
+					if (!item.contains(document.activeElement)) {
+						item.classList.remove('active');
+					}
+				}, 500);
+			});
 
 			toggleSubMenuVisible(item, !isDesktop());
 		});
 	}
 
 	function menuMouseOverInit(item, e, isResize) {
-
 		// закрыть все открытые меню, кроме текущего
 		document.querySelectorAll('.menu>.menu-item-has-children').forEach(li => {
 			if (li != item) {
@@ -179,4 +200,3 @@ export function subMenu() {
 		return e.target.closest('.menu') ? offset(e.target.closest('.menu>.menu-item-has-children')).left > (windowWidth / 2) ? 'right' : 'left' : 'left'
 	}
 }
-

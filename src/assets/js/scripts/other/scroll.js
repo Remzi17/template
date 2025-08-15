@@ -1,5 +1,5 @@
 import { haveScroll, isSafari } from "./checks";
-import { html, body, popup, bodyOpenModalClass, fixedElements, stickyObservers, menu, menuActive } from "../core/variables";
+import { html, body, popup, bodyOpenModalClass, fixedElements, stickyObservers, menu, menuActive } from "../variables";
 
 // 
 // 

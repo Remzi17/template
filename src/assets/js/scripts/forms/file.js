@@ -1,57 +1,121 @@
 
 // Замена текста при выборе файла 
 export function formFiles() {
-	let files = document.querySelectorAll('.input-file');
-	let fileText, fileDefaultText, fileInput, filesNames, fileName;
+	document.querySelectorAll('.input-file').forEach(wrapper => {
+		const input = wrapper.querySelector('input')
+		const textEl = wrapper.querySelector('.input-file-text')
+		const defaultText = textEl.textContent
+		const form = wrapper.closest('form')
+		let dragCounter = 0
 
-	files.forEach(file => {
-		fileText = file.querySelector('.input-file-text');
-		fileDefaultText = fileText.textContent;
+		const allowedExt = (input.getAttribute('accept') || '')
+			.split(',')
+			.map(e => e.trim().replace(/^\./, '').toLowerCase())
+			.filter(e => e)
 
-		const handleFiles = (fileInput, fileText) => {
-			filesNames = '';
+		const isAllowed = file =>
+			allowedExt.includes(file.name.split('.').pop().toLowerCase())
 
-			for (let i = 0; i < fileInput.files.length; i++) {
-				filesNames += fileInput.files[i].name;
+		const filterFiles = files =>
+			Array.from(files).filter(f => isAllowed(f))
 
-				if (i !== fileInput.files.length - 1) {
-					filesNames += ', ';
+		const updateFileText = () => {
+			if (!input.files.length) {
+				textEl.textContent = defaultText
+				return
+			}
+			const names = Array.from(input.files).map(f => f.name).join(', ')
+			textEl.textContent = names
+		}
+
+		input.addEventListener('change', () => {
+			const filtered = filterFiles(input.files)
+			if (filtered.length !== input.files.length) {
+				form?.classList.add('form-dragover-error')
+				const dataTransfer = new DataTransfer()
+				filtered.forEach(f => dataTransfer.items.add(f))
+				input.files = dataTransfer.files
+			}
+			updateFileText()
+		})
+
+		form?.addEventListener('reset', () => {
+			textEl.textContent = defaultText
+		})
+
+		const hasDisallowedDragItems = dt => {
+			if (!dt?.items?.length) return false
+
+			const allowedExt = (input.getAttribute('accept') || '')
+				.split(',')
+				.map(e => e.trim().replace(/^\./, '').toLowerCase())
+				.filter(Boolean)
+
+			const mimeMap = {
+				'plain': 'txt'
+			}
+
+			return Array.from(dt.items).some(item => {
+				if (item.kind !== 'file') return false
+
+				const file = item.getAsFile?.()
+				if (file) {
+					const ext = file.name.split('.').pop().toLowerCase()
+					return !allowedExt.includes(ext)
 				}
+
+				if (item.type) {
+					let mimeExt = item.type.split('/').pop().toLowerCase()
+					if (mimeMap[mimeExt]) {
+						mimeExt = mimeMap[mimeExt]
+					}
+					return !allowedExt.includes(mimeExt)
+				}
+
+				return false
+			})
+		}
+
+		form?.addEventListener('dragenter', e => {
+			e.preventDefault()
+			dragCounter++
+			form.classList.add('form-dragover')
+			if (hasDisallowedDragItems(e.dataTransfer)) {
+				form.classList.add('form-dragover-error')
+			} else {
+				form.classList.remove('form-dragover-error')
 			}
+		})
 
-			fileName = fileInput.value.split('\\').pop();
-			fileText.textContent = fileName ? filesNames : fileDefaultText;
-		};
-
-		file.querySelector('input').addEventListener('change', function () {
-			handleFiles(this, fileText);
-		});
-
-		file.closest('form').addEventListener('reset', function () {
-			fileText.textContent = fileDefaultText
-		});
-
-		file.addEventListener('dragover', (e) => {
-			e.preventDefault();
-			file.classList.add('dragover');
-		});
-
-		file.addEventListener('dragleave', () => {
-			file.classList.remove('dragover');
-		});
-
-		file.addEventListener('drop', (e) => {
-			e.preventDefault();
-			file.classList.remove('dragover');
-
-			const droppedFiles = e.dataTransfer.files;
-
-			if (droppedFiles.length > 0) {
-				file.querySelector('input').files = droppedFiles;
-
-				handleFiles(file.querySelector('input'), fileText);
+		form?.addEventListener('dragleave', e => {
+			e.preventDefault()
+			dragCounter--
+			if (dragCounter === 0) {
+				form.classList.remove('form-dragover', 'form-dragover-error')
 			}
-		});
-	});
+		})
+
+		form?.addEventListener('dragover', e => {
+			e.preventDefault()
+			if (hasDisallowedDragItems(e.dataTransfer)) {
+				form.classList.add('form-dragover-error')
+			} else {
+				form.classList.remove('form-dragover-error')
+			}
+		})
+
+		form?.addEventListener('drop', e => {
+			e.preventDefault()
+			dragCounter = 0
+			form.classList.remove('form-dragover', 'form-dragover-error')
+
+			if (e.dataTransfer.files.length) {
+				const filtered = filterFiles(e.dataTransfer.files)
+				const dataTransfer = new DataTransfer()
+				filtered.forEach(f => dataTransfer.items.add(f))
+				input.files = dataTransfer.files
+				updateFileText()
+			}
+		})
+	})
 }
-

@@ -5,38 +5,45 @@ $container1199: 940px
 
 .container
 	position: relative
-	width: 100%
-	max-width: max(100%, $container575)
 	margin-inline: auto
-	padding-inline: 12px
 
-	&-left,
-	&-right
-		padding: 0
+	@if $containerWidth != 0
+		max-width: max(100%, $container575)
+		padding-inline: 12px
 
-	@media (min-width: 576px)
-		width: $container767
-		max-width: none
-		padding: 0
+		@media (min-width: 576px)
+			width: $container767
+			max-width: none
+			padding: 0
 
-	@media (min-width: 768px)
-		width: $container991
+		@media (min-width: 768px)
+			width: $container991
 
-	@media (min-width: 992px)
-		width: $container1199
+		@media (min-width: 992px)
+			width: $container1199
 
-	@if $firstBreakpoint > 1399
-		@media (min-width: 1200px)
-			width: 1140px
+		@if $firstBreakpoint > 1399
+			@media (min-width: 1200px)
+				width: 1140px
 
-	@media (min-width: #{$firstBreakpoint + 1 + px})
-		width: $container
+		@media (min-width: #{$firstBreakpoint + 1 + px})
+			width: $container
+
+	@else
+		max-width: 1732px
+		+adap('padding-inline', 92, 12)
+		box-sizing: content-box
+		
+		@media (max-width: 575px)
+			padding-inline: 12px
+
 
 	&-left,
 	&-right
 		position: relative
 		width: 100vw
 		max-width: calc(100vw - (100vw - $container575) / 2)
+		padding: 0
 
 		@media (min-width: 576px)
 			width: calc($container767 + (100vw - $container767) / 2)
@@ -92,10 +99,14 @@ html
 	min-height: 100%
 
 	&:not(.loaded)
-		[data-da*="header__mobile"], ._dynamic_adapt_, .sub-menu-wrapper
-			display: none
+		[data-da*="header__mobile"], ._dynamic_adapt_, .sub-menu-wrapper, .select__content
+			position: absolute
+			opacity: 0
 
 		.header 
+			opacity: 0
+
+		[data-lines]
 			opacity: 0
 
 	&.safari
@@ -142,25 +153,34 @@ html, body, .header__mobile
 	&.scrollbar-auto
 		scrollbar-gutter: auto
 
-a, button, li, iframe, figure,
-fieldset, dd, dt, dl,
-h1, h2, h3, h4, h5, h6, p, ol, ul
-	padding: 0
+h1, h2, h3, h4, h5, h6,
+p, ul, ol, dl, dt, dd,
+figure, fieldset, iframe
 	margin: 0
-	border: none
+	padding: 0
 	font: inherit
 
-a, button, li
+li
+	padding: 0
+	list-style: none
+	font: inherit
+	cursor: pointer
+
+button
+	margin: 0
+	padding: 0
+	border: none
 	background: none
+	font: inherit
+	color: inherit
+	cursor: pointer
+
+a
 	text-decoration: none
 	color: inherit
 	font-family: inherit
 	cursor: pointer
-
-ul li
-	list-style: none
-	cursor: default
-
+	
 strong, button
 	font: inherit
 
@@ -221,14 +241,15 @@ img
 picture
 	display: flex
 	justify-content: center
-	height: 100%
-
-	// img 
+ 
+	img 
+		height: 100%
 	// 	width: 100%
 	// 	object-fit: cover
 
 
 svg
+	max-height: 100%
 	+t
 
 sup
@@ -346,8 +367,17 @@ sup
 .flex-wrap
 	flex-wrap: wrap
 
+.col, .grid
+	display: grid
+	grid-template-columns: 100%
+	justify-items: start
+
+.grid
+	+adap('gap', 16, 12)
+
 .justify-center
 	justify-content: center
+	justify-items: center
 
 .justify-end
 	justify-content: end
@@ -370,13 +400,17 @@ sup
 	align-items: end
 	align-content: end
 
-.col, .grid
-	display: grid
-	grid-template-columns: 100%
-	justify-items: start
 
-.grid
-	+adap('gap', 16, 12)
+.hidd
+	display: block
+	overflow: hidden
+	max-height: 0
+	opacity: 0
+	transition: max-height 1s ease, opacity .5s ease
+
+	&.show
+		max-height: 500px
+		opacity: 1
 
 =swiper-controls
 	&.swiper

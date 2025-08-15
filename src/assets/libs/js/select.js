@@ -1296,8 +1296,20 @@
 		}
 		hideUI() {
 			this.select.tabIndex = -1;
-			this.select.style.display = 'none';
 			this.select.setAttribute('aria-hidden', 'true');
+
+			if (this.select.hasAttribute('required')) {
+				this.select.style.opacity = '0';
+				this.select.style.position = 'absolute';
+
+				setTimeout(() => {
+					this.select.nextElementSibling.insertAdjacentElement('beforeend', this.select)
+				}, 200);
+
+			} else {
+				this.select.style.display = 'none';
+			}
+
 		}
 		showUI() {
 			this.select.removeAttribute('tabindex');
@@ -1632,24 +1644,31 @@
 					this.close();
 				}
 			};
+
 			this.selectEl = (typeof config.select === 'string' ? document.querySelector(config.select) : config.select);
+
 			if (!this.selectEl) {
 				if (config.events && config.events.error) {
 					config.events.error(new Error('Could not find select element'));
 				}
 				return;
 			}
+
 			if (this.selectEl.tagName !== 'SELECT') {
 				if (config.events && config.events.error) {
 					config.events.error(new Error('Element isnt of type select'));
 				}
 				return;
 			}
+
 			if (this.selectEl.dataset.ssid) {
 				this.destroy();
 			}
+
 			this.settings = new Settings(config.settings);
+
 			const debounceEvents = ['afterChange', 'beforeOpen', 'afterOpen', 'beforeClose', 'afterClose'];
+
 			for (const key in config.events) {
 				if (!config.events.hasOwnProperty(key)) {
 					continue;
@@ -1660,6 +1679,7 @@
 					this.events[key] = config.events[key];
 				}
 			}
+
 			this.settings.disabled = ((_a = config.settings) === null || _a === void 0 ? void 0 : _a.disabled) ? config.settings.disabled : this.selectEl.disabled;
 			this.settings.isMultiple = this.selectEl.multiple;
 			this.settings.style = this.selectEl.style.cssText;
@@ -1685,9 +1705,11 @@
 				this.setData(data);
 			};
 			this.store = new Store(this.settings.isMultiple ? 'multiple' : 'single', config.data ? config.data : this.select.getData());
+
 			if (config.data) {
 				this.select.updateOptions(this.store.getData());
 			}
+
 			const renderCallbacks = {
 				open: this.open.bind(this),
 				close: this.close.bind(this),
@@ -1698,45 +1720,65 @@
 				beforeChange: this.events.beforeChange,
 				afterChange: this.events.afterChange,
 			};
+
 			this.render = new Render(this.settings, this.store, renderCallbacks);
 			this.render.renderValues();
 			this.render.renderOptions(this.store.getData());
+
 			const selectAriaLabel = this.selectEl.getAttribute('aria-label');
 			const selectAriaLabelledBy = this.selectEl.getAttribute('aria-labelledby');
+
 			if (selectAriaLabel) {
 				this.render.main.main.setAttribute('aria-label', selectAriaLabel);
 			} else if (selectAriaLabelledBy) {
 				this.render.main.main.setAttribute('aria-labelledby', selectAriaLabelledBy);
 			}
+
+			for (const attrName of this.selectEl.getAttributeNames()) {
+				if (attrName.startsWith('data-')) {
+					this.render.main.main.setAttribute(attrName, this.selectEl.getAttribute(attrName));
+				}
+			}
+
 			if (this.selectEl.parentNode) {
 				this.selectEl.parentNode.insertBefore(this.render.main.main, this.selectEl.nextSibling);
 			}
+
 			window.addEventListener('resize', this.windowResize, false);
+
 			if (this.settings.openPosition === 'auto') {
 				window.addEventListener('scroll', this.windowScroll, false);
 			}
+
 			document.addEventListener('visibilitychange', this.windowVisibilityChange);
+
 			if (this.settings.disabled) {
 				this.disable();
 			}
+
 			if (this.settings.alwaysOpen) {
 				this.open();
 			}
+
 			this.selectEl.slim = this;
 		}
+
 		enable() {
 			this.settings.disabled = false;
 			this.select.enable();
 			this.render.enable();
 		}
+
 		disable() {
 			this.settings.disabled = true;
 			this.select.disable();
 			this.render.disable();
 		}
+
 		getData() {
 			return this.store.getData();
 		}
+
 		setData(data) {
 			const selected = this.store.getSelected();
 			const err = this.store.validateDataArray(data);
@@ -1755,9 +1797,11 @@
 				this.events.afterChange(this.store.getSelectedOptions());
 			}
 		}
+
 		getSelected() {
 			return this.store.getSelected();
 		}
+
 		setSelected(value, runAfterChange = true) {
 			const selected = this.store.getSelected();
 			this.store.setSelectedBy('value', Array.isArray(value) ? value : [value]);
@@ -1773,6 +1817,7 @@
 				this.events.afterChange(this.store.getSelectedOptions());
 			}
 		}
+
 		addOption(option) {
 			const selected = this.store.getSelected();
 			if (!this.store.getDataOptions().some((o) => {
@@ -1789,6 +1834,7 @@
 				this.events.afterChange(this.store.getSelectedOptions());
 			}
 		}
+
 		open() {
 			if (this.settings.disabled || this.settings.isOpen) {
 				return;
@@ -1817,6 +1863,7 @@
 				this.settings.intervalMove = setInterval(this.render.moveContent.bind(this.render), 500);
 			}
 		}
+
 		close(eventType = null) {
 			if (!this.settings.isOpen || this.settings.alwaysOpen) {
 				return;
@@ -1841,6 +1888,7 @@
 				clearInterval(this.settings.intervalMove);
 			}
 		}
+
 		search(value) {
 			if (this.render.content.search.input.value !== value) {
 				this.render.content.search.input.value = value;
@@ -1866,6 +1914,7 @@
 				this.render.renderError('Search event must return a promise or an array of data');
 			}
 		}
+
 		destroy() {
 			document.removeEventListener('click', this.documentClick);
 			window.removeEventListener('resize', this.windowResize, false);

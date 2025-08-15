@@ -1,5 +1,5 @@
 import { scrollToSmoothly, offset } from "../scripts/core/helpers";
-import { body, menu, menuActive, menuLink, headerTop } from "../scripts/core/variables";
+import { body, menu, menuActive, menuLink, headerTop } from "../scripts/variables";
 import { removeHash } from "../scripts/other/url";
 
 /* 

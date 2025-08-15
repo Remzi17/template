@@ -4,12 +4,11 @@ import path from 'path'
 import fs from 'fs'
 import { paths, isBuild } from './settings.js'
 import fileinclude from 'gulp-file-include'
-import newer from 'gulp-newer';
+import cache from 'gulp-cached';
 import resize from 'gulp-image-resize'
 import through from 'through2'
 import rename from 'gulp-rename'
 import notify from 'gulp-notify'
-import replace from 'gulp-replace'
 import gulpif from 'gulp-if'
 import beautify from 'gulp-beautify'
 import remember from 'gulp-remember'
@@ -34,8 +33,8 @@ function createMobileVersion(originalPath, width = 575) {
 
 export function html() {
 	return src(paths.src.html)
-		.pipe(newer('html'))
 		.pipe(fileinclude())
+		.pipe(cache('html'))
 		.pipe(notify("Found file: <%= file.relative %>!"))
 		.pipe(through.obj(function (file, enc, cb) {
 			if (file._processed) {
@@ -44,14 +43,14 @@ export function html() {
 			file._processed = true;
 
 			let content = file.contents.toString();
-			const imgMatches = content.matchAll(/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*)\s+pic\s*=\s*"?(\d+)"?[^>]*>/g);
+			const imgMatches = content.matchAll(/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*?)\s+pic(?:\s*=\s*"?(\d+)"?)?[^>]*>/g);
 			const processQueue = [];
 
 			for (const match of imgMatches) {
 				const imgSrc = match[1];
 				const attrs = match[2];
 				const picValue = match[3]; // Значение из атрибута pic
-				const mobileWidth = picValue ? parseInt(picValue) : 575;
+				const mobileWidth = picValue ? parseInt(picValue) : 500;
 
 				const extFromHTML = path.extname(imgSrc).toLowerCase();
 				const baseName = path.basename(imgSrc, extFromHTML);
@@ -83,7 +82,7 @@ export function html() {
 			Promise.all(processQueue)
 				.then(() => {
 					content = content.replace(
-						/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*)\s+pic\s*=\s*"?(\d+)"?[^>]*>/g,
+						/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*?)\s+pic(?:\s*=\s*"?(\d+)"?)?[^>]*>/g,
 						(match, imgSrc, attrs, picValue) => {
 							const mobileWidth = picValue ? parseInt(picValue) : 575;
 							const classMatch = attrs.match(/class="([^"]*)"/);
@@ -105,7 +104,7 @@ export function html() {
 
 							return `
 								<picture${classMatch && classMatch[1] ? ` class="${classMatch[1]}"` : ''}>
-									<source srcset="${imgSrc.replace(/(\.\w+)$/, '_mobile$1')}" media="(max-width: ${mobileWidth}px)">
+									<source srcset="${imgSrc.replace(/(\.\w+)$/, '_mobile$1')}" media="(max-width: 575px)">
 									<img src="${imgSrc}"
 										${cleanAttrs ? ' ' + cleanAttrs : ''}
 										${widthMatch && widthMatch[1] ? ` width="${widthMatch[1]}"` : ''}
@@ -132,17 +131,5 @@ export function html() {
 		.pipe(remember('html'))
 		.pipe(dest(paths.build.html))
 		.pipe(browsersync.stream());
-}
-
-export function worker() {
-	return src(paths.src.worker)
-		.pipe(dest(paths.build.html))
-}
-
-export function swVersion() {
-	const version = 'v' + Date.now();
-	return src(paths.src.worker)
-		.pipe(replace(/const CACHE_VERSION = '.*?';/, `const CACHE_VERSION = '${version}';`))
-		.pipe(dest(paths.build.html));
 }
 

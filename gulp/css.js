@@ -81,9 +81,6 @@ export function css() {
 			],
 			cascade: false
 		})))
-		.pipe(gulpif(isBuild, cssnano({
-			autoprefixer: { remove: false }
-		})))
 		.pipe(gulpif(isBuild, csso({
 			restructure: false,
 			forceMediaMerge: false,
@@ -151,6 +148,7 @@ export function cssLibs() {
 			html: [paths.src.unusedHtml],
 			ignore: [
 				/.*lg.*/,
+				/.*select.*/,
 				'.swiper',
 				'.swiper-wrapper',
 				'.swiper-slide',
