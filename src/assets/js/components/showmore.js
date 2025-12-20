@@ -29,13 +29,17 @@ export function showMore() {
 		let linesSpeed = 400;
 		let hiddenElements = []
 
+		if (!linesTarget.dataset.original) {
+			linesTarget.dataset.original = linesTarget.innerHTML;
+		}
+
 		const applyTransition = element => {
 			element.style.transition = 'max-height 0.3s ease'
 			element.style.overflow = 'hidden'
 		}
 
 		function animateHeight(element, targetHeight, duration = linesSpeed) {
-			const startHeight = element.offsetHeight; // текущая высота
+			const startHeight = element.offsetHeight;
 			const heightDiff = targetHeight - startHeight;
 			const startTime = performance.now();
 
@@ -43,9 +47,8 @@ export function showMore() {
 
 			function step(currentTime) {
 				const elapsed = currentTime - startTime;
-				const progress = Math.min(elapsed / duration, 1); // от 0 до 1
+				const progress = Math.min(elapsed / duration, 1);
 
-				// Плавная анимация через ease-out
 				const easeProgress = 1 - Math.pow(1 - progress, 3);
 
 				element.style.height = startHeight + heightDiff * easeProgress + 'px';
@@ -53,7 +56,7 @@ export function showMore() {
 				if (progress < 1) {
 					requestAnimationFrame(step);
 				} else {
-					element.style.height = targetHeight + 'px'; // точно устанавливаем конечное значение
+					element.style.height = targetHeight + 'px';
 				}
 			}
 
@@ -78,6 +81,7 @@ export function showMore() {
 				});
 
 				hiddenElements = [];
+
 			} else {
 				animateHeight(linesTarget, linesTarget.getAttribute('data-default-height'), linesSpeed);
 				setTimeout(() => {
@@ -192,6 +196,11 @@ export function showMore() {
 			if (!e.matches) {
 				showAllItems()
 			} else {
+				hiddenElements.forEach(span => {
+					const children = Array.from(span.childNodes)
+					span.replaceWith(...children)
+				})
+				hiddenElements = []
 				resetInitialState()
 				button.addEventListener('click', buttonHandler)
 			}
@@ -220,7 +229,6 @@ export function showMore() {
 				linesTarget.setAttribute('data-default-height', limitedHeight)
 			}
 
-
 		}
 
 		if (mediaBreakpoint) {
@@ -232,11 +240,28 @@ export function showMore() {
 			initialize()
 		}
 
-		window.addEventListener('resize', debounce(() => {
-			document.querySelectorAll('[data-more].active').forEach(button => {
-				button.click()
-			});
-		}, 100));
+
+		const recalcLines = () => {
+			if (!isLinesMode || !linesTarget) return
+
+			linesTarget.innerHTML = linesTarget.dataset.original
+			hiddenElements = limitLines(linesTarget, initialCount)
+
+			if (button) {
+				button.style.display = hiddenElements.length ? '' : 'none'
+			}
+
+			linesTarget.classList.remove('active')
+			wrapper.classList.remove('active')
+			button.classList.remove('active')
+			if (moreOpenText) moreOpenText.style.display = ''
+			if (moreCloseText) moreCloseText.style.display = 'none'
+		}
+
+		window.addEventListener('resize', debounce(recalcLines, 100));
+
+		recalcLines();
+
 	})
 }
 

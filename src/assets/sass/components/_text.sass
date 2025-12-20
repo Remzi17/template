@@ -63,7 +63,7 @@
 
 
 		ul, ol
-			padding-top: 10px
+			padding-top: 12px
 
 		li
 			&>*
@@ -84,7 +84,7 @@
 						
 				position: absolute
 				left: 0
-				top: .5em   
+				top: calc(.5lh - #{math.div($dots-size, 2)}px)
 	
 				@if ($dots-size == $dots-size-mobile)
 					width: #{$dots-size+px}
@@ -179,7 +179,7 @@
 		object-fit: cover
 
 	mark 
-		background: lighten($active, 7%)
+		background: light($active, 8%)
 
 	img 
 		+adap('border-radius', 20, 16)

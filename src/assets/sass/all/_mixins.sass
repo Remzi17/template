@@ -81,7 +81,7 @@
 	@return url('data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDI2LjMuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9ItCh0LvQvtC5XzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCA5LjcgNS41IiBzdHlsZT0iZW5hYmxlLWJhY2tncm91bmQ6bmV3IDAgMCA5LjcgNS41OyIgeG1sOnNwYWNlPSJwcmVzZXJ2ZSI+CjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyI+Cgkuc3Qwe2ZpbGw6bm9uZTtzdHJva2U6I0ZGMDAwMDtzdHJva2UtbGluZWNhcDpyb3VuZDtzdHJva2UtbGluZWpvaW46cm91bmQ7fQo8L3N0eWxlPgo8cGF0aCBjbGFzcz0ic3QwIiBkPSJNOSwwLjZMNC44LDQuOEwwLjYsMC42Ii8+Cjwvc3ZnPgo=') center / $size no-repeat
 
 
-	// Треугольник
+// Треугольник
 =triangle($direction, $sizeX, $sizeY, $color)
 	content: ''
 	display: block
@@ -140,7 +140,7 @@
 		box-shadow: 0 0 0 1px $color
 
 // Градиентный border
-=gradientborder($dir: to right, $color1: red, $color2: black, $borderWidth: 1px)
+=gradientborder($gradient: linear-gradient(to right, black, red), $borderWidth: 1px)
 	position: relative
 
 	&:before
@@ -148,12 +148,11 @@
 		position: absolute
 		inset: 0
 		padding: $borderWidth
-		background-image: linear-gradient($dir, $color1, $color2)
+		background-image: $gradient
 		border-radius: inherit
 
 		mask: linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)
-
-// 
+		pointer-events: none
 
 // Маска для svg элемента с указанием цвета
 =mask($mask, $color)
@@ -170,7 +169,7 @@
 	$result: math.div($px, $from) * 100
 	@return math.div(round($result * $n), $n) * 1%
 
-// Вычесть процент от числа minusPercent(30, 1000). Хорошо работает с миксином adap. Например, +adap('width', 400, minusPercent(30, 400))
+// Вычесть процент от числа minusPercent(30, 1000)
 @function minusPercent($px, $from, $add: false) 
 	$result: $from - ($from * math.div($px, 100))
 
@@ -208,6 +207,9 @@
 @function light($color, $percent)
 	@return color-mix(in srgb, white $percent, $color) 
 
+// transparent 
+@function tran($color: var(--active), $percent: 40)
+	@return color-mix(in srgb, #{$color} #{100 - $percent+'%'}, transparent #{$percent+'%'})
 
 // Динамический адаптив
 

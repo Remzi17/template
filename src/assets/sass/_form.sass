@@ -1,6 +1,7 @@
 
-.input-wrapper 
-	+adap('gap', 16, 12)
+.form
+	&__fields 
+		+adap('gap', 16, 12)
 
 .input, .textarea
 	width: 100%
@@ -22,7 +23,6 @@
 
 	&::placeholder
 		color: rgba($text, .8)
-
 
 .input
 	+adap('height', 60, 48)
@@ -95,6 +95,9 @@ form.form-dragover
 	width: 100%
 	
 	+t
+
+	&:focus-within
+		+underline
 
 	+hov
 		color: $active
@@ -207,7 +210,6 @@ form.form-dragover
 	z-index: 2
 
 	font: inherit
-
 
 	input
 		font: inherit

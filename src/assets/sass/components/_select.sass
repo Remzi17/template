@@ -44,6 +44,7 @@ $select-value-delete-size: 16px
 	align-items: center
 	gap: 12px
 	min-height: $select-min-height
+	+adap('min-height', 54, 48)
 	padding: $select-current-padding
 	
 	border: $select-border
@@ -58,6 +59,10 @@ $select-value-delete-size: 16px
 	overflow: hidden
 	user-select: none
 	+t
+
+	&_open-bottom 
+		border-bottom-left-radius: 0
+		border-bottom-right-radius: 0
 
 	&__arrow 
 		flex: 0 0 $select-arrow-size
@@ -80,6 +85,10 @@ $select-value-delete-size: 16px
 		background: #fff
 		box-shadow: 0 0 15px 0 rgba(183, 183, 183, 0.05)
 		// +scrollbar(300px, $scrollBarWidth: 4, $padding: 5) 
+		opacity: 0
+
+		&[class*="_open"]
+			opacity: 1
 
 		&.select_open-top
 			border-top-left-radius: $select-border-radius

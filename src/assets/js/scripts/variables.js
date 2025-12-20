@@ -22,9 +22,9 @@ export const burgerMedia = 991;
 export const bodyOpenModalClass = 'popup-show';
 
 export let windowWidth = window.innerWidth;
-export let containerWidth = document.querySelector('.container')?.offsetWidth || 0;
+export let containerWidth = document.querySelector('.container').offsetWidth || 0;
 
 export const checkWindowWidth = () => {
 	windowWidth = window.innerWidth;
-	containerWidth = document.querySelector('.container')?.offsetWidth || 0;
+	containerWidth = document.querySelector('.container').offsetWidth || 0;
 };

@@ -1,8 +1,14 @@
 import gulp from 'gulp'
-const { src, dest } = gulp
+const {
+	src,
+	dest
+} = gulp
 import path from 'path'
 import fs from 'fs'
-import { paths, isBuild } from './settings.js'
+import {
+	paths,
+	isBuild
+} from './settings.js'
 import fileinclude from 'gulp-file-include'
 import cache from 'gulp-cached';
 import resize from 'gulp-image-resize'
@@ -24,7 +30,9 @@ function createMobileVersion(originalPath, width = 575) {
 
 	if (!fs.existsSync(mobilePath)) {
 		return src(originalPath)
-			.pipe(resize({ width: width }))
+			.pipe(resize({
+				width: width
+			}))
 			.pipe(rename(`${base}_mobile${ext}`))
 			.pipe(dest(dir));
 	}
@@ -43,13 +51,15 @@ export function html() {
 			file._processed = true;
 
 			let content = file.contents.toString();
+			content = content.replace(/<!-- not format -->/g, '');
+
 			const imgMatches = content.matchAll(/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*?)\s+pic(?:\s*=\s*"?(\d+)"?)?[^>]*>/g);
 			const processQueue = [];
 
 			for (const match of imgMatches) {
 				const imgSrc = match[1];
 				const attrs = match[2];
-				const picValue = match[3]; // Значение из атрибута pic
+				const picValue = match[3];
 				const mobileWidth = picValue ? parseInt(picValue) : 500;
 
 				const extFromHTML = path.extname(imgSrc).toLowerCase();
@@ -132,4 +142,3 @@ export function html() {
 		.pipe(dest(paths.build.html))
 		.pipe(browsersync.stream());
 }
-

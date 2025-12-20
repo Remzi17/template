@@ -23,6 +23,8 @@ $danger-color: #efa3aa
 	right: 20px
 	bottom: 20px
 	z-index: 10
+	display: grid
+	gap: 4px
 
 	width: min($item-width, 100%)
 	+scrollbar(100%, $scrollBarWidth: 4, $padding: 5) 
@@ -34,8 +36,8 @@ $danger-color: #efa3aa
 
 	&__item
 		position: relative
-		display: grid
-		grid-template: 1fr 1fr / em(calculate($icon-size, $item-padding-x*2), $font) 1fr
+		display: grid 
+		grid-template: 1fr 1fr / 1fr em(calculate($icon-size, $item-padding-x*2), $font) 
 		justify-items: start
 		justify-content: start
 		width: 100%
@@ -106,8 +108,6 @@ $danger-color: #efa3aa
 			svg 
 				+adap('width', $close-size, minusPercent($percent, $close-size))
 				+adap('height', $close-size, minusPercent($percent, $close-size))
-				width: $close-size
-				height: $close-size
 
 				fill: $close-color
 				pointer-events: none
@@ -146,6 +146,9 @@ $danger-color: #efa3aa
 
 		&-text 
 			font-size: 1em
+
+			&:empty
+				display: none 
 
 		&-show
 			display: grid

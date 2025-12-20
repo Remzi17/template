@@ -81,6 +81,10 @@ $search-input-border: 1px solid #000
 			&::placeholder
 				opacity: .5
 
+			&:focus-visible
+				outline: none
+				box-shadow: 0 0 0 1px var(--active)
+
 		&.active
 			&+.search__content 
 				opacity: 1

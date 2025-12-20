@@ -25,11 +25,17 @@
 	&-big
 		+adap('padding-block', $section_gap, 40)
 
-	&-bg
+	&-offset
 		+adap('margin-block', math.div($section_gap, 2), 24)
-		
-		&+.section-bg
+			
+		&+.section-offset
 			+adap('margin-top', math.div($section_gap*-1, 2), -24)
+
+		&-top 
+			+adap('margin-top', math.div($section_gap, 2), 24)
+
+		&-bottom 
+			+adap('margin-bottom', math.div($section_gap, 2), 24)
 
 
 

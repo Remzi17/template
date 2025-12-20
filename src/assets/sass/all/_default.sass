@@ -84,14 +84,17 @@ $container1199: 940px
 	--active: #{$active}
 	--text: #{$text}
 
-*
+*, *:before, *:after
 	box-sizing: border-box
-	outline: none
+
+a, button, input, textarea
 	-webkit-tap-highlight-color: transparent
 
-	&:focus,
-	&:active
-		outline: none
+a:focus,
+button:focus,
+input:focus,
+textarea:focus
+	outline: none 
 
 html
 	display: flex
@@ -99,7 +102,7 @@ html
 	min-height: 100%
 
 	&:not(.loaded)
-		[data-da*="header__mobile"], ._dynamic_adapt_, .sub-menu-wrapper, .select__content
+		[data-da*="header__mobile"], ._dynamic_adapt_, .sub-menu-wrapper
 			position: absolute
 			opacity: 0
 
@@ -153,36 +156,38 @@ html, body, .header__mobile
 	&.scrollbar-auto
 		scrollbar-gutter: auto
 
-h1, h2, h3, h4, h5, h6,
-p, ul, ol, dl, dt, dd,
+h1, h2, h3, h4, h5, h6, 
+p, ul, ol, dl, dt, dd, 
 figure, fieldset, iframe
 	margin: 0
 	padding: 0
-	font: inherit
+
+button, a
+	cursor: pointer
+	color: inherit
 
 li
 	padding: 0
+	color: inherit
 	list-style: none
-	font: inherit
-	cursor: pointer
 
 button
-	margin: 0
 	padding: 0
 	border: none
 	background: none
-	font: inherit
-	color: inherit
-	cursor: pointer
 
 a
 	text-decoration: none
-	color: inherit
-	font-family: inherit
-	cursor: pointer
-	
-strong, button
+
+strong, a, button, li
 	font: inherit
+
+button, a
+	&:focus-visible
+		outline: 3px solid var(--active)
+		outline-offset: 8px
+		border-radius: $border-radius
+		z-index: 20
 
 input, textarea
 	border: none
@@ -191,11 +196,15 @@ input, textarea
 	color: inherit
 	font-family: $font
 	appearance: none
+	+t
 
 	&::placeholder
 		font: inherit
 		color: inherit
-		+t
+
+input, textarea, [role="combobox"]
+	&:focus-visible
+		outline: 1px solid var(--active)
 
 textarea
 	resize: none
@@ -217,19 +226,6 @@ input[type="submit"],
 input[type="button"]
 	cursor: pointer
 
-input, textarea, button
-	+box-shadow-border(transparent)
-	+t(.3)
-
-	&:focus-visible
-		+box-shadow-border(darken($active, 10%))
-
-a
-	+box-shadow-border(transparent)
-
-	&:focus-visible
-		+box-shadow-border($active)
-
 h1, h2, h3, h4, h5, h6
 	@media (min-width: 576px) and (max-width: 1199px)
 		text-wrap: balance
@@ -244,8 +240,8 @@ picture
  
 	img 
 		height: 100%
-	// 	width: 100%
-	// 	object-fit: cover
+		// width: 100%
+		// object-fit: cover
 
 
 svg
@@ -268,7 +264,7 @@ sup
 		-webkit-line-clamp: unset
 		overflow: visible
 
-.input-wrapper
+.form__fields
 	display: grid
 
 .logo
@@ -330,7 +326,7 @@ sup
 	text-decoration: underline
 	text-decoration-skip-ink: none
 	text-underline-offset: .1lh
-	+t
+	transition: color .3s, text-decoration-color .3s
 
 =hover-underline
 	+underline
@@ -383,7 +379,7 @@ sup
 	justify-content: end
 
 .justify-start
-	justify-content: start
+	justify-items: start
 
 .justify-between
 	width: 100%
@@ -419,7 +415,7 @@ sup
 			display: none
 
 =hide-swiper
-	+hidden
+	display: none
 	+swiper-controls
 
 .hidden

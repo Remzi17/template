@@ -32,7 +32,7 @@
 			&-active
 				background: $active
 
-				&:last-child:first-child
+				&:only-child
 					display: none
 
 		&-lock 
@@ -57,6 +57,7 @@
 
 		background: $gray 
 		cursor: pointer
+		overflow: hidden
 
 		&-drag
 			background: $active

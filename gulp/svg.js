@@ -28,5 +28,7 @@ export function svg() {
 			}
 		}))
 		.pipe(dest(paths.build.svgSprite))
-		.pipe(browsersync.stream())
+		.on('end', () => {
+			browsersync.reload();
+		});
 }

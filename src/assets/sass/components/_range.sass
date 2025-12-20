@@ -20,7 +20,7 @@
 		cursor: pointer
 
 		&:focus-within
-			+box-shadow-border($orange)
+			+box-shadow-border($active)
 
 		&:first-child
 			&:after
@@ -95,10 +95,10 @@
 		border-radius: 2px
 
 	input[type=range]:focus-visible::-webkit-slider-thumb
-		background: $orange
+		background: $active
 
 	input[type=range]:focus-visible::-moz-range-thumb
-		background: $orange 
+		background: $active 
 	
 	input[type=range]
 		position: absolute
@@ -128,7 +128,7 @@
 			+t(.2)
 
 			+hov
-				background: $orange
+				background: $active
 
 		&::-webkit-slider-thumb
 			+thumb

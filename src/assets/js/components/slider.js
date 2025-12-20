@@ -1,4 +1,3 @@
-
 /* 
 	================================================
 	  
@@ -8,36 +7,38 @@
 */
 
 // Включение слайдера на определенных брекпоинтах
-export function slider(match, settings) {
-	if (settings[0]) {
-		let slider;
-		let breakpoint = window.matchMedia(`(${match})`);
+export function slider() {
+  function adaptiveSlider(match, settings) {
+    if (settings[0]) {
+      let slider;
+      let breakpoint = window.matchMedia(`(${match})`);
 
-		let breakpointChecker = function () {
-			if (breakpoint.matches === true) {
-				return enableSwiper();
-			} else if (breakpoint.matches === false) {
-				if (slider !== undefined) {
-					slider.destroy(true, true);
-				}
-				return;
-			}
-		};
+      let breakpointChecker = function () {
+        if (breakpoint.matches === true) {
+          return enableSwiper();
+        } else if (breakpoint.matches === false) {
+          if (slider !== undefined) {
+            slider.destroy(true, true);
+          }
+          return;
+        }
+      };
 
-		let enableSwiper = function () {
-			slider = new Swiper(settings[0], settings[1])
-		};
+      let enableSwiper = function () {
+        slider = new Swiper(settings[0], settings[1]);
+      };
 
-		breakpoint.addListener(breakpointChecker);
-		breakpointChecker();
-	}
+      breakpoint.addListener(breakpointChecker);
+      breakpointChecker();
+    }
+  }
 }
 
 // Пример
-// let aboutSlider = [
+// let adaptiveSlider = [
 // 	'.about-container',
 // 	{
 // 		settings
 // 	}];
 
-// checkBreakpoint('max-width: 767px', aboutSlider);
+// slider('max-width: 767px', aboutSlider);

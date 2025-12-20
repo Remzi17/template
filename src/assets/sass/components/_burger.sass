@@ -9,7 +9,7 @@ $burgerColor: $active
 		position: relative
 		order: 10
 
-		flex: 0 0 $burgerWidth
+		flex-shrink: 0
 		width: $burgerWidth
 		height: $burgerHeight
 
@@ -32,6 +32,7 @@ $burgerColor: $active
 	&-lines:before,
 	&-lines:after
 		position: absolute
+		right: 0
 		width: $burgerWidth
 		height: $burgerLineHeight
 
@@ -41,17 +42,14 @@ $burgerColor: $active
 
 	&-lines
 		top: 50%
-		right: 0
 		translate: 0 -50%
 
 		&:before
 			content: ''
 			top: #{$burgerLineOffset*-1+px}
-			right: 0
 
 		&:after
 			content: ''
 			top: #{$burgerLineOffset+px}
-			right: 0
 
 	

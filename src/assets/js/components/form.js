@@ -1,5 +1,4 @@
-import { body } from "../scripts/variables";
-import { fadeIn, fadeOut } from "../scripts/other/animation";
+import { successSubmitForm } from "../scripts/forms/validation";
 
 /* 
 	================================================
@@ -10,68 +9,77 @@ import { fadeIn, fadeOut } from "../scripts/other/animation";
 */
 
 export function form() {
-	const allForms = document.querySelectorAll('form');
+  const allForms = document.querySelectorAll("form");
 
-	allForms.forEach(form => {
-		if (!form.classList.contains('wpcf7-form')) {
-			if (!form.hasAttribute('enctype')) {
-				form.setAttribute('enctype', 'multipart/form-data');
-			}
+  allForms.forEach((form) => {
+    if (form.classList.contains("wpcf7-form")) return;
 
-			form.addEventListener('submit', formSend);
+    if (!form.hasAttribute("enctype")) {
+      form.setAttribute("enctype", "multipart/form-data");
+    }
 
-			async function formSend(e) {
-				e.preventDefault();
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
 
-				let formData = new FormData(form);
-				form.classList.add('sending');
+      let isValid = true;
 
-				try {
-					let mailResponse = await fetch('/mail.php', {
-						method: 'POST',
-						body: formData
-					});
+      form.querySelectorAll('input[type="tel"]').forEach((input) => {
+        const val = input.value.trim();
 
-					let wpFormData = new FormData(form);
-					wpFormData.append('action', 'submit_request');
+        const requiredLength = val.startsWith("+7") ? 17 : val.startsWith("8") ? 16 : Infinity;
 
-					let wpResponse = await fetch('/wp-admin/admin-ajax.php', {
-						method: 'POST',
-						body: wpFormData,
-						credentials: 'same-origin'
-					});
+        if (val.length < requiredLength && val.length > 3) {
+          input.setCustomValidity("Телефон должен содержать 11 цифр");
+          input.reportValidity();
+          isValid = false;
+        } else {
+          input.setCustomValidity("");
+        }
+      });
 
-					let wpResult = await wpResponse.json();
+      if (typeof checkRequiredChoice === "function") {
+        checkRequiredChoice();
+      }
 
-					if (mailResponse.ok && wpResult.success) {
-						fadeOut('.popup');
+      if (!isValid || !form.checkValidity()) {
+        form.reportValidity();
+        return;
+      }
 
-						setTimeout(() => {
-							fadeIn('.popup-thank');
-						}, 1000);
+      form.classList.add("sending");
 
-						setTimeout(() => {
-							fadeOut('.popup');
-						}, 3000);
+      try {
+        const formData = new FormData(form);
 
-						setTimeout(() => {
-							body.classList.remove('no-scroll');
-						}, 3500);
+        const mailResponse = await fetch("/mail.php", {
+          method: "POST",
+          body: formData,
+        });
 
-						form.reset();
-					} else {
-						console.error('Ошибка при отправке:', {
-							mail: mailResponse,
-							wp: wpResult
-						});
-					}
-				} catch (error) {
-					console.error('Ошибка сети:', error);
-				} finally {
-					form.classList.remove('sending');
-				}
-			}
-		}
-	});
+        const wpFormData = new FormData(form);
+        wpFormData.append("action", "submit_request");
+
+        const wpResponse = await fetch("/wp-admin/admin-ajax.php", {
+          method: "POST",
+          body: wpFormData,
+          credentials: "same-origin",
+        });
+
+        const wpResult = await wpResponse.json();
+
+        if (mailResponse.ok && wpResult.success) {
+          successSubmitForm(form);
+        } else {
+          console.error("Ошибка при отправке:", {
+            mail: mailResponse,
+            wp: wpResult,
+          });
+        }
+      } catch (err) {
+        console.error("Ошибка сети:", err);
+      } finally {
+        form.classList.remove("sending");
+      }
+    });
+  });
 }
-

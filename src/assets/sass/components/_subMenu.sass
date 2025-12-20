@@ -1,28 +1,32 @@
-$box-shadow-size: 48px 
+
+$sub-menu-min-width: 200px 
+$sub-menu-max-width: 40vw 
+
+$sub-menu-box-shadow-size: 48px 
 $sub-menu-items-gap: 8px // отступ между двумя подменю
-$wrapper-padding: #{$box-shadow-size + $sub-menu-items-gap}
-$margin-offset: 4px // отступ между пунктом меню и выпадшкой
+$sub-menu-wrapper-padding: #{$sub-menu-box-shadow-size + $sub-menu-items-gap}
+$sub-menu-margin-offset: 4px // отступ между пунктом меню и выпадшкой
 
 $sub-menu-item-padding: em(12) em(24)
-$sub-menu-box-shadow: 0 12px $box-shadow-size 0 rgba(28, 33, 42, 0.15)
+$sub-menu-box-shadow: 0 12px $sub-menu-box-shadow-size 0 rgba(28, 33, 42, 0.15)
 $sub-menu-border-radius: 12px 
 
-$item-hover-background: $active  
-$item-hover-color: #fff
-$item-arrow-gap: 8px // отступ между пунктом меню и стрелкой
+$sub-menu-item-hover-background: rgba($active, .2)  
+$sub-menu-item-hover-color: $text
+$sub-menu-item-arrow-gap: 12px // отступ между пунктом меню и стрелкой
 
-$arrow-width: 12
-$arrow-height: 12
-$arrow-color: $active
+$sub-menu-arrow-width: 24
+$sub-menu-arrow-height: 24
+$sub-menu-arrow-color: $active
 	
 .sub-menu-wrapper 
 	@media (min-width: #{$burgerMedia+1+px})
 		position: absolute
-		top: calc(100% + $margin-offset)
+		top: calc(100% + $sub-menu-margin-offset)
 		z-index: -1
 		width: max-content 
-		padding-top: $wrapper-padding
-		margin-top: #{-$margin-offset} 
+		padding-top: $sub-menu-wrapper-padding
+		margin-top: #{-$sub-menu-margin-offset} 
 
 		pointer-events: none 
 		opacity: 0
@@ -51,8 +55,8 @@ $arrow-color: $active
 		+hov
 			&>a
 				@media (min-width: #{$burgerMedia+1+px})
-					background: $item-hover-background
-					color: $item-hover-color
+					background: $sub-menu-item-hover-background
+					color: $sub-menu-item-hover-color 
 
 	a
 		padding: 8px 16px
@@ -61,7 +65,6 @@ $arrow-color: $active
 
 li.menu-item-has-children
 	position: relative
-	z-index: 4  
 
 	&_not-relative 
 		position: static !important
@@ -70,8 +73,6 @@ li.menu-item-has-children
 		@media (min-width: #{$burgerMedia+1+px})
 			.sub-menu-wrapper 
 				right: 0
-				translate: 0 #{-$wrapper-padding}  
-
 				text-align: right
 
 				a
@@ -79,7 +80,7 @@ li.menu-item-has-children
 
 				.sub-menu-wrapper
 					right: 100%
-					translate: #{-$sub-menu-items-gap}  #{-$wrapper-padding} 
+					padding-right: $sub-menu-items-gap
 
 				.menu-item-arrow
 					&+a
@@ -88,7 +89,6 @@ li.menu-item-has-children
 			.top 
 				.sub-menu-wrapper
 					right: 0 !important
-					translate: 0 #{-$box-shadow-size} 
 
 				.top 
 					.sub-menu-wrapper
@@ -99,14 +99,11 @@ li.menu-item-has-children
 		@media (min-width: #{$burgerMedia+1+px})
 			.sub-menu-wrapper 
 				left: 0
-				translate: 0 #{-$wrapper-padding}
 
 				.sub-menu-wrapper
-					position: fixed
 					left: 100% 
 					
 					padding-left: $sub-menu-items-gap
-					translate: 0
 
 				.menu-item-arrow
 					&+a
@@ -115,7 +112,6 @@ li.menu-item-has-children
 			.top 
 				.sub-menu-wrapper
 					left: 0 !important
-					translate: 0 #{-$box-shadow-size} 
 
 				.top 
 					.sub-menu-wrapper
@@ -126,15 +122,21 @@ li.menu-item-has-children
 		@media (min-width: #{$burgerMedia+1+px})
 			&>.sub-menu-wrapper
 				width: max-content
-				max-width: 50vw
-				min-width: 200px
+				max-width: $sub-menu-max-width
+				min-width: $sub-menu-min-width
+				translate: 0 #{-$sub-menu-wrapper-padding}
 
-		@media (min-width: #{$burgerMedia+1+px})
+			.sub-menu-wrapper
+				.sub-menu-wrapper
+					position: fixed  
+					translate: 0
+
 			.top 
 				position: relative
 
 				.sub-menu-wrapper
 					top: 100%  !important
+					translate: 0 #{-$sub-menu-box-shadow-size} 
 
 				.top 
 					position: relative !important
@@ -150,16 +152,11 @@ li.menu-item-has-children
 				rotate: -180deg
 		
 		&>.sub-menu-wrapper
-			margin-top: 0
-			z-index: 3
+			margin-top: 0 
+			z-index: 1
 			pointer-events: auto
 
 			opacity: 1
-
-		li
-			&:hover 
-				&>a .menu-item-arrow 
-					background: #fff
 
 	li.menu-item-has-children
 		.sub-menu-wrapper 
@@ -167,11 +164,11 @@ li.menu-item-has-children
 
 	a
 		position: relative
-		z-index: 4  
+		z-index: 2  
 		display: flex 
 		justify-content: space-between 
 		align-items: center
-		gap: $item-arrow-gap
+		gap: $sub-menu-item-arrow-gap
 		width: 100%
 
 	.sub-menu
@@ -188,14 +185,14 @@ li.menu-item-has-children
  
 .menu-item-arrow  
 	display: inline-block
-	flex-basis: #{$arrow-width+px}
-	width: #{$arrow-width+px}	
-	height: #{$arrow-height+px}
+	flex-basis: #{$sub-menu-arrow-width+px}
+	width: #{$sub-menu-arrow-width+px}	
+	height: #{$sub-menu-arrow-height+px}
 	flex-grow: 0
 	flex-shrink: 0
 
 	+t
-	+mask(arrow(), $arrow-color)
+	+mask(arrow(50%), currentColor)
 
 
  
@@ -204,9 +201,11 @@ li.menu-item-has-children
 
 @media (max-width: #{$burgerMedia+px})
 	li.menu-item-has-children
+		width: 100%
+		
 		a
-			justify-content: flex-start
-				
+			justify-content: space-between
+
 	.sub-menu-wrapper 
 		.sub-menu
 			display: grid
@@ -228,5 +227,5 @@ li.menu-item-has-children
 			padding: 0
  
 	.menu-item-arrow 
-		-webkit-mask-size: 80%
-		mask-size: 80%
+		-webkit-mask-size: 70%
+		mask-size: 70%
