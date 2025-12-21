@@ -8,7 +8,24 @@ import path from "path";
 import fs from "fs";
 import { paths, source_folder, project_folder, variables, concatLibs } from "./settings.js";
 import realFavicon from "gulp-real-favicon";
+import browsersync from "browser-sync";
 import { globSync } from "glob";
+
+//
+//
+//
+//
+// browserSync
+
+export function browserSync(params) {
+  browsersync.init({
+    server: {
+      baseDir: "./" + project_folder + "/",
+    },
+    port: 3000,
+    notify: false,
+  });
+}
 
 //
 //

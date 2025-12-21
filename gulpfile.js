@@ -1,3 +1,21 @@
+// ====================
+// ⏱ Performance metrics
+// ====================
+const perf = {
+  start: Date.now(),
+  ready: null,
+  lastChange: {
+    html: null,
+    css: null,
+    js: null,
+  },
+};
+
+const logTime = (label, time) => {
+  const ms = time.toFixed(0);
+  console.log(`⏱ ${label}: ${ms} ms`);
+};
+
 import gulp from "gulp";
 const { series, parallel } = gulp;
 
@@ -7,10 +25,11 @@ import cache from "gulp-cached";
 import remember from "gulp-remember";
 import fs from "fs";
 import path from "path";
+import { css, cssLibs, cssBlocks, cssComponents, cssCommon } from "./gulp/css.js";
 
-import { paths, isDeploy } from "./gulp/settings.js";
+import { paths, isDeploy, isDev, isBuild } from "./gulp/settings.js";
+
 import { html } from "./gulp/html.js";
-import { css, cssLibs } from "./gulp/css.js";
 import { images } from "./gulp/images.js";
 import { fonts, fontcss } from "./gulp/fonts.js";
 import { deployHtml, deployCss, deployJs } from "./gulp/ftp.js";
@@ -23,43 +42,61 @@ import { temp } from "./gulp/functions.js";
 // ====================
 import { startSession, endSession, trackFile, buildStartTimer, buildEndTimer, showStats } from "./gulp/statistics/statistics.js";
 
-// ====================
-// 🔄 Reload
-// ====================
 function reload(done) {
   browsersync.reload();
   done();
 }
 
-// ====================
-// 👀 Watch
-// ====================
 function watchFiles() {
   const onChange = (filePath) => {
-    if (filePath) trackFile(filePath);
+    if (!filePath) return;
+
+    if (filePath.endsWith(".html")) perf.lastChange.html = Date.now();
+    else if (filePath.match(/\.(sass|scss|css)$/)) perf.lastChange.css = Date.now();
+    else if (filePath.endsWith(".js")) perf.lastChange.js = Date.now();
   };
 
-  if (isDeploy) {
-    gulp.watch(paths.watch.html, series(html, deployHtml)).on("change", onChange);
-    gulp.watch(paths.watch.css, series(css, deployCss)).on("change", onChange);
-    gulp.watch(paths.watch.js, series(rollup, deployJs, reload)).on("change", onChange);
-  } else {
-    const htmlWatcher = gulp.watch(paths.watch.html, html);
-    htmlWatcher.on("change", onChange);
-    htmlWatcher.on("unlink", (filePath) => {
-      delete cache.caches.html?.[filePath];
-      remember.forget("html", filePath);
-    });
+  // HTML
+  gulp.watch(paths.watch.html, series(html, measure(html, "html"), reload)).on("change", onChange);
 
-    gulp.watch(paths.watch.css, css).on("change", onChange);
-    gulp.watch(paths.watch.js, series(rollup, reload)).on("change", onChange);
+  // JS
+  gulp.watch(paths.watch.js, series(rollup, measure(rollup, "js"), reload)).on("change", onChange);
+
+  // =====================
+  // ENTRY SASS FILES
+  // =====================
+  if (!isBuild) {
+    gulp.watch(paths.src.sass + "blocks.sass", series(cssBlocks, measure(cssBlocks, "css"), reload)).on("change", onChange);
+
+    gulp.watch(paths.src.sass + "components.sass", series(cssComponents, measure(cssComponents, "css"), reload)).on("change", onChange);
+
+    gulp.watch(paths.src.sass + "common.sass", series(cssCommon, measure(cssCommon, "css"), reload)).on("change", onChange);
+
+    // =====================
+    // PARTIALS (blocks/components/common folders)
+    // =====================
+    gulp.watch(paths.src.sass + "blocks/**/*.sass", series(cssBlocks, measure(cssBlocks, "css"), reload)).on("change", onChange);
+
+    gulp.watch(paths.src.sass + "components/**/*.sass", series(cssComponents, measure(cssComponents, "css"), reload)).on("change", onChange);
+
+    gulp.watch(paths.src.sass + "common/**/*.sass", series(cssCommon, measure(cssCommon, "css"), reload)).on("change", onChange);
   }
 
-  gulp.watch(paths.watch.cssLibs, cssLibs).on("change", onChange);
-  gulp.watch(paths.watch.jsLibs, jsLibs).on("change", onChange);
-  gulp.watch(paths.watch.icons, svg).on("change", onChange);
-  gulp.watch(paths.watch.img, images).on("change", onChange);
-  gulp.watch(paths.watch.fontcss, fontcss).on("change", onChange);
+  // =====================
+  // SHARED FILES (ALL / VARS / MIXINS)
+  // =====================
+  const sharedSass = [paths.src.sass + "all/**/*.sass", paths.src.sass + "_*.sass"];
+
+  gulp.watch(sharedSass, series(isBuild ? css : parallel(cssCommon, cssComponents, cssBlocks), reload)).on("change", onChange);
+
+  // =====================
+  // Остальное
+  // =====================
+  gulp.watch(paths.watch.cssLibs, series(cssLibs, reload));
+  gulp.watch(paths.watch.jsLibs, series(jsLibs, reload));
+  gulp.watch(paths.watch.icons, series(svg, reload));
+  gulp.watch(paths.watch.img, series(images, reload));
+  gulp.watch(paths.watch.fontcss, series(fontcss, reload));
 }
 
 // ====================
@@ -70,55 +107,68 @@ function clean() {
 }
 
 // ====================
-// 🏗 Build
-// ====================
-const build = series(startSession, temp, clean, buildStartTimer, rollup, parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss, deployHtml, deployCss, deployJs), buildEndTimer);
-
-// ====================
 // 🌐 BrowserSync + Dashboard
 // ====================
 function browserSync(done) {
-  browsersync.init({
-    server: {
-      baseDir: paths.build.html, // например "./dist"
-    },
-    middleware: [
-      (req, res, next) => {
-        if (req.url === "/__stats") {
-          res.setHeader("Content-Type", "text/html");
-          res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/index.html")));
-          return;
-        }
-
-        if (req.url === "/__stats/dashboard.js") {
-          res.setHeader("Content-Type", "application/javascript");
-          res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/dashboard.js")));
-          return;
-        }
-
-        if (req.url === "/__stats/data") {
-          res.setHeader("Content-Type", "application/json");
-          res.end(fs.readFileSync(path.resolve("./statistics.json")));
-          return;
-        }
-
-        next();
+  browsersync.init(
+    {
+      server: {
+        baseDir: paths.build.html, // например "./dist"
       },
-    ],
-    notify: false,
-    open: true,
-  });
+      middleware: [
+        (req, res, next) => {
+          if (req.url === "/__stats") {
+            res.setHeader("Content-Type", "text/html");
+            res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/index.html")));
+            return;
+          }
+
+          if (req.url === "/__stats/dashboard.js") {
+            res.setHeader("Content-Type", "application/javascript");
+            res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/dashboard.js")));
+            return;
+          }
+
+          if (req.url === "/__stats/data") {
+            res.setHeader("Content-Type", "application/json");
+            res.end(fs.readFileSync(path.resolve("./statistics.json")));
+            return;
+          }
+
+          next();
+        },
+      ],
+      notify: false,
+      open: true,
+    },
+    () => {
+      perf.ready = Date.now();
+      logTime("Gulp start → BrowserSync ready", perf.ready - perf.start);
+    }
+  );
 
   done();
 }
-// ====================
-// 👁 Watch + Server
-// ====================
-export const watch = parallel(build, watchFiles, browserSync);
+function measure(task, type) {
+  return function measuredTask(done) {
+    const start = perf.lastChange[type];
+    const end = Date.now();
 
-// ====================
-// 📟 CLI команды статистики
-// ====================
+    if (start) {
+      logTime(`${type.toUpperCase()} update`, end - start);
+      perf.lastChange[type] = null;
+    }
+
+    done();
+  };
+}
+
+const dev = series(temp, clean, parallel(html, rollup, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fonts, fontcss));
+
+const build = series(temp, clean, rollup, parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss, deployHtml, deployCss, deployJs));
+
+export const watch = parallel(isDev ? dev : build, watchFiles, browserSync);
+
 export const stats = (done) => {
   showStats("all");
   done();
@@ -149,4 +199,5 @@ process.on("SIGTERM", () => {
 });
 
 // ====================
-export { html, css, cssLibs, rollup, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build, watch as default };
+export { html, css, cssLibs, rollup, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build };
+export default watch;

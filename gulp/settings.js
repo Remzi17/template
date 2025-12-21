@@ -2,7 +2,8 @@ export let replaceScripts = true;
 export let isDeploy = false;
 export let template = "rem";
 export let concatLibs = false;
-export let isBuild = true;
+export const isBuild = process.argv.includes("--build");
+export const isDev = !isBuild;
 export let unCSS = false;
 
 export let variables = {
@@ -174,7 +175,8 @@ export let paths = {
     unusedHtml: source_folder + "/**/*.html",
     htmlFiles: source_folder + "/",
     html: [source_folder + "/*.html", "!" + source_folder + "/_*.html"],
-    css: source_folder + "/assets/sass/style.sass",
+    css: [source_folder + "/assets/sass/common.sass", source_folder + "/assets/sass/components.sass", source_folder + "/assets/sass/blocks.sass"],
+
     cssLibs: source_folder + "/assets/libs/css/",
     cssLibsFiles: source_folder + "/assets/libs/css/*.css",
     cssvariables: source_folder + "/assets/sass/all/_variables.sass",
