@@ -65,12 +65,17 @@ export function cssComponents() {
 }
 
 export function cssBlocks() {
-  return src(paths.src.sass + "blocks.sass")
-    .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
-    .pipe(gulpif(isBuild, autoprefixer({ cascade: false })))
-    .pipe(gulpif(isBuild, csso()))
-    .pipe(dest(paths.build.css))
-    .pipe(browsersync.stream());
+  return (
+    src(paths.src.sass + "blocks.sass", { sourcemaps: !isBuild })
+      .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
+      // только для билд режима
+      .pipe(gulpif(isBuild, autoprefixer({ cascade: false })))
+      .pipe(gulpif(isBuild, csso()))
+      // записываем в папку сборки
+      .pipe(dest(paths.build.css, { sourcemaps: !isBuild }))
+      // только для dev инжектим CSS без перезагрузки страницы
+      .pipe(gulpif(!isBuild, browsersync.stream({ match: "**/*.css" })))
+  );
 }
 
 // ===== BUILD TASK =====

@@ -56,44 +56,55 @@ function watchFiles() {
     else if (filePath.endsWith(".js")) perf.lastChange.js = Date.now();
   };
 
+  // =====================
   // HTML
+  // =====================
   gulp.watch(paths.watch.html, series(html, measure(html, "html"), reload)).on("change", onChange);
 
+  // =====================
   // JS
+  // =====================
   gulp.watch(paths.watch.js, series(rollup, measure(rollup, "js"), reload)).on("change", onChange);
 
   // =====================
-  // ENTRY SASS FILES
+  // SASS / CSS
   // =====================
+  const entryFiles = [paths.src.sass + "blocks.sass", paths.src.sass + "components.sass", paths.src.sass + "common.sass"];
+
+  const partials = [paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
+
+  const sharedSass = [paths.src.sass + "all/**/*.sass", paths.src.sass + "_*.sass"];
+
   if (!isBuild) {
-    gulp.watch(paths.src.sass + "blocks.sass", series(cssBlocks, measure(cssBlocks, "css"), reload)).on("change", onChange);
+    // Entry SASS
+    entryFiles.forEach((file) => {
+      let task = file.includes("blocks") ? cssBlocks : file.includes("components") ? cssComponents : cssCommon;
+      gulp.watch(file, series(task, measure(task, "css"))).on("change", onChange);
+    });
 
-    gulp.watch(paths.src.sass + "components.sass", series(cssComponents, measure(cssComponents, "css"), reload)).on("change", onChange);
+    // Partials
+    partials.forEach((folder) => {
+      let task = folder.includes("blocks") ? cssBlocks : folder.includes("components") ? cssComponents : cssCommon;
+      gulp.watch(folder, series(task, measure(task, "css"))).on("change", onChange);
+    });
 
-    gulp.watch(paths.src.sass + "common.sass", series(cssCommon, measure(cssCommon, "css"), reload)).on("change", onChange);
-
-    // =====================
-    // PARTIALS (blocks/components/common folders)
-    // =====================
-    gulp.watch(paths.src.sass + "blocks/**/*.sass", series(cssBlocks, measure(cssBlocks, "css"), reload)).on("change", onChange);
-
-    gulp.watch(paths.src.sass + "components/**/*.sass", series(cssComponents, measure(cssComponents, "css"), reload)).on("change", onChange);
-
-    gulp.watch(paths.src.sass + "common/**/*.sass", series(cssCommon, measure(cssCommon, "css"), reload)).on("change", onChange);
+    // Shared files
+    gulp.watch(sharedSass, series(parallel(cssCommon, cssComponents, cssBlocks))).on("change", onChange);
+  } else {
+    // Build режим — пересобираем всё и делаем reload
+    const allSass = [paths.src.sass + "*.sass", paths.src.sass + "all/**/*.sass", paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
+    gulp.watch(allSass, series(css, reload)).on("change", onChange);
   }
 
   // =====================
-  // SHARED FILES (ALL / VARS / MIXINS)
-  // =====================
-  const sharedSass = [paths.src.sass + "all/**/*.sass", paths.src.sass + "_*.sass"];
-
-  gulp.watch(sharedSass, series(isBuild ? css : parallel(cssCommon, cssComponents, cssBlocks), reload)).on("change", onChange);
-
-  // =====================
-  // Остальное
+  // CSS/JS библиотеки
   // =====================
   gulp.watch(paths.watch.cssLibs, series(cssLibs, reload));
   gulp.watch(paths.watch.jsLibs, series(jsLibs, reload));
+
+  // =====================
+  // Иконки, картинки, шрифты
+  // =====================
   gulp.watch(paths.watch.icons, series(svg, reload));
   gulp.watch(paths.watch.img, series(images, reload));
   gulp.watch(paths.watch.fontcss, series(fontcss, reload));
