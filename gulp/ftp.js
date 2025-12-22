@@ -1,5 +1,5 @@
 import gulp from "gulp";
-import { project_folder, template, isDeploy, concatLibs } from "./settings.js";
+import { project_folder, template, isBuild, concatLibs } from "./settings.js";
 import gutil from "gulp-util";
 import ftp from "vinyl-ftp";
 import cheerio from "gulp-cheerio";
@@ -98,9 +98,19 @@ if (template == "siteup") {
   });
 }
 
+function buildOnly() {
+  if (!isBuild) {
+    console.warn(`\n\n\n\n Таск доступен только в build режиме. Запусти: gulp --build\n\n\n\n\n\n`);
+    return false;
+  }
+  return true;
+}
+
 const deploy = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   return cleanScripts().on("end", () => {
-    let globs = [project_folder + "/assets/css/style.css", project_folder + "/assets/js/script.js", project_folder + "/*.html"];
+    const globs = [project_folder + "/assets/css/style.css", project_folder + "/assets/js/script.js", project_folder + "/*.html"];
 
     return gulp
       .src(globs, {
@@ -112,6 +122,8 @@ const deploy = () => {
 };
 
 const deployAll = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   return cleanScripts().on("end", () => {
     let globs = [project_folder + "/**/*.*", project_folder + "/*.*"];
 
@@ -125,6 +137,8 @@ const deployAll = () => {
 };
 
 const deploySprite = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   let globs = [project_folder + "/assets/img/sprite.svg"];
 
   return gulp
@@ -137,6 +151,8 @@ const deploySprite = () => {
 };
 
 const deployLibs = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   let globs = [project_folder + "/assets/css/vendor.css", project_folder + "/assets/js/vendor.js"];
 
   return gulp
@@ -149,6 +165,8 @@ const deployLibs = () => {
 };
 
 const deployImages = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   let globs = [project_folder + "/assets/img/**/*"];
 
   return gulp
@@ -161,6 +179,8 @@ const deployImages = () => {
 };
 
 const deployHtml = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   if (!isDeploy) return Promise.resolve();
 
   let globs = [project_folder + "/*.html"];
@@ -175,6 +195,8 @@ const deployHtml = () => {
 };
 
 const deployCss = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   if (!isDeploy) return Promise.resolve();
   let globs = [project_folder + "/assets/css/*.css", "!" + project_folder + "/assets/css/vendor.css", "!" + project_folder + "/assets/css/fonts.css"];
 
@@ -188,6 +210,8 @@ const deployCss = () => {
 };
 
 const deployJs = () => {
+  if (!buildOnly()) return Promise.resolve();
+
   if (!isDeploy) return Promise.resolve();
   let globs = [project_folder + "/assets/js/*.js", "!" + project_folder + "/assets/js/vendor.js"];
   return gulp

@@ -34,7 +34,7 @@ import { images } from "./gulp/images.js";
 import { fonts, fontcss } from "./gulp/fonts.js";
 import { deployHtml, deployCss, deployJs } from "./gulp/ftp.js";
 import { svg } from "./gulp/svg.js";
-import { jsLibs, rollup } from "./gulp/js.js";
+import { jsLibs, js } from "./gulp/js.js";
 import { temp } from "./gulp/functions.js";
 
 // ====================
@@ -52,23 +52,14 @@ function watchFiles() {
     if (!filePath) return;
 
     if (filePath.endsWith(".html")) perf.lastChange.html = Date.now();
-    else if (filePath.match(/\.(sass|scss|css)$/)) perf.lastChange.css = Date.now();
+    else if (/\.(sass|scss|css)$/.test(filePath)) perf.lastChange.css = Date.now();
     else if (filePath.endsWith(".js")) perf.lastChange.js = Date.now();
   };
 
-  // =====================
-  // HTML
-  // =====================
   gulp.watch(paths.watch.html, series(html, measure(html, "html"), reload)).on("change", onChange);
 
-  // =====================
-  // JS
-  // =====================
-  gulp.watch(paths.watch.js, series(rollup, measure(rollup, "js"), reload)).on("change", onChange);
+  gulp.watch(paths.watch.js, series(js, measure(js, "js"), reload)).on("change", onChange);
 
-  // =====================
-  // SASS / CSS
-  // =====================
   const entryFiles = [paths.src.sass + "blocks.sass", paths.src.sass + "components.sass", paths.src.sass + "common.sass"];
 
   const partials = [paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
@@ -76,35 +67,28 @@ function watchFiles() {
   const sharedSass = [paths.src.sass + "all/**/*.sass", paths.src.sass + "_*.sass"];
 
   if (!isBuild) {
-    // Entry SASS
     entryFiles.forEach((file) => {
-      let task = file.includes("blocks") ? cssBlocks : file.includes("components") ? cssComponents : cssCommon;
+      const task = file.includes("blocks") ? cssBlocks : file.includes("components") ? cssComponents : cssCommon;
+
       gulp.watch(file, series(task, measure(task, "css"))).on("change", onChange);
     });
 
-    // Partials
-    partials.forEach((folder) => {
-      let task = folder.includes("blocks") ? cssBlocks : folder.includes("components") ? cssComponents : cssCommon;
-      gulp.watch(folder, series(task, measure(task, "css"))).on("change", onChange);
+    partials.forEach((pattern) => {
+      const task = pattern.includes("blocks") ? cssBlocks : pattern.includes("components") ? cssComponents : cssCommon;
+
+      gulp.watch(pattern, series(task, measure(task, "css"))).on("change", onChange);
     });
 
-    // Shared files
     gulp.watch(sharedSass, series(parallel(cssCommon, cssComponents, cssBlocks))).on("change", onChange);
   } else {
-    // Build режим — пересобираем всё и делаем reload
     const allSass = [paths.src.sass + "*.sass", paths.src.sass + "all/**/*.sass", paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
+
     gulp.watch(allSass, series(css, reload)).on("change", onChange);
   }
 
-  // =====================
-  // CSS/JS библиотеки
-  // =====================
   gulp.watch(paths.watch.cssLibs, series(cssLibs, reload));
   gulp.watch(paths.watch.jsLibs, series(jsLibs, reload));
 
-  // =====================
-  // Иконки, картинки, шрифты
-  // =====================
   gulp.watch(paths.watch.icons, series(svg, reload));
   gulp.watch(paths.watch.img, series(images, reload));
   gulp.watch(paths.watch.fontcss, series(fontcss, reload));
@@ -160,6 +144,7 @@ function browserSync(done) {
 
   done();
 }
+
 function measure(task, type) {
   return function measuredTask(done) {
     const start = perf.lastChange[type];
@@ -174,9 +159,9 @@ function measure(task, type) {
   };
 }
 
-const dev = series(temp, clean, parallel(html, rollup, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fonts, fontcss));
+const dev = series(temp, clean, parallel(html, js, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fonts, fontcss));
 
-const build = series(temp, clean, rollup, parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss, deployHtml, deployCss, deployJs));
+const build = series(temp, clean, js, parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss, deployHtml, deployCss, deployJs));
 
 export const watch = parallel(isDev ? dev : build, watchFiles, browserSync);
 
@@ -210,5 +195,5 @@ process.on("SIGTERM", () => {
 });
 
 // ====================
-export { html, css, cssLibs, rollup, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build };
+export { html, css, cssLibs, js, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build };
 export default watch;

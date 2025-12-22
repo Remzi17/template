@@ -1,18 +1,13 @@
 import gulp from "gulp";
 const { src, dest, parallel } = gulp;
-import { paths, isBuild, unCSS } from "./settings.js";
-import notify from "gulp-notify";
-import { concatLibs } from "./settings.js";
-import concat from "gulp-concat";
-import newer from "gulp-newer";
+import { paths, isDev, isBuild, unCSS, concatLibs } from "./settings.js";
 import browsersync from "browser-sync";
+import notify from "gulp-notify";
 import gulpif from "gulp-if";
+import concat from "gulp-concat";
 import autoprefixer from "gulp-autoprefixer";
-import group_media from "gulp-group-css-media-queries";
-import uncss from "gulp-uncss";
-import beautify from "gulp-beautify";
-import cssnano from "gulp-cssnano";
 import csso from "gulp-csso";
+import uncss from "gulp-uncss";
 import gulpSass from "gulp-sass";
 import * as dartSass from "sass";
 const sass = gulpSass(dartSass);
@@ -42,14 +37,24 @@ function translateError(msg) {
   return translated;
 }
 
-function handleError(taskName) {
+export function handleError(taskName) {
   return function (err) {
-    console.error(`\n${taskName} error:\n`, err.message, "\n");
+    const original = err.messageOriginal || err.message || "Неизвестная ошибка";
+    const short = original.split("\n")[0];
+    const translated = translateError(short);
+    const file = err.relativePath || err.file || "Неизвестный файл";
+    const line = err.line || "?";
+
+    notify({
+      title: `\n${taskName} ошибка`,
+      message: `\n\n${translated}\n${file.split("src/assets/")[1]}\n${line} строка \n\n\n\n`,
+      sound: true,
+    }).write(err);
+
     this.emit("end");
   };
 }
 
-// ===== DEV TASKS =====
 export function cssCommon() {
   return src(paths.src.sass + "common.sass")
     .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
@@ -65,20 +70,14 @@ export function cssComponents() {
 }
 
 export function cssBlocks() {
-  return (
-    src(paths.src.sass + "blocks.sass", { sourcemaps: !isBuild })
-      .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
-      // только для билд режима
-      .pipe(gulpif(isBuild, autoprefixer({ cascade: false })))
-      .pipe(gulpif(isBuild, csso()))
-      // записываем в папку сборки
-      .pipe(dest(paths.build.css, { sourcemaps: !isBuild }))
-      // только для dev инжектим CSS без перезагрузки страницы
-      .pipe(gulpif(!isBuild, browsersync.stream({ match: "**/*.css" })))
-  );
+  return src(paths.src.sass + "blocks.sass", { sourcemaps: isDev })
+    .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
+    .pipe(autoprefixer({ cascade: false }))
+    .pipe(csso())
+    .pipe(dest(paths.build.css, { sourcemaps: isDev }))
+    .pipe(browsersync.stream({ match: "**/*.css" }));
 }
 
-// ===== BUILD TASK =====
 export function css() {
   return src([paths.src.sass + "common.sass", paths.src.sass + "components.sass", paths.src.sass + "blocks.sass"])
     .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
@@ -88,7 +87,6 @@ export function css() {
     .pipe(gulp.dest(paths.build.css));
 }
 
-// ===== EXPORT =====
 export function cssLibs() {
   return src(paths.src.cssLibsFiles)
     .pipe(gulpif(concatLibs, concat("vendor.css")))
