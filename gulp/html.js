@@ -41,7 +41,7 @@ export function html() {
       fileinclude({
         prefix: "@@",
         basepath: "@file",
-        context: { isDev },
+        context: { isDev: !isBuild },
       })
     )
     .on("error", notify.onError({ title: "HTML error", message: "<%= error.message %>", sound: false }))
@@ -53,34 +53,45 @@ export function html() {
         let content = file.contents.toString();
         content = content.replace(/<!-- not format -->/g, "");
 
-        const imgMatches = [...content.matchAll(/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*?)\s+pic(?:\s*=\s*"?(\d+)"?)?[^>]*>/g)];
+        const imgMatches = [...content.matchAll(/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*)>/g)];
 
         const processQueue = imgMatches.map((match) => {
           const imgSrc = match[1];
-          const picValue = match[3];
-          const mobileWidth = picValue ? parseInt(picValue) : 500;
+          const attrs = match[2];
+          const picAttr = / pic\b/.test(attrs);
+          const mobileWidth = 575;
 
-          const extFromHTML = path.extname(imgSrc).toLowerCase();
-          const baseName = path.basename(imgSrc, extFromHTML);
-          const dirName = path.dirname(imgSrc);
-          const searchDir = path.join("src", dirName);
+          const ext = path.extname(imgSrc);
+          const base = path.basename(imgSrc, ext);
+          const dir = path.dirname(imgSrc);
+          const searchDir = path.join("src", dir);
           const availableExts = [".jpg", ".jpeg", ".png"];
 
           let foundPath = null;
           for (const ext of availableExts) {
-            const fullPath = path.join(searchDir, baseName + ext);
+            const fullPath = path.join(searchDir, base + ext);
             if (fs.existsSync(fullPath)) {
               foundPath = fullPath;
               break;
             }
           }
 
-          return foundPath ? createMobileVersion(foundPath, mobileWidth) : Promise.resolve();
+          if (picAttr && foundPath) {
+            return createMobileVersion(foundPath, mobileWidth);
+          }
+
+          return Promise.resolve();
         });
 
         Promise.allSettled(processQueue)
           .then(() => {
-            content = content.replace(/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*?)\s+pic(?:\s*=\s*"?(\d+)"?)?[^>]*>/g, (match, imgSrc, attrs, picValue) => {
+            content = content.replace(/<img src="([^"]+\.(?:webp|png|jpg|jpeg))"([^>]*)>/g, (match, imgSrc, attrs) => {
+              const picAttr = / pic\b/.test(attrs);
+
+              const ext = path.extname(imgSrc);
+              const base = path.basename(imgSrc, ext);
+              const dir = path.dirname(imgSrc);
+
               const classMatch = attrs.match(/class="([^"]*)"/);
               const widthMatch = attrs.match(/width="(\d+)"/);
               const heightMatch = attrs.match(/height="(\d+)"/);
@@ -89,7 +100,7 @@ export function html() {
               const decodingMatch = attrs.match(/decoding="([^"]*)"/);
 
               const cleanAttrs = attrs
-                .replace(/\s*pic\s*=\s*"?\d+"?\s*/, "")
+                .replace(/\s*pic\b/, "")
                 .replace(/\s*width="\d+"\s*/, "")
                 .replace(/\s*height="\d+"\s*/, "")
                 .replace(/\s*alt="[^"]*"\s*/, "")
@@ -98,10 +109,13 @@ export function html() {
                 .replace(/\s*class="[^"]*"\s*/, "")
                 .trim();
 
-              return `
+              if (picAttr) {
+                return `
 <picture${classMatch && classMatch[1] ? ` class="${classMatch[1]}"` : ""}>
-  <source srcset="${imgSrc.replace(/(\.\w+)$/, "_mobile$1")}" media="(max-width: 575px)">
-  <img src="${imgSrc}"
+  <source type="image/avif" srcset="${path.join(dir, base)}.avif">
+  <source type="image/avif" srcset="${path.join(dir, base)}_mobile.avif" media="(max-width: 575px)">
+  <source srcset="${path.join(dir, base)}_mobile.webp" media="(max-width: 575px)">
+  <img src="${path.join(dir, base)}.webp"
     ${cleanAttrs ? " " + cleanAttrs : ""}
     ${widthMatch && widthMatch[1] ? ` width="${widthMatch[1]}"` : ""}
     ${heightMatch && heightMatch[1] ? ` height="${heightMatch[1]}"` : ""}
@@ -109,6 +123,20 @@ export function html() {
     ${loadingMatch ? ` loading="${loadingMatch[1]}"` : ' loading="lazy"'}
     ${decodingMatch ? ` decoding="${decodingMatch[1]}"` : ' decoding="async"'}>
 </picture>`;
+              } else {
+                return `
+<picture${classMatch && classMatch[1] ? ` class="${classMatch[1]}"` : ""}>
+  <source type="image/avif" srcset="${path.join(dir, base)}.avif">
+  <source type="image/webp" srcset="${path.join(dir, base)}.webp">
+  <img src="${path.join(dir, base)}.webp"
+    ${cleanAttrs ? " " + cleanAttrs : ""}
+    ${widthMatch && widthMatch[1] ? ` width="${widthMatch[1]}"` : ""}
+    ${heightMatch && heightMatch[1] ? ` height="${heightMatch[1]}"` : ""}
+    alt="${altMatch ? altMatch[1] : ""}"
+    ${loadingMatch ? ` loading="${loadingMatch[1]}"` : ' loading="lazy"'}
+    ${decodingMatch ? ` decoding="${decodingMatch[1]}"` : ' decoding="async"'}>
+</picture>`;
+              }
             });
 
             file.contents = Buffer.from(content);
@@ -119,5 +147,4 @@ export function html() {
     )
     .pipe(gulpif(isBuild, beautify.html({ indent_size: 2, max_preserve_newlines: 1 })))
     .pipe(dest(paths.build.html));
-  // .pipe(browsersync.stream());
 }

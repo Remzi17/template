@@ -1,6 +1,9 @@
 import gulp from "gulp";
 const { src, dest, parallel } = gulp;
-import { paths, isDev, isBuild, unCSS, concatLibs } from "./settings.js";
+import fs from "fs";
+import path from "path";
+
+import { paths, isDev, isBuild, unCSS, concatLibs, __dirname } from "./settings.js";
 import browsersync from "browser-sync";
 import notify from "gulp-notify";
 import gulpif from "gulp-if";
@@ -10,6 +13,7 @@ import csso from "gulp-csso";
 import uncss from "gulp-uncss";
 import gulpSass from "gulp-sass";
 import * as dartSass from "sass";
+
 const sass = gulpSass(dartSass);
 
 function translateError(msg) {
@@ -115,4 +119,40 @@ export function cssLibs() {
     )
     .pipe(dest(paths.build.css))
     .pipe(browsersync.stream());
+}
+
+export function deadCss(done) {
+  const cssPath = path.join(paths.build.css, "style.css");
+  const htmlFiles = fs.readdirSync(paths.build.html).filter((f) => f.endsWith(".html"));
+
+  if (!fs.existsSync(cssPath)) {
+    console.log("❌ CSS файл не найден:", cssPath);
+    done();
+    return;
+  }
+
+  const cssContent = fs.readFileSync(cssPath, "utf-8");
+
+  function extractClasses(cssContent) {
+    return [...new Set(Array.from(cssContent.matchAll(/\.([_a-zA-Z][_a-zA-Z0-9-]*)/g)).map((m) => m[1]))];
+  }
+  const cssClasses = extractClasses(cssContent);
+
+  let htmlContent = "";
+  htmlFiles.forEach((file) => {
+    htmlContent += fs.readFileSync(path.join(paths.build.html, file), "utf-8");
+  });
+
+  const usedClasses = new Set(
+    Array.from(htmlContent.matchAll(/class=["']([^"']+)["']/g))
+      .flatMap((m) => m[1].split(/\s+/))
+      .filter(Boolean)
+  );
+
+  const unusedClasses = cssClasses.filter((c) => !usedClasses.has(c));
+
+  console.log("❌ Неиспользуемые классы:");
+  unusedClasses.forEach((c) => console.log("  " + c));
+
+  done();
 }

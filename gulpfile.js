@@ -20,7 +20,7 @@ import del from "del";
 import browsersync from "browser-sync";
 import fs from "fs";
 import path from "path";
-import { css, cssLibs, cssBlocks, cssComponents, cssCommon } from "./gulp/css.js";
+import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gulp/css.js";
 
 import { paths, isDev, isBuild } from "./gulp/settings.js";
 
@@ -100,7 +100,7 @@ function browserSync(done) {
   browsersync.init(
     {
       server: {
-        baseDir: paths.build.html, // например "./dist"
+        baseDir: paths.build.html,
       },
       middleware: [
         (req, res, next) => {
@@ -208,6 +208,5 @@ process.on("SIGTERM", () => {
   process.exit();
 });
 
-// ====================
-export { html, css, cssLibs, js, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build };
+export { html, css, cssLibs, deadCss, js, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build };
 export default watch;

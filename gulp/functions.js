@@ -632,7 +632,7 @@ function sitemap(cb) {
   fs.writeFile(sitemapPath, sitemapContent.trim(), (err) => {
     if (err) return cb(err);
 
-    console.log("\n\n Карта сайта создана \n\n\n");
+    console.log("\n\n ✅ Карта сайта создана \n\n\n");
 
     cb();
   });
