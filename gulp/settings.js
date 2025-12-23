@@ -177,7 +177,6 @@ export let paths = {
     htmlFiles: source_folder + "/",
     html: [source_folder + "/*.html", "!" + source_folder + "/_*.html"],
     css: [source_folder + "/assets/sass/common.sass", source_folder + "/assets/sass/components.sass", source_folder + "/assets/sass/blocks.sass"],
-
     cssLibs: source_folder + "/assets/libs/css/",
     cssLibsFiles: source_folder + "/assets/libs/css/*.css",
     cssvariables: source_folder + "/assets/sass/all/_variables.sass",
@@ -189,7 +188,6 @@ export let paths = {
     jsLibs: source_folder + "/assets/libs/js/",
     jsLibsFiles: source_folder + "/assets/libs/js/*.js",
     img: [source_folder + "/assets/img/**/*.{jpg,jpeg,png,svg,gif,json,ico,webp,mp4,mp3,m4a,pdf}", "!" + source_folder + "/assets/img/resize/**/*.*"],
-    imgResize: source_folder + "/assets/img/resize/",
     fonts: source_folder + "/assets/fonts/*.{woff,woff2}",
     fontcss: source_folder + "/assets/css/fonts.css",
     fontsDir: source_folder + "/assets/fonts/",

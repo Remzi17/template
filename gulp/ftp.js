@@ -1,5 +1,5 @@
 import gulp from "gulp";
-import { project_folder, template, isBuild, concatLibs } from "./settings.js";
+import { project_folder, template, isBuild, isDeploy, concatLibs } from "./settings.js";
 import gutil from "gulp-util";
 import ftp from "vinyl-ftp";
 import cheerio from "gulp-cheerio";

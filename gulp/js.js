@@ -2,17 +2,16 @@ import gulp from "gulp";
 const { src, dest } = gulp;
 
 import { paths, isBuild, jsBundler, concatLibs } from "./settings.js";
+import { trackFile } from "./statistics/statistics.js";
 import browsersync from "browser-sync";
+import esbuild from "esbuild";
+import * as rollupJs from "rollup";
+import { configs } from "../rollup.config.js";
 import concat from "gulp-concat";
 import gulpif from "gulp-if";
 import terser from "gulp-terser";
 import beautify from "gulp-beautify";
-import esbuild from "esbuild";
-import * as rollupJs from "rollup";
-import { configs } from "../rollup.config.js";
-// =======================
-// JS LIBS
-// =======================
+
 export function jsLibs() {
   return src(paths.src.jsLibsFiles)
     .pipe(gulpif(concatLibs, concat("vendor.js")))
@@ -26,7 +25,7 @@ export async function js() {
 
   if (jsBundler === "esbuild") {
     await esbuild.build({
-      entryPoints: ["src/assets/js/script.js"],
+      entryPoints: [paths.src.mainJs],
       bundle: true,
       outfile: paths.build.js + "script.js",
       format: "iife",
@@ -53,18 +52,15 @@ export async function js() {
           space_in_paren: false,
         })
       )
-      .pipe(dest(paths.build.js))
-      .pipe(isDev ? browsersync.stream() : browsersync.reload());
+      .pipe(dest(paths.build.js));
   } else if (jsBundler === "rollup") {
     for (const config of configs) {
       const bundle = await rollupJs.rollup(config);
       await bundle.write(config.output);
-    }
 
-    if (isDev) {
-      browsersync.stream();
-    } else {
-      browsersync.reload();
+      if (config.input) {
+        // trackFile(config.input);
+      }
     }
   } else {
     throw new Error(`Unknown jsBundler: ${jsBundler}`);

@@ -1,6 +1,3 @@
-// ====================
-// ⏱ Performance metrics
-// ====================
 const perf = {
   start: Date.now(),
   ready: null,
@@ -21,13 +18,11 @@ const { series, parallel } = gulp;
 
 import del from "del";
 import browsersync from "browser-sync";
-import cache from "gulp-cached";
-import remember from "gulp-remember";
 import fs from "fs";
 import path from "path";
 import { css, cssLibs, cssBlocks, cssComponents, cssCommon } from "./gulp/css.js";
 
-import { paths, isDeploy, isDev, isBuild } from "./gulp/settings.js";
+import { paths, isDev, isBuild } from "./gulp/settings.js";
 
 import { html } from "./gulp/html.js";
 import { images } from "./gulp/images.js";
@@ -37,10 +32,9 @@ import { svg } from "./gulp/svg.js";
 import { jsLibs, js } from "./gulp/js.js";
 import { temp } from "./gulp/functions.js";
 
-// ====================
-// 📊 Статистика
-// ====================
 import { startSession, endSession, trackFile, buildStartTimer, buildEndTimer, showStats } from "./gulp/statistics/statistics.js";
+
+startSession();
 
 function reload(done) {
   browsersync.reload();
@@ -50,6 +44,10 @@ function reload(done) {
 function watchFiles() {
   const onChange = (filePath) => {
     if (!filePath) return;
+
+    console.log("222");
+
+    trackFile(filePath);
 
     if (filePath.endsWith(".html")) perf.lastChange.html = Date.now();
     else if (/\.(sass|scss|css)$/.test(filePath)) perf.lastChange.css = Date.now();
@@ -94,16 +92,10 @@ function watchFiles() {
   gulp.watch(paths.watch.fontcss, series(fontcss, reload));
 }
 
-// ====================
-// 🧹 Clean
-// ====================
 function clean() {
   return del(paths.clean);
 }
 
-// ====================
-// 🌐 BrowserSync + Dashboard
-// ====================
 function browserSync(done) {
   browsersync.init(
     {
@@ -159,9 +151,34 @@ function measure(task, type) {
   };
 }
 
-const dev = series(temp, clean, parallel(html, js, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fonts, fontcss));
+const dev = series(
+  (done) => {
+    buildStartTimer();
+    done();
+  },
+  temp,
+  clean,
+  parallel(html, js, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fonts, fontcss),
+  (done) => {
+    buildEndTimer();
+    done();
+  }
+);
 
-const build = series(temp, clean, js, parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss, deployHtml, deployCss, deployJs));
+const build = series(
+  (done) => {
+    buildStartTimer();
+    done();
+  },
+  temp,
+  clean,
+  js,
+  parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss, deployHtml, deployCss, deployJs),
+  (done) => {
+    buildEndTimer();
+    done();
+  }
+);
 
 export const watch = parallel(isDev ? dev : build, watchFiles, browserSync);
 
@@ -182,9 +199,6 @@ export const statsBuild = (done) => {
   done();
 };
 
-// ====================
-// 🛑 Завершение сессии
-// ====================
 process.on("SIGINT", () => {
   endSession();
   process.exit();
