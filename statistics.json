@@ -299,12 +299,22 @@
       "date": "24.12.2025",
       "start": 1766575111357,
       "end": 1766575111357
+    },
+    {
+      "date": "24.12.2025",
+      "start": 1766586337426,
+      "end": 1766586337426
+    },
+    {
+      "date": "24.12.2025",
+      "start": 1766587501775,
+      "end": 1766587501775
     }
   ],
   "files": {
     "style.sass": 2,
     "index.html": 6,
-    "_footer.sass": 3,
+    "_footer.sass": 7,
     "script.js": 14,
     "showmore.js": 2,
     "fixedmenu.js": 1,
@@ -312,7 +322,7 @@
     "_news.sass": 1,
     "_header.sass": 10,
     "components.sass": 4,
-    "head.html": 1,
+    "head.html": 2,
     "common.sass": 8
   },
   "builds": [],
