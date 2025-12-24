@@ -6,5 +6,3 @@ import "./components.js";
 //
 //
 // Общие скрипты
-
-console.log("2");

@@ -284,17 +284,36 @@
       "date": "23.12.2025",
       "start": 1766505010812,
       "end": 1766505010812
+    },
+    {
+      "date": "23.12.2025",
+      "start": 1766513453402,
+      "end": 1766513453402
+    },
+    {
+      "date": "24.12.2025",
+      "start": 1766575012125,
+      "end": 1766575012125
+    },
+    {
+      "date": "24.12.2025",
+      "start": 1766575111357,
+      "end": 1766575111357
     }
   ],
   "files": {
     "style.sass": 2,
     "index.html": 6,
     "_footer.sass": 3,
-    "script.js": 12,
+    "script.js": 14,
     "showmore.js": 2,
     "fixedmenu.js": 1,
     "_about.sass": 3,
-    "_news.sass": 1
+    "_news.sass": 1,
+    "_header.sass": 10,
+    "components.sass": 4,
+    "head.html": 1,
+    "common.sass": 8
   },
   "builds": [],
   "sizes": [],

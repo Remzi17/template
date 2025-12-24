@@ -20,7 +20,6 @@ export function images(done) {
     .pipe(dest(paths.build.img));
 
   return mergeStream(webpStream, avifStream).on("finish", () => {
-    console.log("✅ Все изображения готовы!");
     browsersync.reload();
     done();
   });
