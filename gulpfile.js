@@ -1,18 +1,3 @@
-const perf = {
-  start: Date.now(),
-  ready: null,
-  lastChange: {
-    html: null,
-    css: null,
-    js: null,
-  },
-};
-
-const logTime = (label, time) => {
-  const ms = time.toFixed(0);
-  console.log(`⏱ ${label}: ${ms} ms`);
-};
-
 import gulp from "gulp";
 const { series, parallel } = gulp;
 
@@ -45,8 +30,6 @@ function watchFiles() {
   const onChange = (filePath) => {
     if (!filePath) return;
 
-    console.log("222");
-
     trackFile(filePath);
 
     if (filePath.endsWith(".html")) perf.lastChange.html = Date.now();
@@ -54,33 +37,27 @@ function watchFiles() {
     else if (filePath.endsWith(".js")) perf.lastChange.js = Date.now();
   };
 
-  gulp.watch(paths.watch.html, series(html, measure(html, "html"), reload)).on("change", onChange);
-
-  gulp.watch(paths.watch.js, series(js, measure(js, "js"), reload)).on("change", onChange);
+  gulp.watch(paths.watch.html, series(html, reload)).on("change", onChange);
+  gulp.watch(paths.watch.js, series(js, reload)).on("change", onChange);
 
   const entryFiles = [paths.src.sass + "blocks.sass", paths.src.sass + "components.sass", paths.src.sass + "common.sass"];
-
   const partials = [paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
-
   const sharedSass = [paths.src.sass + "all/**/*.sass", paths.src.sass + "_*.sass"];
 
   if (!isBuild) {
     entryFiles.forEach((file) => {
       const task = file.includes("blocks") ? cssBlocks : file.includes("components") ? cssComponents : cssCommon;
-
-      gulp.watch(file, series(task, measure(task, "css"))).on("change", onChange);
+      gulp.watch(file, series(task)).on("change", onChange);
     });
 
     partials.forEach((pattern) => {
       const task = pattern.includes("blocks") ? cssBlocks : pattern.includes("components") ? cssComponents : cssCommon;
-
-      gulp.watch(pattern, series(task, measure(task, "css"))).on("change", onChange);
+      gulp.watch(pattern, series(task)).on("change", onChange);
     });
 
     gulp.watch(sharedSass, series(parallel(cssCommon, cssComponents, cssBlocks))).on("change", onChange);
   } else {
     const allSass = [paths.src.sass + "*.sass", paths.src.sass + "all/**/*.sass", paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
-
     gulp.watch(allSass, series(css, reload)).on("change", onChange);
   }
 
@@ -97,58 +74,38 @@ function clean() {
 }
 
 function browserSync(done) {
-  browsersync.init(
-    {
-      server: {
-        baseDir: paths.build.html,
-      },
-      middleware: [
-        (req, res, next) => {
-          if (req.url === "/__stats") {
-            res.setHeader("Content-Type", "text/html");
-            res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/index.html")));
-            return;
-          }
-
-          if (req.url === "/__stats/dashboard.js") {
-            res.setHeader("Content-Type", "application/javascript");
-            res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/dashboard.js")));
-            return;
-          }
-
-          if (req.url === "/__stats/data") {
-            res.setHeader("Content-Type", "application/json");
-            res.end(fs.readFileSync(path.resolve("./statistics.json")));
-            return;
-          }
-
-          next();
-        },
-      ],
-      notify: false,
-      open: true,
+  browsersync.init({
+    server: {
+      baseDir: paths.build.html,
     },
-    () => {
-      perf.ready = Date.now();
-      logTime("Gulp start → BrowserSync ready", perf.ready - perf.start);
-    }
-  );
+    middleware: [
+      (req, res, next) => {
+        if (req.url === "/__stats") {
+          res.setHeader("Content-Type", "text/html");
+          res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/index.html")));
+          return;
+        }
+
+        if (req.url === "/__stats/dashboard.js") {
+          res.setHeader("Content-Type", "application/javascript");
+          res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/dashboard.js")));
+          return;
+        }
+
+        if (req.url === "/__stats/data") {
+          res.setHeader("Content-Type", "application/json");
+          res.end(fs.readFileSync(path.resolve("./statistics.json")));
+          return;
+        }
+
+        next();
+      },
+    ],
+    notify: false,
+    open: true,
+  });
 
   done();
-}
-
-function measure(task, type) {
-  return function measuredTask(done) {
-    const start = perf.lastChange[type];
-    const end = Date.now();
-
-    if (start) {
-      logTime(`${type.toUpperCase()} update`, end - start);
-      perf.lastChange[type] = null;
-    }
-
-    done();
-  };
 }
 
 const dev = series(

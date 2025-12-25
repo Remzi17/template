@@ -322,19 +322,6 @@ sup
 		img, svg
 			scale: 1.08
 
-=underline
-	text-decoration: underline
-	text-decoration-skip-ink: none
-	text-underline-offset: .1lh
-	transition: color .3s, text-decoration-color .3s
-
-=hover-underline
-	+underline
-	text-decoration-color: transparent
-
-	+hov
-		text-decoration-color: currentColor
-
 .underline
 	+underline
 
@@ -354,7 +341,6 @@ sup
 [data-scrolling]
 	* 
 		user-select: none 
-
 
 .flex
 	display: flex
@@ -407,16 +393,6 @@ sup
 	&.show
 		max-height: 500px
 		opacity: 1
-
-=swiper-controls
-	&.swiper
-		&-pagination,
-		&-navigation
-			display: none
-
-=hide-swiper
-	display: none
-	+swiper-controls
 
 .hidden
 	+hidden

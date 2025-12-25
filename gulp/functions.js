@@ -192,7 +192,10 @@ function cleanupTemp({ keepLast = 3, step = 3, max = 9 } = {}) {
 
   folders.forEach((f) => {
     if (!keep.has(f.name)) {
-      fs.rmSync(path.join(dir, f.name), { recursive: true, force: true });
+      fs.rmSync(path.join(dir, f.name), {
+        recursive: true,
+        force: true,
+      });
     }
   });
 }
@@ -293,254 +296,162 @@ const fonts = () => {
 //
 // Создание файлов
 
-const create = () => {
-  // Создание html файлов
-  let htmlFiles = getFiles.html.sort();
+const cleanDir = (dir, allowed, ignore = []) => {
+  const allowedSet = new Set(allowed);
 
-  for (let i = 0; i < htmlFiles.length; i++) {
-    // Если файл ранее не создан, то создать
-    if (!fs.existsSync(paths.src.htmlFiles + htmlFiles[i] + ".html") && htmlFiles[i]) {
-      // Создать
-      fs.open(paths.src.htmlFiles + htmlFiles[i] + ".html", "w", (err) => {
-        if (err) throw err;
-      });
-
-      // Добавление содержимого в файл
-      fs.appendFile(paths.src.htmlFiles + htmlFiles[i] + ".html", `@@include('assets/html/head.html', {\n` + '"class" : \'" "\'\n})' + `\n@@include("assets/html/crumbs.html", {\n"list": [\n{\n"title":"Контакты",\n"link":'"#"'\n},\n]\n})` + ` \n\n\n\n@@include('assets/html/foot.html')`, (err) => {
-        if (err) throw err;
-      });
+  fs.readdirSync(dir).forEach((file) => {
+    const name = file.split(".")[0].replace(/^_/, "");
+    if (!allowedSet.has(name) && !ignore.includes(name)) {
+      fs.unlinkSync(path.join(dir, file));
     }
+  });
+};
+
+const appendImportsToBottom = (filePath, imports) => {
+  if (!fs.existsSync(filePath)) return;
+
+  const content = fs.readFileSync(filePath, "utf8");
+
+  const lines = content.split("\n");
+
+  // оставляем всё до первого динамического @import
+  const cleaned = [];
+  for (const line of lines) {
+    if (/^@import\s+["'](_|components\/_)/.test(line.trim())) break;
+    cleaned.push(line);
   }
 
-  // sass файлы
-  fs.writeFile(paths.src.css, "", cb);
+  const base = cleaned.join("\n").trimEnd();
 
-  fs.readdir(paths.src.sass, function (err, items) {
-    let files = getFiles.sass.sort();
-    let components = getFiles.components.sort();
+  const result = imports.length ? `${base}\n\n${imports.join("\n")}\n` : `${base}\n`;
 
-    // Добавление в sass файл импортов
-    fs.appendFile(paths.src.css, `@use 'sass:math'\n@use 'sass:color'\n\n@import "all/_mixins"\n@import "all/_variables"\n@import "all/_default"\n\n`, cb);
+  fs.writeFileSync(filePath, result);
+};
 
-    // Добавление в sass файл стандартных импортов
-    fs.appendFile(paths.src.css, `@import "components/_burger"\n\n@import "_interface"\n@import "_form"\n@import "_popup"\n\n@import "_header"\n@import "_footer"\n\n`, cb);
+const create = () => {
+  /* ---------------- HTML ---------------- */
+  const htmlTpl = `@@include('assets/html/head.html', {
+"class": ""
+})
+@@include("assets/html/crumbs.html", {
+"list": [{
+"title":"Контакты",
+"link":"#"
+}]
+})
 
-    // Добавление в sass файл импортов компонентов
-    let createFiles = false;
-    let currentSassFile;
+@@include('assets/html/foot.html')`;
 
-    for (let i = 0; i < components.length; i++) {
-      let fileName = components[i].split(".");
-      fileName = fileName[0];
-
-      fs.appendFile(paths.src.css, `@import "components/_` + fileName + `" \n`, cb);
-
-      if (i == components.length - 1) {
-        createFiles = true;
-      }
-    }
-
-    // Удаление неиспользуемых sass компонентов
-    if (replaceScripts) {
-      fs.readdir(paths.src.sassComponents, (err, files) => {
-        files.forEach((file) => {
-          currentSassFile = file.split(".")[0].split("_")[1];
-          let removeSassFile = true;
-
-          for (let index = 0; index < components.length; index++) {
-            if (currentSassFile == components[index]) {
-              removeSassFile = false;
-              break;
-            } else {
-              removeSassFile = true;
-            }
-          }
-
-          // Если не совпадают, то удалить этот файл
-          if (removeSassFile && currentSassFile != "burger") {
-            fs.unlink(paths.src.sassComponents + file, cb);
-          }
-        });
-      });
-    }
-
-    // Создание файлов
-    for (let i = 0; i < items.length; i++) {
-      // Если файл ранее не создан, то создать
-      if (!fs.existsSync(paths.src.sass + "_" + files[i] + ".sass") && files[i]) {
-        // Создать
-        fs.open(paths.src.sass + "_" + files[i] + ".sass", "w", (err) => {
-          if (err) throw err;
-        });
-
-        // Добавление содержимого в файл
-        fs.appendFile(paths.src.sass + "_" + files[i] + ".sass", `//.` + files[i] + `\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n`, (err) => {
-          if (err) throw err;
-        });
-      }
-    }
-
-    // Добавление импортов
-    if (createFiles) {
-      for (let i = 0; i < files.length; i++) {
-        let fileName = files[i].split(".");
-        fileName = fileName[0];
-
-        if (fileName == "style" || fileName == "fonts" || fileName == "all" || fileName == "components") {
-          continue;
-        } else {
-          fs.appendFile(paths.src.css, `@import "_` + fileName + `" \n`, cb);
-        }
-      }
+  getFiles.html.sort().forEach((name) => {
+    const file = `${paths.src.htmlFiles}${name}.html`;
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, htmlTpl);
     }
   });
 
-  // js скрипты
+  /* ---------------- SASS: components ---------------- */
+
+  const componentsImports = getFiles.components.sort().map((name) => `@import "components/_${name}"`);
+
+  appendImportsToBottom(`${source_folder}/assets/sass/components.sass`, componentsImports);
+
+  cleanDir(paths.src.sassComponents, getFiles.components, ["burger"]);
+
+  /* ---------------- SASS: blocks ---------------- */
+
+  const skip = new Set(["style", "fonts", "all", "components"]);
+
+  const blocksImports = getFiles.sass
+    .filter((name) => !skip.has(name))
+    .sort()
+    .map((name) => `@import "_${name}"`);
+
+  appendImportsToBottom(`${source_folder}/assets/sass/blocks.sass`, blocksImports);
+
+  /* ---------------- SASS files ---------------- */
+
+  getFiles.sass.forEach((name) => {
+    const file = `${paths.src.sass}_${name}.sass`;
+    if (!fs.existsSync(file)) {
+      fs.writeFileSync(file, `//.${name}\n`);
+    }
+  });
+
+  /* ---------------- JS components ---------------- */
 
   if (replaceScripts) {
-    let componentsFile = source_folder + "/assets/js/components.js";
+    const js = getFiles.jsScripts;
 
-    fs.writeFile(componentsFile, "", cb);
-    let jsScripts = getFiles.jsScripts;
+    const imports = js.map((name) => `import { ${name} } from './components/${name}'`).join("\n");
 
-    for (let i = 0; i < jsScripts.length; i++) {
-      let jsFileName = jsScripts[i].split(".");
-      jsFileName = jsFileName[0];
+    const calls = js.map((name) => `${name}()`).join("\n");
 
-      fs.appendFile(componentsFile, `import { ` + jsFileName + ` } from './components/` + jsFileName + `';\n`, cb);
+    fs.writeFileSync(`${source_folder}/assets/js/components.js`, `${imports}\n\n${calls}\n`);
 
-      i == jsScripts.length - 1 ? fs.appendFile(componentsFile, "\n", cb) : "";
-    }
-
-    for (let i = 0; i < jsScripts.length; i++) {
-      let jsFileName = jsScripts[i].split(".");
-      jsFileName = jsFileName[0];
-
-      fs.appendFile(componentsFile, `${jsFileName}();\n`, cb);
-    }
-
-    // Удаление неиспользуемых js компонентов
-    if (replaceScripts) {
-      fs.readdir(paths.src.jsComponents, (err, files) => {
-        files.forEach((file) => {
-          currentJsFile = file.split(".")[0];
-          removeJsFile = true;
-
-          for (let index = 0; index < jsScripts.length; index++) {
-            if (currentJsFile == jsScripts[index]) {
-              removeJsFile = false;
-              break;
-            } else {
-              removeJsFile = true;
-            }
-          }
-
-          // Если не совпадают, то удалить этот файл
-          if (removeJsFile && currentJsFile != "variable") {
-            fs.unlink(paths.src.jsComponents + file, cb);
-          }
-        });
-      });
-    }
+    cleanDir(paths.src.jsComponents, js, ["variable"]);
   }
 
-  // js библиотеки
-  fs.readdir(paths.src.jsLibs, function (err, items) {
-    let jsLibs = getFiles.jsLibs.sort();
-    let currentJsFile, removeJsLibs;
+  /* ---------------- JS libs ---------------- */
 
-    // Перебор файлов из папки libs/js
-    for (let i = 0; i < items.length; i++) {
-      currentJsFile = items[i].split(".")[0];
+  cleanDir(paths.src.jsLibs, getFiles.jsLibs);
 
-      removeJsLibs = true;
+  /* ---------------- CSS libs ---------------- */
 
-      // Перебор файлов из переменной getFiles.jsLibs
-      for (let index = 0; index < jsLibs.length; index++) {
-        if (currentJsFile == jsLibs[index]) {
-          removeJsLibs = false;
-          break;
-        } else {
-          removeJsLibs = true;
-        }
-      }
+  cleanDir(paths.src.cssLibs, getFiles.cssLibs);
 
-      // Если не совпадают, то удалить этот файл
-      if (removeJsLibs) {
-        fs.unlink(paths.src.jsLibs + items[i], cb);
-      }
-    }
-  });
+  /* ---------------- CSS variables ---------------- */
 
-  // css библиотеки
-  fs.readdir(paths.src.cssLibs, function (err, items) {
-    let cssLibs = getFiles.cssLibs.sort();
-    let currentCssFile, removeCssLibs;
+  const v = variables;
 
-    // Перебор файлов из папки libs/css
-    for (let i = 0; i < items.length; i++) {
-      currentCssFile = items[i].split(".")[0];
+  fs.writeFileSync(
+    paths.src.cssvariables,
+    `$active: ${v.active}
+$gray: ${v.gray}
+$text: ${v.text}
+$bg: ${v.bg}
+$border-radius: ${v.borderRadius}
 
-      removeCssLibs = true;
+$minWidth: ${v.minWidth}
+$maxWidth: ${v.maxWidth}
+$containerWidth: ${v.containerWidth}
+$container: ${v.container}
+$firstBreakpoint: ${v.firstBreakpoint}
+$section_gap: ${v.section_gap}
+$burgerMedia: ${v.burgerMedia}
 
-      // Перебор файлов из переменной getFiles.cssLibs
-      for (let index = 0; index < cssLibs.length; index++) {
-        if (currentCssFile == cssLibs[index]) {
-          removeCssLibs = false;
-          break;
-        } else {
-          removeCssLibs = true;
-        }
-      }
+$font: '${v.font}'`
+  );
 
-      // Если не совпадают, то удалить этот файл
-      if (removeCssLibs) {
-        fs.unlink(paths.src.cssLibs + items[i], cb);
-      }
-    }
-  });
-
-  // css переменные
-  fs.writeFile(paths.src.cssvariables, "", cb);
-
-  fs.appendFile(paths.src.cssvariables, `$active: ` + variables.active + `\n$gray: ` + variables.gray + `\n$text: ` + variables.text + `\n$bg: ` + variables.bg + `\n$border-radius: ` + variables.borderRadius + `\n\n$minWidth: ` + variables.minWidth + `\n$maxWidth: ` + variables.maxWidth + `\n$containerWidth: ` + variables.containerWidth + `\n$container: ` + variables.container + `\n$firstBreakpoint: ` + variables.firstBreakpoint + `\n$section_gap: ` + variables.section_gap + ` \n$burgerMedia: ` + variables.burgerMedia + `\n\n$font: '` + variables.font + `'`, cb);
+  /* ---------------- Объединения библиотек ---------------- */
 
   if (!concatLibs) {
-    // css
     const cssFiles = globSync(paths.src.cssLibsFiles);
+
     const styles = [...cssFiles]
       .reverse()
-      .map((file, index) => {
-        const cssFileName = path.basename(file);
-        const indent = index === 0 ? "" : "\t";
-
-        return `${indent}<link rel="preload" href="assets/css/${cssFileName}" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">`;
+      .map((file, i) => {
+        const name = path.basename(file);
+        const indent = i === 0 ? "" : "\t";
+        return `${indent}<link rel="preload" href="assets/css/${name}" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">`;
       })
       .join("\n");
 
     const headPath = "src/assets/html/head.html";
-    let headContent = fs.readFileSync(headPath, "utf8");
+    let head = fs.readFileSync(headPath, "utf8");
+    head = head.replace(/<link rel="preload" href="assets\/css\/vendor\.css"[\s\S]*?>/g, styles);
+    fs.writeFileSync(headPath, head);
 
-    headContent = headContent.replace(/<link rel="preload" href="assets\/css\/vendor.css" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">/g, styles);
-
-    fs.writeFileSync(headPath, headContent);
-
-    // js
     const jsFiles = globSync(paths.src.jsLibsFiles);
+
     const scripts = [...jsFiles]
       .reverse()
-      .map((file) => {
-        const fileName = path.basename(file);
-        return `<script src="assets/js/${fileName}" defer></script>`;
-      })
+      .map((file) => `<script src="assets/js/${path.basename(file)}" defer></script>`)
       .join("\n");
 
     const footPath = "src/assets/html/foot.html";
-    let footContent = fs.readFileSync(footPath, "utf8");
-
-    footContent = footContent.replace(/<script src="assets\/js\/vendor\.js" defer><\/script>/g, scripts);
-
-    fs.writeFileSync(footPath, footContent);
+    let foot = fs.readFileSync(footPath, "utf8");
+    foot = foot.replace(/<script src="assets\/js\/vendor\.js" defer><\/script>/g, scripts);
+    fs.writeFileSync(footPath, foot);
   }
 };
 
@@ -600,28 +511,28 @@ function sitemap(cb) {
 
   const sitemapContent = `
 @@include('assets/html/head.html', {
-	"class": '""'
+  "class": '""'
 })
 @@include("assets/html/crumbs.html", {
-	"list": [
-		{
-			"title": "Карта сайта",
-			"link": "'#'"
-		}
-	]
+  "list": [
+    {
+      "title": "Карта сайта",
+      "link": "'#'"
+    }
+  ]
 })
 
 <!-- Карта сайта -->
 <div class="section">
-	<div class="container">
-		<div class="text-block">
-			<ul>
-				${links}
-				<li><a data-modal="popup-call">Заказать звонок</a></li>
-				<li><a data-modal="popup-thank">Спасибо</a></li>
-			</ul>
-		</div>
-	</div>
+  <div class="container">
+    <div class="text-block">
+      <ul>
+        ${links}
+        <li><a data-modal="popup-call">Заказать звонок</a></li>
+        <li><a data-modal="popup-thank">Спасибо</a></li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 @@include('assets/html/foot.html')

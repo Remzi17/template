@@ -8,9 +8,11 @@ import browsersync from "browser-sync";
 import notify from "gulp-notify";
 import gulpif from "gulp-if";
 import concat from "gulp-concat";
+import group_media from "gulp-group-css-media-queries";
 import autoprefixer from "gulp-autoprefixer";
 import csso from "gulp-csso";
 import uncss from "gulp-uncss";
+import beautify from "gulp-beautify";
 import gulpSass from "gulp-sass";
 import * as dartSass from "sass";
 
@@ -85,9 +87,22 @@ export function cssBlocks() {
 export function css() {
   return src([paths.src.sass + "common.sass", paths.src.sass + "components.sass", paths.src.sass + "blocks.sass"])
     .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
-    .pipe(autoprefixer({ cascade: false }))
-    .pipe(csso())
+    .pipe(
+      gulpif(
+        isBuild,
+        autoprefixer({
+          overrideBrowserslist: ["ff >= 120", "chrome >= 120", "ios >= 14"],
+          cascade: false,
+        })
+      )
+    )
+    .pipe(
+      csso({
+        restructure: false,
+      })
+    )
     .pipe(concat("style.css"))
+    .pipe(group_media())
     .pipe(gulp.dest(paths.build.css));
 }
 
@@ -136,6 +151,7 @@ export function deadCss(done) {
   function extractClasses(cssContent) {
     return [...new Set(Array.from(cssContent.matchAll(/\.([_a-zA-Z][_a-zA-Z0-9-]*)/g)).map((m) => m[1]))];
   }
+
   const cssClasses = extractClasses(cssContent);
 
   let htmlContent = "";
