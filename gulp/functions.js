@@ -271,11 +271,11 @@ const fonts = () => {
 
               const fontFace = `
 @font-face {
-  font-family: '${fontname.split("-")[0]}'
-  src: url('../fonts/${fontname}.woff2')
-  font-weight: ${weight}
-  font-style: normal
-  font-display: block
+  font-family: '${fontname.split("-")[0]}';
+  src: url('../fonts/${fontname}.woff2');
+  font-weight: ${weight};
+  font-style: normal;
+  font-display: block;
 }
 `;
 
@@ -289,6 +289,8 @@ const fonts = () => {
     });
   });
 };
+
+gulp.task("fonts", fonts);
 
 //
 //

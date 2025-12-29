@@ -1,5 +1,7 @@
 import gulp from "gulp";
-import { project_folder, template, isBuild, isDeploy, concatLibs } from "./settings.js";
+import path from "path";
+import fs from "fs";
+import { project_folder, template, isDeploy, concatLibs, paths } from "./settings.js";
 import gutil from "gulp-util";
 import ftp from "vinyl-ftp";
 import cheerio from "gulp-cheerio";
@@ -53,6 +55,8 @@ export const cleanScripts = () => {
       )
       .pipe(gulp.dest(project_folder));
   }
+
+  return Promise.resolve();
 };
 
 let domen;
@@ -63,7 +67,6 @@ export function getLink() {
   } else {
     return "/www/" + project_folder + domen;
   }
-  // return '/www/test.osmanovremzi.ru/wp-content/themes/main/';
 }
 
 if (template == "siteup") {
@@ -99,8 +102,8 @@ if (template == "siteup") {
 }
 
 function buildOnly() {
-  if (!isBuild) {
-    console.warn(`\n\n\n\n Таск доступен только в build режиме. Запусти: gulp --build\n\n\n\n\n\n`);
+  if (!fs.existsSync(path.join(paths.build.css, "style.css"))) {
+    console.warn(`\n\n\n\n ❌ Таск доступен только в build режиме. Запусти: gulp --build\n\n\n\n\n\n`);
     return false;
   }
   return true;
@@ -109,31 +112,27 @@ function buildOnly() {
 const deploy = () => {
   if (!buildOnly()) return Promise.resolve();
 
-  return cleanScripts().on("end", () => {
-    const globs = [project_folder + "/assets/css/style.css", project_folder + "/assets/js/script.js", project_folder + "/*.html"];
+  const globs = [project_folder + "/assets/css/style.css", project_folder + "/assets/js/script.js", project_folder + "/*.html"];
 
-    return gulp
-      .src(globs, {
-        base: project_folder,
-        buffer: false,
-      })
-      .pipe(conn.dest(getLink()));
-  });
+  return gulp
+    .src(globs, {
+      base: project_folder,
+      buffer: false,
+    })
+    .pipe(conn.dest(getLink()));
 };
 
 const deployAll = () => {
   if (!buildOnly()) return Promise.resolve();
 
-  return cleanScripts().on("end", () => {
-    let globs = [project_folder + "/**/*.*", project_folder + "/*.*"];
+  let globs = [project_folder + "/**/*.*", project_folder + "/*.*"];
 
-    return gulp
-      .src(globs, {
-        base: project_folder,
-        buffer: false,
-      })
-      .pipe(conn.dest(getLink()));
-  });
+  return gulp
+    .src(globs, {
+      base: project_folder,
+      buffer: false,
+    })
+    .pipe(conn.dest(getLink()));
 };
 
 const deploySprite = () => {
@@ -214,6 +213,7 @@ const deployJs = () => {
 
   if (!isDeploy) return Promise.resolve();
   let globs = [project_folder + "/assets/js/*.js", "!" + project_folder + "/assets/js/vendor.js"];
+
   return gulp
     .src(globs, {
       base: project_folder,
@@ -223,8 +223,8 @@ const deployJs = () => {
     .pipe(conn.dest(getLink()));
 };
 
-gulp.task("deploy", deploy);
-gulp.task("deploy-all", deployAll);
+gulp.task("deploy", gulp.series(cleanScripts, deploy));
+gulp.task("deploy-all", gulp.series(cleanScripts, deployAll));
 gulp.task("deploy-sprite", deploySprite);
 gulp.task("deploy-libs", deployLibs);
 gulp.task("deploy-images", deployImages);

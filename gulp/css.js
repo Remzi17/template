@@ -12,7 +12,6 @@ import group_media from "gulp-group-css-media-queries";
 import autoprefixer from "gulp-autoprefixer";
 import csso from "gulp-csso";
 import uncss from "gulp-uncss";
-import beautify from "gulp-beautify";
 import gulpSass from "gulp-sass";
 import * as dartSass from "sass";
 
@@ -20,6 +19,7 @@ const sass = gulpSass(dartSass);
 
 function translateError(msg) {
   const translations = [
+    ["Tabs and spaces may not be mixed", "Табуляции и пробелы нельзя смешивать"],
     ["Declarations may only be used within style rules", "Объявления допустимы только внутри CSS-правил"],
     ["Expected identifier", "Ожидался идентификатор"],
     ["Invalid CSS after", "Неверный CSS после"],
@@ -88,13 +88,10 @@ export function css() {
   return src([paths.src.sass + "common.sass", paths.src.sass + "components.sass", paths.src.sass + "blocks.sass"])
     .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
     .pipe(
-      gulpif(
-        isBuild,
-        autoprefixer({
-          overrideBrowserslist: ["ff >= 120", "chrome >= 120", "ios >= 14"],
-          cascade: false,
-        })
-      )
+      autoprefixer({
+        overrideBrowserslist: ["ff >= 120", "chrome >= 120", "ios >= 14"],
+        cascade: false,
+      })
     )
     .pipe(
       csso({

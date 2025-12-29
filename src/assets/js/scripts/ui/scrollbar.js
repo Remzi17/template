@@ -1,4 +1,6 @@
-import { body, popup } from "../variables";
+import { body, popup, menu, menuActive } from "../variables";
+import { haveScroll } from "../core/checks";
+import { isSafari } from "./browser";
 
 //
 //

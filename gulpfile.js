@@ -3,12 +3,8 @@ const { series, parallel } = gulp;
 
 import del from "del";
 import browsersync from "browser-sync";
-import fs from "fs";
-import path from "path";
 import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gulp/css.js";
-
-import { paths, isDev, isBuild } from "./gulp/settings.js";
-
+import { paths, isDev, isBuild, isWp } from "./gulp/settings.js";
 import { html } from "./gulp/html.js";
 import { images } from "./gulp/images.js";
 import { fonts, fontcss } from "./gulp/fonts.js";
@@ -16,7 +12,6 @@ import { deployHtml, deployCss, deployJs } from "./gulp/ftp.js";
 import { svg } from "./gulp/svg.js";
 import { jsLibs, js } from "./gulp/js.js";
 import { temp } from "./gulp/functions.js";
-
 import { startSession, endSession, trackFile, buildStartTimer, buildEndTimer, showStats } from "./gulp/statistics/statistics.js";
 
 startSession();
@@ -31,10 +26,6 @@ function watchFiles() {
     if (!filePath) return;
 
     trackFile(filePath);
-
-    if (filePath.endsWith(".html")) perf.lastChange.html = Date.now();
-    else if (/\.(sass|scss|css)$/.test(filePath)) perf.lastChange.css = Date.now();
-    else if (filePath.endsWith(".js")) perf.lastChange.js = Date.now();
   };
 
   gulp.watch(paths.watch.html, series(html, reload)).on("change", onChange);
@@ -74,36 +65,21 @@ function clean() {
 }
 
 function browserSync(done) {
-  browsersync.init({
-    server: {
-      baseDir: paths.build.html,
-    },
-    middleware: [
-      (req, res, next) => {
-        if (req.url === "/__stats") {
-          res.setHeader("Content-Type", "text/html");
-          res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/index.html")));
-          return;
-        }
-
-        if (req.url === "/__stats/dashboard.js") {
-          res.setHeader("Content-Type", "application/javascript");
-          res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/dashboard.js")));
-          return;
-        }
-
-        if (req.url === "/__stats/data") {
-          res.setHeader("Content-Type", "application/json");
-          res.end(fs.readFileSync(path.resolve("./statistics.json")));
-          return;
-        }
-
-        next();
+  if (isWp) {
+    browsersync.init({
+      proxy: "http://localhost:8080",
+      notify: false,
+      open: true,
+    });
+  } else {
+    browsersync.init({
+      server: {
+        baseDir: paths.build.html,
       },
-    ],
-    notify: false,
-    open: true,
-  });
+      notify: false,
+      open: true,
+    });
+  }
 
   done();
 }

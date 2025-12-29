@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  wordpress:
+    build: ./docker/php
+    container_name: wp_local
+    ports:
+      - "8080:80"
+    environment:
+      NODE_ENV: ${NODE_ENV:-dev}
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wp_db
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_pass
+    volumes:
+      - ./wp/wp-content:/var/www/html/wp-content
+    depends_on:
+      - db
+
+  db:
+    image: mysql:8.0
+    container_name: wp_db_local
+    restart: always
+    environment:
+      MYSQL_DATABASE: wp_db
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_pass
+      MYSQL_ROOT_PASSWORD: root_pass
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

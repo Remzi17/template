@@ -6,6 +6,7 @@ export let jsBundler = "esbuild"; // rollup или esbuild
 export const isBuild = process.argv.includes("--build");
 export const isDev = !isBuild;
 export let unCSS = false;
+export let isWp = true;
 
 export let variables = {
   font: "Montserrat",
@@ -208,4 +209,18 @@ export let paths = {
 
 if (project_folder == "template") {
   replaceScripts = false;
+}
+
+if (isWp) {
+  paths.build = {
+    html: "wp/wp-content/themes/main/",
+    css: "wp/wp-content/themes/main/assets/css/",
+    js: "wp/wp-content/themes/main/assets/js/",
+    img: "wp/wp-content/themes/main/assets/img/",
+    fonts: "wp/wp-content/themes/main/assets/fonts/",
+    svgSprite: "wp/wp-content/themes/main/assets/img/",
+    srcHtml: source_folder + "/assets/",
+    srcCss: source_folder + "/assets/css/",
+    srcJs: source_folder + "/assets/js/",
+  };
 }
