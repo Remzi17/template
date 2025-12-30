@@ -2,9 +2,11 @@ import gulp from "gulp";
 import path from "path";
 import fs from "fs";
 import { project_folder, template, isDeploy, concatLibs, paths } from "./settings.js";
-import gutil from "gulp-util";
+import log from "fancy-log";
 import ftp from "vinyl-ftp";
 import cheerio from "gulp-cheerio";
+import dotenv from "dotenv";
+dotenv.config();
 
 export const cleanScripts = () => {
   if (!concatLibs) {
@@ -59,47 +61,51 @@ export const cleanScripts = () => {
   return Promise.resolve();
 };
 
-let domen;
-
 export function getLink() {
-  if (template == "wsp") {
-    return "/" + project_folder;
-  } else {
-    return "/www/" + project_folder + domen;
-  }
+  if (template === "wsp") return "/" + project_folder;
+  return "/www/" + project_folder + current.domen;
 }
 
-if (template == "siteup") {
-  domen = ".siteup.ru/";
+const hosts = {
+  siteup: {
+    domen: ".siteup.ru/",
+    ftp: {
+      host: process.env.FTP_HOST_SITEUP,
+      user: process.env.FTP_USER_SITEUP,
+      password: process.env.FTP_PASS_SITEUP,
+    },
+  },
+  wsp: {
+    domen: "verstka.demo-wsp.ru/",
+    ftp: {
+      host: process.env.FTP_HOST_WSP,
+      user: process.env.FTP_USER_WSP,
+      password: process.env.FTP_PASS_WSP,
+    },
+  },
+  default: {
+    domen: ".osmanovremzi.ru/",
+    ftp: {
+      host: process.env.FTP_HOST,
+      user: process.env.FTP_USER,
+      password: process.env.FTP_PASS,
+    },
+  },
+};
 
-  var conn = ftp.create({
-    host: "host.siteup.ru",
-    user: "osmanov",
-    password: "2Z0a5T8i",
-    parallel: 10,
-    log: gutil.log,
-  });
-} else if (template == "wsp") {
-  domen = "verstka.demo-wsp.ru/";
+const current = hosts[template] || hosts.default;
 
-  var conn = ftp.create({
-    host: "managem9.beget.tech",
-    user: "managem9_remzi",
-    password: "BaZSZLHV*B89",
-    parallel: 10,
-    log: gutil.log,
-  });
-} else {
-  domen = ".osmanovremzi.ru/";
-
-  var conn = ftp.create({
-    host: "ru5.link-host.net",
-    user: "remzi144_dev",
-    password: "hP1jU7gP8u",
-    parallel: 10,
-    log: gutil.log,
-  });
+if (!current.ftp.host || !current.ftp.user || !current.ftp.password) {
+  throw new Error("❌ FTP credentials not found. Check .env");
 }
+
+const conn = ftp.create({
+  host: current.ftp.host,
+  user: current.ftp.user,
+  password: current.ftp.password,
+  parallel: 10,
+  log,
+});
 
 function buildOnly() {
   if (!fs.existsSync(path.join(paths.build.css, "style.css"))) {
@@ -136,8 +142,6 @@ const deployAll = () => {
 };
 
 const deploySprite = () => {
-  if (!buildOnly()) return Promise.resolve();
-
   let globs = [project_folder + "/assets/img/sprite.svg"];
 
   return gulp
@@ -150,8 +154,6 @@ const deploySprite = () => {
 };
 
 const deployLibs = () => {
-  if (!buildOnly()) return Promise.resolve();
-
   let globs = [project_folder + "/assets/css/vendor.css", project_folder + "/assets/js/vendor.js"];
 
   return gulp
@@ -164,8 +166,6 @@ const deployLibs = () => {
 };
 
 const deployImages = () => {
-  if (!buildOnly()) return Promise.resolve();
-
   let globs = [project_folder + "/assets/img/**/*"];
 
   return gulp
@@ -178,8 +178,6 @@ const deployImages = () => {
 };
 
 const deployHtml = () => {
-  if (!buildOnly()) return Promise.resolve();
-
   if (!isDeploy) return Promise.resolve();
 
   let globs = [project_folder + "/*.html"];
@@ -209,8 +207,6 @@ const deployCss = () => {
 };
 
 const deployJs = () => {
-  if (!buildOnly()) return Promise.resolve();
-
   if (!isDeploy) return Promise.resolve();
   let globs = [project_folder + "/assets/js/*.js", "!" + project_folder + "/assets/js/vendor.js"];
 

@@ -1,0 +1,9 @@
+.DS_Store
+.vscode/
+.idea/
+*.log
+*.map
+.env
+.cache/
+.tmp/
+node_modules/

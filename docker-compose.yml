@@ -13,7 +13,7 @@ services:
       WORDPRESS_DB_USER: wp_user
       WORDPRESS_DB_PASSWORD: wp_pass
     volumes:
-      - ./wp/wp-content:/var/www/html/wp-content
+      - ./wp:/var/www/html # монтируем всю папку wp, а не только wp-content
     depends_on:
       - db
 

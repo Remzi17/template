@@ -35,6 +35,8 @@ function createMobileVersion(originalPath, width = 575) {
 }
 
 export function html() {
+  if (isWp) return Promise.resolve();
+
   return src(paths.src.html)
     .pipe(
       fileinclude({
@@ -52,37 +54,26 @@ export function html() {
         let content = file.contents.toString();
         content = content.replace(/<!-- not format -->/g, "");
 
-        console.log("\n=== FILE:", file.path, "===\n");
-
         const imgRegex = /<img\b[^>]*>/gi;
         const imgTags = content.match(imgRegex) || [];
-
-        console.log("IMG TAGS FOUND:", imgTags.length);
-
         const processQueue = [];
 
         imgTags.forEach((imgTag, index) => {
-          console.log(`\n[IMG ${index}] RAW:`, imgTag);
-
           const srcMatch = imgTag.match(/\bsrc="([^"]+\.(?:webp|png|jpg|jpeg))"/i);
           if (!srcMatch) {
-            console.log("  ❌ no src");
             return;
           }
 
           const imgSrc = srcMatch[1];
 
-          // новый универсальный разбор pic
           const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
           const picAttr = !!picMatch;
-          let picWidth = 575; // по умолчанию
+          let picWidth = 575;
+
           if (picMatch && picMatch[1]) {
             const w = parseInt(picMatch[1], 10);
             if (!isNaN(w)) picWidth = w;
           }
-
-          console.log("  src:", imgSrc);
-          console.log("  pic:", picAttr, "mobile width:", picWidth);
 
           const ext = path.extname(imgSrc);
           const base = path.basename(imgSrc, ext);
@@ -99,8 +90,6 @@ export function html() {
             }
           }
 
-          console.log("  foundPath:", foundPath);
-
           if (picAttr && foundPath) {
             processQueue.push(createMobileVersion(foundPath, picWidth));
           }
@@ -113,17 +102,16 @@ export function html() {
               if (!srcMatch) return imgTag;
 
               const imgSrc = srcMatch[1];
-
-              // разбор pic
               const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
               const picAttr = !!picMatch;
               let picWidth = 575;
+
               if (picMatch && picMatch[1]) {
                 const w = parseInt(picMatch[1], 10);
                 if (!isNaN(w)) picWidth = w;
               }
-              const mobileMedia = `(max-width: ${picWidth}px)`;
 
+              const mobileMedia = `(max-width: ${picWidth}px)`;
               const ext = path.extname(imgSrc);
               const base = path.basename(imgSrc, ext);
               const dir = path.dirname(imgSrc);
@@ -187,6 +175,14 @@ export function html() {
           .catch(cb);
       })
     )
-    .pipe(gulpif(isBuild, beautify.html({ indent_size: 2, max_preserve_newlines: 1 })))
-    .pipe(dest(isWp ? paths.build.html : paths.build.html));
+    .pipe(
+      gulpif(
+        isBuild,
+        beautify.html({
+          indent_size: 2,
+          max_preserve_newlines: 1,
+        })
+      )
+    )
+    .pipe(dest(paths.build.html));
 }
