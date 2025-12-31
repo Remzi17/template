@@ -6,12 +6,9 @@ services:
     container_name: wp_local
     ports:
       - "8080:80"
-    environment:
-      NODE_ENV: ${NODE_ENV:-dev}
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_NAME: wp_db
-      WORDPRESS_DB_USER: wp_user
-      WORDPRESS_DB_PASSWORD: wp_pass
+    env_file:
+      - ./.env
+
     volumes:
       - ./wp:/var/www/html # монтируем всю папку wp, а не только wp-content
     depends_on:

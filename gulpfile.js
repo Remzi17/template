@@ -5,6 +5,8 @@ import del from "del";
 import browsersync from "browser-sync";
 import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gulp/css.js";
 import { paths, isDev, isBuild, isWp } from "./gulp/settings.js";
+import fs from "fs";
+import { exec } from "child_process";
 import { html } from "./gulp/html.js";
 import { images } from "./gulp/images.js";
 import { fonts, fontcss } from "./gulp/fonts.js";
@@ -16,11 +18,49 @@ import { startSession, endSession, trackFile, buildStartTimer, buildEndTimer, sh
 
 startSession();
 
+const envFilePath = ".env";
+
+function getEnvNodeEnv() {
+  const env = fs.readFileSync(envFilePath, "utf-8");
+  const match = env.match(/^NODE_ENV=(.*)$/m);
+  return match ? match[1] : "dev";
+}
+
+function setEnvNodeEnv(value) {
+  let env = fs.readFileSync(envFilePath, "utf-8");
+
+  if (/^NODE_ENV=.*/m.test(env)) {
+    env = env.replace(/^NODE_ENV=.*/m, `NODE_ENV=${value}`);
+  } else {
+    env += `\nNODE_ENV=${value}`;
+  }
+
+  fs.writeFileSync(envFilePath, env);
+}
+
+export function syncEnvAndDocker(cb) {
+  const cliEnv = process.argv.includes("--build") ? "build" : "dev";
+  const envFileEnv = getEnvNodeEnv();
+
+  if (cliEnv !== envFileEnv) {
+    console.log(`Docker ENV: ${envFileEnv} → ${cliEnv}`);
+    setEnvNodeEnv(cliEnv);
+
+    exec("docker compose down && docker compose up -d --build", (err, stdout, stderr) => {
+      console.log(stdout);
+      console.error(stderr);
+      cb(err);
+    });
+  } else {
+    cb();
+  }
+}
 function reload(done) {
   browsersync.reload();
   done();
 }
 
+// prettier-ignore
 function watchFiles() {
   const onChange = (filePath) => {
     if (!filePath) return;
@@ -31,11 +71,26 @@ function watchFiles() {
   gulp.watch(paths.watch.html, series(html, reload)).on("change", onChange);
   gulp.watch(paths.watch.js, series(js, reload)).on("change", onChange);
 
-  const entryFiles = [paths.src.sass + "blocks.sass", paths.src.sass + "components.sass", paths.src.sass + "common.sass"];
-  const partials = [paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
-  const sharedSass = [paths.src.sass + "all/**/*.sass", paths.src.sass + "_*.sass"];
+  const entryFiles = [
+    paths.src.sass + "blocks.sass", 
+    paths.src.sass + "components.sass", 
+    paths.src.sass + "common.sass"
+  ];
 
-  if (!isBuild) {
+  const partials = [
+    paths.src.sass + "blocks/**/*.sass", 
+    paths.src.sass + "components/**/*.sass", 
+    paths.src.sass + "common/**/*.sass"
+   ];
+
+  const sharedSass = [
+    paths.src.sass + "all/**/*.sass", 
+    paths.src.sass + "_*.sass"
+  ];
+
+  if (isDev) {
+    console.log('isDev нх');
+    
     entryFiles.forEach((file) => {
       const task = file.includes("blocks") ? cssBlocks : file.includes("components") ? cssComponents : cssCommon;
       gulp.watch(file, series(task)).on("change", onChange);
@@ -48,7 +103,14 @@ function watchFiles() {
 
     gulp.watch(sharedSass, series(parallel(cssCommon, cssComponents, cssBlocks))).on("change", onChange);
   } else {
-    const allSass = [paths.src.sass + "*.sass", paths.src.sass + "all/**/*.sass", paths.src.sass + "blocks/**/*.sass", paths.src.sass + "components/**/*.sass", paths.src.sass + "common/**/*.sass"];
+    console.log('isBuild нх');
+    const allSass = [
+      paths.src.sass + "*.sass", 
+      paths.src.sass + "all/**/*.sass", 
+      paths.src.sass + "blocks/**/*.sass", 
+      paths.src.sass + "components/**/*.sass", 
+      paths.src.sass + "common/**/*.sass"
+    ];
     gulp.watch(allSass, series(css, reload)).on("change", onChange);
   }
 
@@ -85,6 +147,7 @@ function browserSync(done) {
 }
 
 const dev = series(
+  syncEnvAndDocker,
   (done) => {
     buildStartTimer();
     done();
@@ -99,6 +162,7 @@ const dev = series(
 );
 
 const build = series(
+  syncEnvAndDocker,
   (done) => {
     buildStartTimer();
     done();
@@ -106,7 +170,7 @@ const build = series(
   temp,
   clean,
   js,
-  parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss, deployHtml, deployCss, deployJs),
+  parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss),
   (done) => {
     buildEndTimer();
     done();

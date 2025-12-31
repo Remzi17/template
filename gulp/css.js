@@ -1,8 +1,7 @@
 import gulp from "gulp";
 const { src, dest, parallel } = gulp;
-import fs from "fs";
 import path from "path";
-
+import fs from "fs";
 import { paths, isDev, isBuild, unCSS, concatLibs, __dirname } from "./settings.js";
 import browsersync from "browser-sync";
 import notify from "gulp-notify";

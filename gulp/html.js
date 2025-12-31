@@ -36,7 +36,6 @@ function createMobileVersion(originalPath, width = 575) {
 
 export function html() {
   if (isWp) return Promise.resolve();
-
   return src(paths.src.html)
     .pipe(
       fileinclude({

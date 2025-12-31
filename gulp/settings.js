@@ -1,12 +1,10 @@
 export let replaceScripts = true;
-export let isDeploy = false;
 export let template = "rem";
 export let concatLibs = false;
 export let jsBundler = "esbuild"; // rollup или esbuild
-export const isBuild = process.argv.includes("--build");
-export const isDev = !isBuild;
 export let unCSS = false;
-export let isWp = true;
+export let isDeploy = true;
+export let isWp = false;
 
 export let variables = {
   font: "Montserrat",
@@ -26,25 +24,25 @@ export let variables = {
 
 export let getFiles = {
   html: [
-    "about",
+    // "about",
     // 'account',
     // 'action',
     // 'catalog',
     // 'categories',
-    "category",
+    // "category",
     // 'checkout',
-    "contact",
-    "feedback",
-    "news",
+    // "contact",
+    // "feedback",
+    // "news",
     // 'payment',
     // 'search',
     // 'single-category',
-    "single-news",
+    // "single-news",
     // 'single-product',
     // 'sitemap',
     // 'vacancy',
     // 'wishlist',
-    "text",
+    // "text",
   ],
   sass: [
     // 'about',
@@ -157,6 +155,7 @@ export let getFiles = {
 
 import path from "path";
 import { fileURLToPath } from "url";
+
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
 export const project_folder = path.basename(path.dirname(__dirname));
@@ -207,13 +206,20 @@ export let paths = {
   clean: "./" + project_folder + "/",
 };
 
+import dotenv from "dotenv";
+dotenv.config({ path: ".env" });
+
+export const isBuild = process.argv.includes("--build");
+export const isDev = !isBuild;
+export const NODE_ENV = isBuild ? "build" : "dev";
+
 if (project_folder == "template") {
   replaceScripts = false;
 }
 
 if (isWp) {
   paths.build = {
-    html: "wp/wp-content/themes/main/",
+    html: null,
     css: "wp/wp-content/themes/main/assets/css/",
     js: "wp/wp-content/themes/main/assets/js/",
     img: "wp/wp-content/themes/main/assets/img/",
