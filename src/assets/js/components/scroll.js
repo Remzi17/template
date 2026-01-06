@@ -1,7 +1,7 @@
 import { body, menu, menuActive, menuLink, headerTop } from "../scripts/variables";
 import { offset } from "../scripts/core/helpers";
 import { scrollToSmoothly } from "../scripts/ui/scroll";
-import { removeHash } from "../scripts/interaction/url";
+import { removeHash } from "../scripts/ui/url";
 
 /* 
 	================================================

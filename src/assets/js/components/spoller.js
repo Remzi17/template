@@ -1,5 +1,5 @@
 import { dataMediaQueries } from "../scripts/core/checks";
-import { _slideToggle, _slideUp } from "../scripts/interaction/animation";
+import { _slideToggle, _slideUp } from "../scripts/ui/animation";
 
 /* 
 	================================================
@@ -15,18 +15,15 @@ export function spoller() {
 
   document.addEventListener("click", setSpollerAction);
 
-  // Спойлеры без медиаусловий
   const spollersRegular = [...spollersArray].filter((item) => !item.dataset.spollers.split(",")[0]);
   if (spollersRegular.length) initSpollers(spollersRegular);
 
-  // Спойлеры с медиаусловиями
   const mdQueriesArray = dataMediaQueries(spollersArray, "spollers");
   mdQueriesArray?.forEach((mdItem) => {
     mdItem.matchMedia.addEventListener("change", () => initSpollers(mdItem.itemsArray, mdItem.matchMedia));
     initSpollers(mdItem.itemsArray, mdItem.matchMedia);
   });
 
-  // Инициализация спойлеров
   function initSpollers(array, matchMedia = false) {
     array.forEach((spollersBlock) => {
       const block = matchMedia ? spollersBlock.item : spollersBlock;
@@ -37,7 +34,6 @@ export function spoller() {
     });
   }
 
-  // Подготовка тела спойлера
   function initSpollerBody(block, hideBody = true) {
     block.querySelectorAll("[data-spoller]").forEach((item) => {
       const title = item.querySelector("[data-spoller-title]");
@@ -58,12 +54,10 @@ export function spoller() {
     });
   }
 
-  // Клик по спойлеру
   function setSpollerAction(e) {
     const titleEl = e.target.closest("[data-spoller-title]");
     const blockEl = e.target.closest("[data-spollers]");
 
-    // Клик по заголовку спойлера
     if (titleEl && blockEl) {
       if (blockEl.classList.contains("_disabled-click")) return;
 
@@ -80,9 +74,9 @@ export function spoller() {
         }
 
         titleEl.classList.toggle("active");
+
         _slideToggle(contentEl, speed);
 
-        // Прокрутка к спойлеру
         if (itemEl.hasAttribute("data-spoller-scroll") && titleEl.classList.contains("active")) {
           const scrollOffset = parseInt(itemEl.dataset.spollerScroll) || 0;
           const headerOffset = itemEl.hasAttribute("data-spoller-scroll-noheader") ? document.querySelector(".header")?.offsetHeight || 0 : 0;
@@ -94,7 +88,6 @@ export function spoller() {
       }
     }
 
-    // Клик вне спойлеров — закрытие по [data-spoller-close]
     if (!blockEl) {
       document.querySelectorAll("[data-spoller-close]").forEach((title) => {
         const item = title.closest("[data-spoller]");
@@ -110,7 +103,6 @@ export function spoller() {
     }
   }
 
-  // Скрыть все активные спойлеры
   function hideSpollersBody(block) {
     const activeTitle = block.querySelector("[data-spoller] .active");
     if (!activeTitle || block.querySelectorAll("._slide").length) return;

@@ -4,64 +4,11 @@ import fs from "fs";
 import { project_folder, template, isDeploy, concatLibs, paths, isWp } from "./settings.js";
 import log from "fancy-log";
 import ftp from "vinyl-ftp";
-import cheerio from "gulp-cheerio";
 import dotenv from "dotenv";
+
 dotenv.config({
   quiet: true,
 });
-
-export const cleanScripts = () => {
-  if (!concatLibs) {
-    return gulp
-      .src(project_folder + "/*.html")
-      .pipe(
-        cheerio(($) => {
-          if ($("[data-gallery]").length === 0) {
-            $('[src*="lg.js"]').remove();
-            $('[src*="lg-thumbnail.js"]').remove();
-            $('[src*="lg-video.js"]').remove();
-            $('[src*="lg-zoom.js"]').remove();
-            $('[src*="lg-hash.js"]').remove();
-
-            $('[href*="lg.css"]').remove();
-            $('[href*="lg-thumbnail.css"]').remove();
-            $('[href*="lg-video.css"]').remove();
-            $('[href*="lg-zoom.css"]').remove();
-            $('[href*="lg-hash.css"]').remove();
-          }
-
-          if ($(".swiper").length === 0) {
-            $('[src*="swiper.js"]').remove();
-            $('[href*="swiper.css"]').remove();
-          }
-
-          if ($(".wow").length === 0) {
-            $('[src*="wow.js"]').remove();
-            $('[href*="animate.css"]').remove();
-          }
-
-          if ($(".input-date").length === 0) {
-            $('[src*="date.js"]').remove();
-            $('[href*="date.css"]').remove();
-          }
-
-          if ($("[data-da]").length === 0) $('[src*="dynamic.js"]').remove();
-          if ($('[type="tel"]').length === 0) $('[src*="mask.js"]').remove();
-          if ($("[data-notify]").length === 0) $('[src*="notify.js"]').remove();
-
-          if ($("select").length === 0) {
-            $('[src*="select.js"]').remove();
-            $('[href*="select.css"]').remove();
-          }
-
-          if ($(".timer").length === 0) $('[src*="timer.js"]').remove();
-        })
-      )
-      .pipe(gulp.dest(project_folder));
-  }
-
-  return Promise.resolve();
-};
 
 const hosts = {
   siteup: {
@@ -249,8 +196,8 @@ const deployJs = () => {
   ]);
 };
 
-gulp.task("deploy", gulp.series(cleanScripts, deployTask));
-gulp.task("deploy-all", gulp.series(cleanScripts, deployAllTask));
+gulp.task("deploy", deployTask);
+gulp.task("deploy-all", deployAllTask);
 gulp.task("deploy-sprite", deploySpriteTask);
 gulp.task("deploy-libs", deployLibsTask);
 gulp.task("deploy-images", deployImagesTask);

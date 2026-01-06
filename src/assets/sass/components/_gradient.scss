@@ -4,8 +4,8 @@ $gradients: (
 
 @if length(map-keys($gradients))>0 {
 	@for $i from 1 through length(map-keys($gradients)) {
-		$key: nth(map-keys($gradients), $i); // Получаем селектор (например, '.block1')
-		$args: map-get($gradients, $key); // Получаем список аргументов
+		$key: nth(map-keys($gradients), $i); // Селектор (например, '.block1')
+		$args: map-get($gradients, $key); //  Селектор аргументов
 
 		// Основные цвета
 		$color-start: nth($args, 1);
@@ -28,14 +28,14 @@ $gradients: (
 		// Точка остановки второго цвета (по умолчанию 100%)
 		$color-end-percent: if(length($args) >=7, nth($args, 7), 100%);
 
-		// Определяем CSS-свойство для первого цвета градиента
+		// Определение CSS-свойства для первого цвета градиента
 		@property #{$color-name} {
 			syntax: '<color>';
 			inherits: false;
 			initial-value: #{$color-start};
 		}
 
-		// Определяем CSS-свойство для второго цвета градиента
+		// Определение CSS-свойства для второго цвета градиента
 		@property #{$color-end-name} {
 			syntax: '<color>';
 			inherits: false;

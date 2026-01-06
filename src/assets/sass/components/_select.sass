@@ -1,10 +1,29 @@
+@use 'sass:color'
+	
 // селект 
 $select-current-padding: 4px 16px
 $select-min-height: 52px
 
-$select-border: 1px solid #ccc
+$select-border-color: #ccc
+$select-border: 1px solid $select-border-color
 $select-border-radius: 20px
 $select-background: #fff
+
+
+// опции 
+$select-option-height: 48px
+$select-option-padding: 4px 16px
+
+$select-option-border-radius: 8px
+$select-option-background: #fafafa
+$select-option-background-hover: rgba($active, .12)
+$select-option-color-hover: $text
+
+$select-option-active-background: $active
+$select-option-active-color: #fff
+$select-option-color: $text
+
+$select-value-delete-size: 16px
 
 // стрелка
 $select-arrow-size: 20px
@@ -22,26 +41,12 @@ $select-input-height: 40px
 $select-input-border: 1px solid #000
 $select-input-border-radius: 8px
 
-// опции 
-$select-option-height: 48px
-$select-option-padding: 4px 16px
-
-$select-option-border-radius: 8px
-$select-option-background: #fafafa
-$select-option-background-hover: rgba($active, .12)
-$select-option-color-hover: $text
-
-$select-option-active-background: $active
-$select-option-active-color: #fff
-$select-option-color: $text
-
-$select-value-delete-size: 16px
-
 .select 
 	position: relative
 
 	display: flex
 	align-items: center
+	justify-content: space-between
 	gap: 12px
 	min-height: $select-min-height
 	+adap('min-height', 54, 48)
@@ -52,7 +57,7 @@ $select-value-delete-size: 16px
 	background-color: $select-background
 
 	color: $text
-	font-size: 14px
+	font-size: 14px 
 
 	cursor: pointer
 	transition: background-color .3s 
@@ -80,11 +85,11 @@ $select-value-delete-size: 16px
 		z-index: 10
 		min-width: 150px
 		display: grid
+		grid-template-columns: 100%  
 
-		border: 1px solid #ccc
+		border: 1px solid $select-border-color
 		background: #fff
 		box-shadow: 0 0 15px 0 rgba(183, 183, 183, 0.05)
-		// +scrollbar(300px, $scrollBarWidth: 4, $padding: 5) 
 		opacity: 0
 
 		&[class*="_open"]
@@ -102,32 +107,14 @@ $select-value-delete-size: 16px
 		display: grid
 		grid-template-columns: 100%
 		gap: 4px
-		overflow-y: auto
-		overscroll-behavior: contain
 
-		padding-right: #{4 + 5 + px}
-		margin-right: -#{4 + 5 + px}
-		
-		overflow-y: auto
-		overflow-x: hidden
+		+scrollbar(300px, $scrollBarWidth: 4, $padding: 5) 
+		scrollbar-gutter: stable
+		overscroll-behavior: contain
 		
 		@supports (-moz-appearance: none)
 			scrollbar-color: color.adjust($active, $lightness: 10%) $gray
 			scrollbar-width: thin
-		
-		&::-webkit-scrollbar
-			width: #{4 + px}
-		
-		&::-webkit-scrollbar-track-piece
-			background-color: $gray
-			border-radius: 4px
-		
-		&::-webkit-scrollbar-thumb
-			background-color: color.adjust($active, $lightness: 10%)
-			border-radius: 4px
-
-		&.error
-			color: #f03 
 
 	&__option
 		width: 100%
@@ -162,9 +149,12 @@ $select-value-delete-size: 16px
 			background: light($active, 20%)
 
 	&__optgroup
+		display: grid
+		gap: 4px
+
 		&:not(:last-child)
 			padding-bottom: 12px
-			border-bottom: 1px solid #ccc
+			border-bottom: 1px solid $select-border-color
 			
 		&.ss-close 
 			.select__option

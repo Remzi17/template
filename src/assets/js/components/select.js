@@ -38,6 +38,16 @@ export function select() {
           },
           afterOpen: () => {
             currentOpenSelect = instance;
+
+            if (select.hasAttribute("data-search")) {
+              requestAnimationFrame(() => {
+                const searchInput = document.querySelector(`.select__content[data-id="${select.getAttribute("data-id")}"] .select__input input`);
+
+                if (searchInput) {
+                  searchInput.focus();
+                }
+              });
+            }
           },
           afterClose: () => {
             if (currentOpenSelect === instance) {
@@ -47,10 +57,19 @@ export function select() {
         },
       });
 
+      if (select.hasAttribute("data-open")) {
+        requestAnimationFrame(() => {
+          instance.open();
+        });
+      }
+
       slimSelectInstances.push({ instance, select });
 
+      // prettier-ignore
       const selectAttribures = Array.from(select.attributes)
-        .filter((attr) => !["class", "tabindex", "multiple", "data-id", "aria-hidden", "style"].includes(attr.name))
+        .filter((attr) => ![
+          "class", "tabindex", "multiple", "data-id", "aria-hidden", "style"]
+        .includes(attr.name))
         .map((attr) => `${attr.name}="${attr.value}"`);
 
       selectAttribures.forEach((attr) => {
@@ -83,7 +102,7 @@ export function select() {
 
     // Закрытие при клике вне селекта
     document.addEventListener("mousedown", (e) => {
-      const clickedSelect = e.target.closest(".select");
+      const clickedSelect = e.target.closest(".select__content") || e.target.closest(".select");
       if (!clickedSelect) {
         closeAllSelects();
       }

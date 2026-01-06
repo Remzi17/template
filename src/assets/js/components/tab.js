@@ -1,9 +1,9 @@
 import { headerTop } from "../scripts/variables.js";
-import { getHash, setHash } from "../scripts/interaction/url.js";
+import { getHash, setHash } from "../scripts/ui/url.js";
 import { indexInParent, offset } from "../scripts/core/helpers";
 import { scrollToSmoothly } from "../scripts/ui/scroll.js";
 import { dataMediaQueries } from "../scripts/core/checks.js";
-import { fadeIn } from "../scripts/interaction/animation.js";
+import { fadeIn } from "../scripts/ui/animation.js";
 
 /* 
 	================================================

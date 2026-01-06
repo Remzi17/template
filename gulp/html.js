@@ -141,31 +141,33 @@ export function html() {
                 .trim();
 
               if (picAttr) {
-                return `
-<picture${classAttr ? ` class="${classAttr}"` : ""}>
-  <source type="image/avif" srcset="${path.join(dir, base)}.avif">
-  <source type="image/avif" srcset="${path.join(dir, base)}_mobile.avif" media="${mobileMedia}">
-  <source srcset="${path.join(dir, base)}_mobile.webp" media="${mobileMedia}">
-  <img src="${path.join(dir, base)}.webp"${cleanAttrs ? " " + cleanAttrs : ""}
-    ${width ? ` width="${width}"` : ""}
-    ${height ? ` height="${height}"` : ""}
-    alt="${alt}"
-    loading="${loading}"
-    decoding="${decoding}">
-</picture>`;
+                return dedent(`
+                  <picture${classAttr ? ` class="${classAttr}"` : ""}>
+                    <source type="image/avif" srcset="${path.join(dir, base)}.avif">
+                    <source type="image/avif" srcset="${path.join(dir, base)}_mobile.avif" media="${mobileMedia}">
+                    <source srcset="${path.join(dir, base)}_mobile.webp" media="${mobileMedia}">
+                    <img src="${path.join(dir, base)}.webp"${cleanAttrs ? " " + cleanAttrs : ""}
+                      ${width ? ` width="${width}"` : ""}
+                      ${height ? ` height="${height}"` : ""}
+                      alt="${alt}"
+                      loading="${loading}"
+                      decoding="${decoding}">
+                  </picture>
+                `);
               }
 
-              return `
-<picture${classAttr ? ` class="${classAttr}"` : ""}>
-  <source type="image/avif" srcset="${path.join(dir, base)}.avif">
-  <source type="image/webp" srcset="${path.join(dir, base)}.webp">
-  <img src="${path.join(dir, base)}.webp"${cleanAttrs ? " " + cleanAttrs : ""}
-    ${width ? ` width="${width}"` : ""}
-    ${height ? ` height="${height}"` : ""}
-    alt="${alt}"
-    loading="${loading}"
-    decoding="${decoding}">
-</picture>`;
+              return dedent(`
+                <picture${classAttr ? ` class="${classAttr}"` : ""}>
+                  <source type="image/avif" srcset="${path.join(dir, base)}.avif">
+                  <source type="image/webp" srcset="${path.join(dir, base)}.webp">
+                  <img src="${path.join(dir, base)}.webp"${cleanAttrs ? " " + cleanAttrs : ""}
+                    ${width ? ` width="${width}"` : ""}
+                    ${height ? ` height="${height}"` : ""}
+                    alt="${alt}"
+                    loading="${loading}"
+                    decoding="${decoding}">
+                </picture>
+              `);
             });
 
             file.contents = Buffer.from(content);

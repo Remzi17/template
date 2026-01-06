@@ -24,6 +24,8 @@ export let variables = {
 
 export let getFiles = {
   html: [
+    "test",
+    // "",
     // "about",
     // 'account',
     // 'action',
@@ -207,7 +209,10 @@ export let paths = {
 };
 
 import dotenv from "dotenv";
-dotenv.config({ path: ".env" });
+dotenv.config({
+  path: ".env",
+  quiet: true,
+});
 
 export const isBuild = process.argv.includes("--build");
 export const isDev = !isBuild;

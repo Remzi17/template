@@ -7,7 +7,9 @@ import { paths, source_folder, project_folder, variables, concatLibs, getFiles, 
 import { hideBin } from "yargs/helpers";
 import resize from "gulp-image-resize";
 import rename from "gulp-rename";
+import posthtml from "gulp-posthtml";
 import realFavicon from "gulp-real-favicon";
+import through2 from "through2";
 import { globSync } from "glob";
 
 //
@@ -269,15 +271,15 @@ const fonts = () => {
                   break;
               }
 
-              const fontFace = `
-@font-face {
-  font-family: '${fontname.split("-")[0]}';
-  src: url('../fonts/${fontname}.woff2');
-  font-weight: ${weight};
-  font-style: normal;
-  font-display: block;
-}
-`;
+              const fontFace = dedent(`
+                @font-face {
+                  font-family: '${fontname.split("-")[0]}';
+                  src: url('../fonts/${fontname}.woff2');
+                  font-weight: ${weight};
+                  font-style: normal;
+                  font-display: block;
+                }
+              `);
 
               fs.appendFile(paths.src.fontcss, fontFace, (err) => (err ? rej(err) : res()));
             });
@@ -330,19 +332,32 @@ const appendImportsToBottom = (filePath, imports) => {
   fs.writeFileSync(filePath, result);
 };
 
+export function dedent(str) {
+  const lines = str.split("\n");
+
+  while (lines[0]?.trim() === "") lines.shift();
+  while (lines[lines.length - 1]?.trim() === "") lines.pop();
+
+  const minIndent = Math.min(...lines.filter((l) => l.trim()).map((l) => l.match(/^\s*/)[0].length));
+
+  return lines.map((l) => l.slice(minIndent)).join("\n");
+}
+
 const create = () => {
   /* ---------------- HTML ---------------- */
-  const htmlTpl = `@@include('assets/html/head.html', {
-"class": ""
-})
-@@include("assets/html/crumbs.html", {
-"list": [{
-"title":"Контакты",
-"link":"#"
-}]
-})
+  const htmlTpl = dedent(`
+    @@include('assets/html/head.html', {
+    "class": ""
+    })
+    @@include("assets/html/crumbs.html", {
+    "list": [{
+    "title":"Контакты",
+    "link":"#"
+    }]
+    })
 
-@@include('assets/html/foot.html')`;
+    @@include('assets/html/foot.html')
+  `);
 
   getFiles.html.sort().forEach((name) => {
     const file = `${paths.src.htmlFiles}${name}.html`;
@@ -383,9 +398,7 @@ const create = () => {
 
   if (replaceScripts) {
     const js = getFiles.jsScripts;
-
     const imports = js.map((name) => `import { ${name} } from './components/${name}'`).join("\n");
-
     const calls = js.map((name) => `${name}()`).join("\n");
 
     fs.writeFileSync(`${source_folder}/assets/js/components.js`, `${imports}\n\n${calls}\n`);
@@ -407,21 +420,23 @@ const create = () => {
 
   fs.writeFileSync(
     paths.src.cssvariables,
-    `$active: ${v.active}
-$gray: ${v.gray}
-$text: ${v.text}
-$bg: ${v.bg}
-$border-radius: ${v.borderRadius}
+    dedent(`
+      $active: ${v.active}
+      $gray: ${v.gray}
+      $text: ${v.text}
+      $bg: ${v.bg}
+      $border-radius: ${v.borderRadius}
 
-$minWidth: ${v.minWidth}
-$maxWidth: ${v.maxWidth}
-$containerWidth: ${v.containerWidth}
-$container: ${v.container}
-$firstBreakpoint: ${v.firstBreakpoint}
-$section_gap: ${v.section_gap}
-$burgerMedia: ${v.burgerMedia}
+      $minWidth: ${v.minWidth}
+      $maxWidth: ${v.maxWidth}
+      $containerWidth: ${v.containerWidth}
+      $container: ${v.container}
+      $firstBreakpoint: ${v.firstBreakpoint}
+      $section_gap: ${v.section_gap}
+      $burgerMedia: ${v.burgerMedia}
 
-$font: '${v.font}'`
+      $font: '${v.font}'
+    `)
   );
 
   /* ---------------- Объединения библиотек ---------------- */
@@ -511,34 +526,32 @@ function sitemap(cb) {
 
   const links = htmlFiles.map((page) => `<li><a target="_blank" href="${page.path}">${page.title}</a></li>`).join("\n\t\t\t\t");
 
-  const sitemapContent = `
-@@include('assets/html/head.html', {
-  "class": '""'
-})
-@@include("assets/html/crumbs.html", {
-  "list": [
-    {
-      "title": "Карта сайта",
-      "link": "'#'"
-    }
-  ]
-})
+  const sitemapContent = dedent(`
+    @@include('assets/html/head.html', {
+    "class": '""'
+    })
+    @@include("assets/html/crumbs.html", {
+    "list": [{
+    "title": "Карта сайта",
+    "link": "'#'"
+    }]
+    })
 
-<!-- Карта сайта -->
-<div class="section">
-  <div class="container">
-    <div class="text-block">
-      <ul>
-        ${links}
-        <li><a data-modal="popup-call">Заказать звонок</a></li>
-        <li><a data-modal="popup-thank">Спасибо</a></li>
-      </ul>
+    <!-- Карта сайта -->
+    <div class="section">
+      <div class="container">
+        <div class="text-block">
+          <ul>
+            ${links}
+            <li><a data-modal="popup-call">Заказать звонок</a></li>
+            <li><a data-modal="popup-thank">Спасибо</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-@@include('assets/html/foot.html')
-`;
+    @@include('assets/html/foot.html')
+  `);
 
   const sitemapPath = path.join("src", "sitemap.html");
 
@@ -552,6 +565,104 @@ function sitemap(cb) {
 }
 
 gulp.task("sitemap", sitemap);
+
+//
+//
+//
+//
+// Очистка страниц от неиспользуемых библиотек
+export const cleanScripts = () => {
+  if (!concatLibs) {
+    return gulp
+      .src(project_folder + "/*.html")
+      .pipe(
+        posthtml([
+          (tree) => {
+            const hasNode = (check) => {
+              let found = false;
+
+              tree.walk((node) => {
+                if (!node || !node.tag) return node;
+
+                if (check(node)) {
+                  found = true;
+                }
+
+                return node;
+              });
+
+              return found;
+            };
+
+            const removeIfNot = (match, condition) => {
+              if (!condition()) {
+                tree.walk((node) => {
+                  if (!node || !node.tag) return node;
+
+                  if (node.tag === match.tag && node.attrs && Object.entries(match.attrs).every(([key, val]) => node.attrs[key] && val.test(node.attrs[key]))) {
+                    return null;
+                  }
+
+                  return node;
+                });
+              }
+            };
+
+            const hasDynamic = () => hasNode((node) => node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "data-da"));
+            const hasNotify = () => hasNode((node) => node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "data-notify"));
+            const hasGallery = () => hasNode((node) => node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "data-gallery"));
+            const hasSwiper = () => hasNode((node) => node.attrs && node.attrs.class && node.attrs.class.includes("swiper"));
+            const hasWow = () => hasNode((node) => node.attrs && node.attrs.class && node.attrs.class.includes("wow"));
+            const hasInputDate = () => hasNode((node) => node.tag === "input" && node.attrs && node.attrs.class && node.attrs.class.includes("input-date"));
+            const hasSelect = () => hasNode((node) => node.tag === "select");
+            const hasTimer = () => hasNode((node) => node.attrs && node.attrs.class && node.attrs.class.includes("timer"));
+
+            removeIfNot({ tag: "script", attrs: { src: /dynamic/ } }, hasDynamic);
+
+            removeIfNot({ tag: "script", attrs: { src: /notify/ } }, hasNotify);
+
+            removeIfNot({ tag: "script", attrs: { src: /lg/ } }, hasGallery);
+            removeIfNot({ tag: "link", attrs: { href: /lg/ } }, hasGallery);
+
+            removeIfNot({ tag: "script", attrs: { src: /swiper/ } }, hasSwiper);
+            removeIfNot({ tag: "link", attrs: { href: /swiper/ } }, hasSwiper);
+
+            removeIfNot({ tag: "script", attrs: { src: /wow/ } }, hasWow);
+            removeIfNot({ tag: "link", attrs: { href: /animate/ } }, hasWow);
+
+            removeIfNot({ tag: "script", attrs: { src: /date/ } }, hasInputDate);
+            removeIfNot({ tag: "link", attrs: { href: /date/ } }, hasInputDate);
+
+            removeIfNot({ tag: "script", attrs: { src: /select/ } }, hasSelect);
+            removeIfNot({ tag: "link", attrs: { href: /select/ } }, hasSelect);
+
+            removeIfNot({ tag: "script", attrs: { src: /timer/ } }, hasTimer);
+
+            return tree;
+          },
+        ])
+      )
+      .pipe(
+        through2.obj(function (file, _, cb) {
+          if (file.isBuffer()) {
+            let html = file.contents.toString();
+
+            html = html.replace(/<\/script>\s*\n\s*\n\s*(<script)/g, "</script>\n\t$1");
+            html = html.replace(/\n\s*\n\s*\n+/g, "\n\n");
+
+            file.contents = Buffer.from(html);
+          }
+
+          cb(null, file);
+        })
+      )
+      .pipe(gulp.dest(project_folder));
+  }
+
+  return Promise.resolve();
+};
+
+gulp.task("clean", cleanScripts);
 
 function cb() {}
 

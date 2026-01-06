@@ -1,7 +1,7 @@
 import { debounce } from "../scripts/core/helpers";
 import { isDesktop } from "../scripts/ui/browser";
 import { offset } from "../scripts/core/helpers";
-import { _slideDown, _slideUp } from "../scripts/interaction/animation";
+import { _slideDown, _slideUp } from "../scripts/ui/animation";
 import { windowWidth } from "../scripts/variables";
 
 /* 
