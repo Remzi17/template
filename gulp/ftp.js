@@ -43,7 +43,7 @@ if (!current.ftp.host || !current.ftp.user || !current.ftp.password) {
   throw new Error("❌ Неправильные FTP доступы");
 }
 
-const createFastConn = () =>
+const createFastConn = () => {
   ftp.create({
     host: current.ftp.host,
     user: current.ftp.user,
@@ -53,8 +53,9 @@ const createFastConn = () =>
     keepalive: 10000,
     log,
   });
+};
 
-const createSafeConn = () =>
+const createSafeConn = () => {
   ftp.create({
     host: current.ftp.host,
     user: current.ftp.user,
@@ -64,6 +65,7 @@ const createSafeConn = () =>
     keepalive: 10000,
     log,
   });
+};
 
 function buildOnly() {
   if (!fs.existsSync(path.join(paths.build.css, "style.css"))) {

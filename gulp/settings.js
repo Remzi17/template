@@ -24,8 +24,6 @@ export let variables = {
 
 export let getFiles = {
   html: [
-    "test",
-    // "",
     // "about",
     // 'account',
     // 'action',
@@ -99,7 +97,7 @@ export let getFiles = {
     // 'slider',
     // 'subMenu',
     // 'switch',
-    "text",
+    // "text",
     // 'tooltip',
     // 'video',
   ],
@@ -114,7 +112,7 @@ export let getFiles = {
     // 'swiper',
   ],
   jsLibs: [
-    "a_jquery",
+    // "a_jquery",
     "dynamic",
     // 'date',
 

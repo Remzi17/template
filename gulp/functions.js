@@ -298,6 +298,64 @@ gulp.task("fonts", fonts);
 //
 //
 //
+// Объединение библиотек
+export const concat = () => {
+  const headPath = "src/assets/html/head.html";
+  const footPath = "src/assets/html/foot.html";
+
+  let head = fs.readFileSync(headPath, "utf8");
+  let foot = fs.readFileSync(footPath, "utf8");
+
+  const headRe = /(^[ \t]*)<!-- Библиотеки -->[\s\S]*?\n\1<!-- Общие стили -->/m;
+  const footRe = /(^[ \t]*)<!-- Библиотеки -->[\s\S]*?\n\1<!-- Общие скрипты -->/m;
+
+  // =========================
+  // concatLibs === true
+  // =========================
+  if (concatLibs) {
+    head = head.replace(headRe, (_, indent) => [`${indent}<!-- Библиотеки -->`, `${indent}<link rel="preload" href="assets/css/vendor.css" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">`, ``, `${indent}<!-- Общие стили -->`].join("\n"));
+
+    foot = foot.replace(footRe, (_, indent) => [`${indent}<!-- Библиотеки -->`, `${indent}<script src="assets/js/vendor.js" defer></script>`, ``, `${indent}<!-- Общие скрипты -->`].join("\n"));
+
+    fs.writeFileSync(headPath, head);
+    fs.writeFileSync(footPath, foot);
+    return Promise.resolve();
+  }
+
+  // =========================
+  // concatLibs === false
+  // =========================
+
+  head = head.replace(headRe, (_, indent) => {
+    const styles = globSync(paths.src.cssLibsFiles)
+      .reverse()
+      .map((file) => `${indent}<link rel="preload" href="assets/css/${path.basename(file)}" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">`)
+      .join("\n");
+
+    return [`${indent}<!-- Библиотеки -->`, styles, ``, `${indent}<!-- Общие стили -->`].join("\n");
+  });
+
+  foot = foot.replace(footRe, (_, indent) => {
+    const scripts = globSync(paths.src.jsLibsFiles)
+      .reverse()
+      .map((file) => `${indent}<script src="assets/js/${path.basename(file)}" defer></script>`)
+      .join("\n");
+
+    return [`${indent}<!-- Библиотеки -->`, scripts, ``, `${indent}<!-- Общие скрипты -->`].join("\n");
+  });
+
+  fs.writeFileSync(headPath, head);
+  fs.writeFileSync(footPath, foot);
+
+  return Promise.resolve();
+};
+
+gulp.task("concat", concat);
+
+//
+//
+//
+//
 // Создание файлов
 
 const cleanDir = (dir, allowed, ignore = []) => {
@@ -438,41 +496,9 @@ const create = () => {
       $font: '${v.font}'
     `)
   );
-
-  /* ---------------- Объединения библиотек ---------------- */
-
-  if (!concatLibs) {
-    const cssFiles = globSync(paths.src.cssLibsFiles);
-
-    const styles = [...cssFiles]
-      .reverse()
-      .map((file, i) => {
-        const name = path.basename(file);
-        const indent = i === 0 ? "" : "\t";
-        return `${indent}<link rel="preload" href="assets/css/${name}" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">`;
-      })
-      .join("\n");
-
-    const headPath = "src/assets/html/head.html";
-    let head = fs.readFileSync(headPath, "utf8");
-    head = head.replace(/<link rel="preload" href="assets\/css\/vendor\.css"[\s\S]*?>/g, styles);
-    fs.writeFileSync(headPath, head);
-
-    const jsFiles = globSync(paths.src.jsLibsFiles);
-
-    const scripts = [...jsFiles]
-      .reverse()
-      .map((file) => `<script src="assets/js/${path.basename(file)}" defer></script>`)
-      .join("\n");
-
-    const footPath = "src/assets/html/foot.html";
-    let foot = fs.readFileSync(footPath, "utf8");
-    foot = foot.replace(/<script src="assets\/js\/vendor\.js" defer><\/script>/g, scripts);
-    fs.writeFileSync(footPath, foot);
-  }
 };
 
-gulp.task("create", create);
+gulp.task("create", gulp.series(concat, create));
 
 //
 //
