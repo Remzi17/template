@@ -1,10 +1,11 @@
 import gulp from "gulp";
 import path from "path";
 import fs from "fs";
-import { project_folder, template, isDeploy, concatLibs, paths, isWp } from "./settings.js";
 import log from "fancy-log";
 import ftp from "vinyl-ftp";
 import dotenv from "dotenv";
+
+import { project_folder, template, isDeploy, paths, isWp } from "./settings.js";
 
 dotenv.config({
   quiet: true,
@@ -42,6 +43,19 @@ const current = hosts[template] || hosts.default;
 if (!current.ftp.host || !current.ftp.user || !current.ftp.password) {
   throw new Error("❌ Неправильные FTP доступы");
 }
+
+export const deployPaths = {
+  normal: {
+    base: project_folder,
+    root: project_folder,
+  },
+  wp: {
+    base: "wp/wp-content/themes/main",
+    root: "wp/wp-content/themes/main",
+  },
+};
+
+const currentDeploy = isWp ? deployPaths.wp : deployPaths.normal;
 
 const createFastConn = () => {
   ftp.create({
@@ -81,35 +95,10 @@ export function getLink() {
   return `/www/${project_folder}${current.domen}`;
 }
 
-export const deployPaths = {
-  normal: {
-    base: project_folder,
-    root: project_folder,
-  },
-  wp: {
-    base: "wp/wp-content/themes/main",
-    root: "wp/wp-content/themes/main",
-  },
-};
-
-const currentDeploy = isWp ? deployPaths.wp : deployPaths.normal;
-
-function handleFtpError(err, runFn) {
-  if (err.code === "ECONNRESET") {
-    log.warn("VPN режим, повторная попытка через безопасное соединение");
-    return runFn(createSafeConn()).on("error", (e) => {
-      log.error("FTP ошибка после повторной попытки:", e.message);
-    });
-  }
-  log.error("FTP ошибка:", err.message);
-}
-
 function deployRunner(globs) {
   if (!buildOnly()) return Promise.resolve();
 
   const run = (conn) => gulp.src(globs, { base: currentDeploy.base, buffer: false }).pipe(conn.dest(getLink()));
-
-  const safeRun = () => run(createSafeConn());
 
   const fastConn = createFastConn();
 
@@ -120,7 +109,7 @@ function deployRunner(globs) {
       if (err.code === "ECONNRESET") {
         log.warn("VPN режим, повторная попытка через безопасное соединение с паузой");
         setTimeout(() => {
-          safeRun()
+          run(createSafeConn())
             .on("finish", resolve)
             .on("error", (e) => {
               log.error("FTP ошибка после повторной попытки:", e.message);
