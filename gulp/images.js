@@ -1,12 +1,12 @@
 import gulp from "gulp";
 const { src, dest } = gulp;
 import { paths } from "./settings.js";
+import mergeStream from "merge-stream";
 import browsersync from "browser-sync";
 import newer from "gulp-newer";
 import webp from "gulp-webp";
 import avif from "gulp-avif";
 import gulpif from "gulp-if";
-import mergeStream from "merge-stream";
 
 export function images(done) {
   const webpStream = src(paths.src.img)

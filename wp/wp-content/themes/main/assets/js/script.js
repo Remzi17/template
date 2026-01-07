@@ -12,7 +12,7 @@
   var headerTop = document.querySelector(".header") ? document.querySelector(".header") : document.querySelector("head");
   var headerTopFixed = "header_fixed";
   var fixedHeader = true;
-  var fixedElements2 = document.querySelectorAll("[data-fixed]");
+  var fixedElements = document.querySelectorAll("[data-fixed]");
   var stickyObservers2 = /* @__PURE__ */ new Map();
   var menuClass = ".header__mobile";
   var menu = document.querySelector(menuClass) ? document.querySelector(menuClass) : document.querySelector("head");
@@ -657,7 +657,7 @@
   }
   __name(tooltip, "tooltip");
 
-  // src/assets/js/scripts/interaction/animation.js
+  // src/assets/js/scripts/ui/animation.js
   var fadeIn = /* @__PURE__ */ __name((el, isItem = false, display, timeout = 400) => {
     document.body.classList.add("_fade");
     let elements = isItem ? el : document.querySelectorAll(el);
@@ -1392,7 +1392,7 @@
     }
   });
 
-  // src/assets/js/scripts/interaction/url.js
+  // src/assets/js/scripts/ui/url.js
   function getHash() {
     return location.hash ? location.hash.replace("#", "") : "";
   }
@@ -1604,6 +1604,14 @@
             }, "beforeOpen"),
             afterOpen: /* @__PURE__ */ __name(() => {
               currentOpenSelect = instance;
+              if (select2.hasAttribute("data-search")) {
+                requestAnimationFrame(() => {
+                  const searchInput = document.querySelector(`.select__content[data-id="${select2.getAttribute("data-id")}"] .select__input input`);
+                  if (searchInput) {
+                    searchInput.focus();
+                  }
+                });
+              }
             }, "afterOpen"),
             afterClose: /* @__PURE__ */ __name(() => {
               if (currentOpenSelect === instance) {
@@ -1612,11 +1620,23 @@
             }, "afterClose")
           }
         });
+        if (select2.hasAttribute("data-open")) {
+          requestAnimationFrame(() => {
+            instance.open();
+          });
+        }
         slimSelectInstances.push({
           instance,
           select: select2
         });
-        const selectAttribures = Array.from(select2.attributes).filter((attr) => !["class", "tabindex", "multiple", "data-id", "aria-hidden", "style"].includes(attr.name)).map((attr) => `${attr.name}="${attr.value}"`);
+        const selectAttribures = Array.from(select2.attributes).filter((attr) => ![
+          "class",
+          "tabindex",
+          "multiple",
+          "data-id",
+          "aria-hidden",
+          "style"
+        ].includes(attr.name)).map((attr) => `${attr.name}="${attr.value}"`);
         selectAttribures.forEach((attr) => {
           const [name, value] = attr.split("=");
           const selectOptions = document.querySelector(`.select__content[data-id="${select2.getAttribute("data-id")}"] .select__options`);
@@ -1640,7 +1660,7 @@
         closeAllSelects();
       });
       document.addEventListener("mousedown", (e) => {
-        const clickedSelect = e.target.closest(".select");
+        const clickedSelect = e.target.closest(".select__content") || e.target.closest(".select");
         if (!clickedSelect) {
           closeAllSelects();
         }

@@ -1,9 +1,8 @@
-import { nodeResolve } from "@rollup/plugin-node-resolve";
-import babel from "@rollup/plugin-babel";
-import terser from "@rollup/plugin-terser";
 import path from "path";
-import commonjs from "@rollup/plugin-commonjs";
 import { project_folder } from "./gulp/settings.js";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
+import commonjs from "@rollup/plugin-commonjs";
 import dynamicImportVars from "@rollup/plugin-dynamic-import-vars";
 
 const isBuild = process.env.BUILD === "true";

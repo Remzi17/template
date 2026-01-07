@@ -4,7 +4,7 @@ export let concatLibs = false;
 export let jsBundler = "esbuild"; // rollup или esbuild
 export let unCSS = false;
 export let isDeploy = true;
-export let isWp = false;
+export let isWp = true;
 
 export let variables = {
   font: "Montserrat",

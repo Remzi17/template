@@ -1,24 +1,22 @@
-
-.admin-bar .header__top-wrapper {
+.admin-bar .header {
 	top: 32px;
 }
 
-@media(max-width: 782px){
-	.admin-bar .header__top-wrapper {
+@media (max-width: 782px) {
+	.admin-bar .header {
 		top: 46px;
 	}
 }
- 
-@media(max-width: 991px){
-	.admin-bar .header__top-wrapper{
+
+@media (max-width: 991px) {
+	.admin-bar .header {
 		top: 46px;
 	}
-
 }
 
-@media screen and (max-width: 600px) {
+@media (max-width: 600px) {
 	#wpadminbar {
-			position: fixed;
+		position: fixed;
 	}
 }
 
@@ -35,11 +33,11 @@ form .wpcf7-response-output,
 form .wpcf7-not-valid-tip,
 form div.wpcf7-mail-sent-ok {
 	display: none !important;
-} 
+}
 
 form .wpcf7-not-valid:not(.wpcf7-checkbox) {
-	background:  #BF1A20;
-	color: #fff; 
+	background: #BF1A20;
+	color: #fff;
 	border-color: #BF1A20
 }
 
@@ -53,11 +51,11 @@ img.aligncenter {
 
 img.alignleft {
 	float: left;
-	margin: 15px 15px 15px 0;
+	margin: 16px 16px 16px 0;
 }
 
 img.alignright {
-	margin-left: auto;
 	float: right;
-	margin: 15px 0 15px 15px;
+	margin-left: auto;
+	margin: 16px 0 16px 16px;
 }

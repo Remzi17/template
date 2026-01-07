@@ -469,10 +469,6 @@ form.form-dragover-error:after {
   align-items: center;
 }
 
-body {
-  background: #ff0;
-}
-
 @keyframes fadeInTop {
   0% {
     translate: 0 -100%;

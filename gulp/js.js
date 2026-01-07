@@ -1,8 +1,6 @@
 import gulp from "gulp";
 const { src, dest } = gulp;
-
 import { paths, isBuild, jsBundler, concatLibs } from "./settings.js";
-import { trackFile } from "./statistics/statistics.js";
 import browsersync from "browser-sync";
 import esbuild from "esbuild";
 import * as rollupJs from "rollup";

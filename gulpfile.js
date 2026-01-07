@@ -1,64 +1,23 @@
 import gulp from "gulp";
 const { series, parallel } = gulp;
-
 import del from "del";
 import browsersync from "browser-sync";
-import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gulp/css.js";
-import { paths, isDev, isBuild, isWp } from "./gulp/settings.js";
-import fs from "fs";
-import { exec } from "child_process";
+import { paths, isDev, isWp } from "./gulp/settings.js";
+
 import { html } from "./gulp/html.js";
+import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gulp/css.js";
+import { jsLibs, js } from "./gulp/js.js";
 import { images } from "./gulp/images.js";
+import { svg } from "./gulp/svg.js";
 import { fonts, fontcss } from "./gulp/fonts.js";
 import { deployHtml, deployCss, deployJs } from "./gulp/ftp.js";
-import { svg } from "./gulp/svg.js";
-import { jsLibs, js } from "./gulp/js.js";
+
 import { temp } from "./gulp/functions.js";
+import "./gulp/wp.js";
+import { syncEnvAndDocker } from "./gulp/wp.js";
 import { startSession, endSession, trackFile, buildStartTimer, buildEndTimer, showStats } from "./gulp/statistics/statistics.js";
 
 startSession();
-
-const envFilePath = ".env";
-
-function getEnvNodeEnv() {
-  const env = fs.readFileSync(envFilePath, "utf-8");
-  const match = env.match(/^NODE_ENV=(.*)$/m);
-  return match ? match[1] : "dev";
-}
-
-function setEnvNodeEnv(value) {
-  let env = fs.readFileSync(envFilePath, "utf-8");
-
-  if (/^NODE_ENV=.*/m.test(env)) {
-    env = env.replace(/^NODE_ENV=.*/m, `NODE_ENV=${value}`);
-  } else {
-    env += `\nNODE_ENV=${value}`;
-  }
-
-  fs.writeFileSync(envFilePath, env);
-}
-
-export function syncEnvAndDocker(cb) {
-  const cliEnv = process.argv.includes("--build") ? "build" : "dev";
-  const envFileEnv = getEnvNodeEnv();
-
-  if (cliEnv !== envFileEnv) {
-    console.log(`Docker ENV: ${envFileEnv} → ${cliEnv}`);
-    setEnvNodeEnv(cliEnv);
-
-    exec("docker compose down && docker compose up -d --build", (err, stdout, stderr) => {
-      console.log(stdout);
-      console.error(stderr);
-      cb(err);
-    });
-  } else {
-    cb();
-  }
-}
-function reload(done) {
-  browsersync.reload();
-  done();
-}
 
 // prettier-ignore
 function watchFiles() {
@@ -122,10 +81,6 @@ function watchFiles() {
   gulp.watch(paths.watch.fontcss, series(fontcss, reload));
 }
 
-function clean() {
-  return del(paths.clean);
-}
-
 function browserSync(done) {
   if (isWp) {
     browsersync.init({
@@ -179,18 +134,27 @@ const build = series(
 
 export const watch = parallel(isDev ? dev : build, watchFiles, browserSync);
 
+//
+//
+//
+//
+// Статистика
+
 export const stats = (done) => {
   showStats("all");
   done();
 };
+
 export const statsTime = (done) => {
   showStats("time");
   done();
 };
+
 export const statsFiles = (done) => {
   showStats("files");
   done();
 };
+
 export const statsBuild = (done) => {
   showStats("build");
   done();
@@ -200,10 +164,32 @@ process.on("SIGINT", () => {
   endSession();
   process.exit();
 });
+
 process.on("SIGTERM", () => {
   endSession();
   process.exit();
 });
+
+//
+//
+//
+//
+// Общие функции
+
+function reload(done) {
+  browsersync.reload();
+  done();
+}
+
+function clean() {
+  return del(paths.clean);
+}
+
+//
+//
+//
+//
+// Экспорты
 
 export { html, css, cssLibs, deadCss, js, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build };
 export default watch;
