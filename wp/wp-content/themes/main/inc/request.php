@@ -21,6 +21,14 @@ register_post_type('request', array(
 	'supports' => array('title', 'editor')
 ));
 
+function exclude_request_from_index() {
+	if ( is_singular('request') ) {
+		echo '<meta name="robots" content="noindex,nofollow">';
+	}
+}
+
+add_action('wp_head', 'exclude_request_from_index');
+
 // Добавление заявки в админку
 add_action('wp_ajax_submit_request', 'handle_request_submission');
 add_action('wp_ajax_nopriv_submit_request', 'handle_request_submission');

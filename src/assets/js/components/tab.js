@@ -129,13 +129,13 @@ export function tab() {
       tabsContent.forEach((tabsContentItem, index) => {
         if (tabsTitles[index].classList.contains("active")) {
           if (tabsBlockAnimate) {
-            _slideDown(tabsContentItem, tabsBlockAnimate);
+            slideDown(tabsContentItem, tabsBlockAnimate);
           } else {
             fadeIn(tabsContentItem, true);
             tabsContentItem.hidden = false;
           }
 
-          if (isHash && !tabsContentItem.closest(".popup")) {
+          if (isHash && !tabsContentItem.closest(".modal")) {
             const activeTitle = tabsTitles[index];
             const tabId = activeTitle.dataset.tabId;
             if (tabId) {
@@ -146,7 +146,7 @@ export function tab() {
           }
         } else {
           if (tabsBlockAnimate) {
-            _slideUp(tabsContentItem, tabsBlockAnimate);
+            slideUp(tabsContentItem, tabsBlockAnimate);
           } else {
             tabsContentItem.style.display = "none";
             tabsContentItem.hidden = true;
@@ -178,12 +178,15 @@ export function tab() {
   }
 
   // Переключение табов левыми кнопками (атрибут data-tab="")
-  let dataTabs = document.querySelectorAll("[data-tab]");
+  document.addEventListener("click", (event) => {
+    const target = event.target.closest("[data-tab]");
+    if (!target) return;
 
-  dataTabs.forEach((button) => {
-    button.addEventListener("click", function () {
-      document.querySelector(button.getAttribute("data-tab")).click();
-      scrollToSmoothly(offset(document.querySelector(button.getAttribute("data-tab"))).top - parseInt(headerTop.clientHeight));
-    });
+    const tabId = target.getAttribute("data-tab");
+    const element = document.querySelector(`[data-tab-id="${tabId}"]`);
+
+    element.click();
+
+    scrollToSmoothly(element.offsetTop - headerTop.clientHeight);
   });
 }

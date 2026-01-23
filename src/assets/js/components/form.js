@@ -1,4 +1,5 @@
 import { successSubmitForm } from "../scripts/forms/validation";
+import { validation } from "../scripts/forms/validation";
 
 /* 
 	================================================
@@ -21,30 +22,29 @@ export function form() {
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      let isValid = true;
+      // let isValid = true;
 
-      form.querySelectorAll('input[type="tel"]').forEach((input) => {
-        const val = input.value.trim();
+      // form.querySelectorAll('input[type="tel"]').forEach((input) => {
+      //   const val = input.value.trim();
+      //   const requiredLength = val.startsWith("+7") ? 17 : val.startsWith("8") ? 16 : Infinity;
 
-        const requiredLength = val.startsWith("+7") ? 17 : val.startsWith("8") ? 16 : Infinity;
+      //   if (val.length < requiredLength && val.length > 3) {
+      //     input.setCustomValidity("Телефон должен содержать 11 цифр");
+      //     input.reportValidity();
+      //     isValid = false;
+      //   } else {
+      //     input.setCustomValidity("");
+      //   }
+      // });
 
-        if (val.length < requiredLength && val.length > 3) {
-          input.setCustomValidity("Телефон должен содержать 11 цифр");
-          input.reportValidity();
-          isValid = false;
-        } else {
-          input.setCustomValidity("");
-        }
-      });
+      // if (typeof checkRequiredChoice === "function") {
+      //   checkRequiredChoice();
+      // }
 
-      if (typeof checkRequiredChoice === "function") {
-        checkRequiredChoice();
-      }
-
-      if (!isValid || !form.checkValidity()) {
-        form.reportValidity();
-        return;
-      }
+      // if (!isValid || !form.checkValidity()) {
+      //   form.reportValidity();
+      //   return;
+      // }
 
       form.classList.add("sending");
 

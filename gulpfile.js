@@ -48,8 +48,6 @@ function watchFiles() {
   ];
 
   if (isDev) {
-    console.log('isDev нх');
-    
     entryFiles.forEach((file) => {
       const task = file.includes("blocks") ? cssBlocks : file.includes("components") ? cssComponents : cssCommon;
       gulp.watch(file, series(task)).on("change", onChange);
@@ -62,7 +60,6 @@ function watchFiles() {
 
     gulp.watch(sharedSass, series(parallel(cssCommon, cssComponents, cssBlocks))).on("change", onChange);
   } else {
-    console.log('isBuild нх');
     const allSass = [
       paths.src.sass + "*.sass", 
       paths.src.sass + "all/**/*.sass", 
@@ -87,6 +84,11 @@ function browserSync(done) {
       proxy: "http://localhost:8080",
       notify: false,
       open: true,
+      ghostMode: {
+        clicks: true,
+        scroll: true,
+        forms: false,
+      },
     });
   } else {
     browsersync.init({

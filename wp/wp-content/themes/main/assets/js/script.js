@@ -7,7 +7,7 @@
 
   // src/assets/js/scripts/variables.js
   var body = document.querySelector("body");
-  var html2 = document.querySelector("html");
+  var html = document.querySelector("html");
   var popup = document.querySelectorAll(".popup");
   var headerTop = document.querySelector(".header") ? document.querySelector(".header") : document.querySelector("head");
   var headerTopFixed = "header_fixed";
@@ -19,7 +19,7 @@
   var menuLink = document.querySelector(".menu-link") ? document.querySelector(".menu-link") : document.querySelector("head");
   var menuActive = "active";
   var burgerMedia = 991;
-  var bodyOpenModalClass2 = "popup-show";
+  var bodyOpenModalClass = "popup-show";
   var windowWidth = window.innerWidth;
   var containerWidth = document.querySelector(".container").offsetWidth || 0;
   var checkWindowWidth = /* @__PURE__ */ __name(() => {
@@ -200,12 +200,12 @@
       menuLink.classList.remove("active");
       if (menu) {
         menu.classList.remove(menuActive);
-        if (!body.classList.contains(bodyOpenModalClass2)) {
+        if (!body.classList.contains(bodyOpenModalClass)) {
           body.classList.remove("no-scroll");
         }
       }
     }
-    if (html2.classList.contains("lg-on")) {
+    if (html.classList.contains("lg-on")) {
       if (isMobile()) {
         body.style.paddingRight = "0";
       } else {
@@ -295,13 +295,13 @@
 
   function loaded() {
     document.addEventListener("DOMContentLoaded", function() {
-      html2.classList.add("loaded");
+      html.classList.add("loaded");
       if (document.querySelector("header")) {
         document.querySelector("header").classList.add("loaded");
       }
       if (haveScroll()) {
         setTimeout(() => {
-          html2.classList.remove("scrollbar-auto");
+          html.classList.remove("scrollbar-auto");
         }, 500);
       }
     });
@@ -425,7 +425,7 @@
   }
   __name(getScrollBarWidth2, "getScrollBarWidth");
 
-  function changeScrollbarGutter2(add = true) {
+  function changeScrollbarGutter(add = true) {
     if (haveScroll()) {
       if (add) {
         body.classList.add(bodyOpenModalClass, "scrollbar-auto");
@@ -436,7 +436,7 @@
       }
     }
   }
-  __name(changeScrollbarGutter2, "changeScrollbarGutter");
+  __name(changeScrollbarGutter, "changeScrollbarGutter");
 
   function changeScrollbarPadding(add = true) {
     const scrollbarPadding = getScrollBarWidth2() + "px";
@@ -509,7 +509,7 @@
           });
           gallery2.classList.add("gallery_init");
           gallery2.addEventListener("lgBeforeOpen", () => {
-            if (!body.classList.contains(bodyOpenModalClass2)) {
+            if (!body.classList.contains(bodyOpenModalClass)) {
               hideScrollbar();
             }
           });
@@ -600,123 +600,151 @@
 
   // src/assets/js/components/tooltip.js
   function tooltip() {
-    let tooltipItems = document.querySelectorAll("[data-tooltip]");
-    let calculatePosTooltip = /* @__PURE__ */ __name((item) => {
-      tooltip = item.querySelector(".tooltip");
-      if (getPageSide(item) == "left") {
-        tooltip.style.left = 0;
-        tooltip.style.bottom = item.offsetHeight + "px";
+    const timers = /* @__PURE__ */ new WeakMap();
+    const getTooltip = /* @__PURE__ */ __name((item) => {
+      let tooltip2;
+      const tooltipIsHtml = item.getAttribute("data-tooltip") === "html";
+      if (tooltipIsHtml) {
+        tooltip2 = item.querySelector(".tooltip");
       } else {
-        tooltip.style.right = 0;
-        tooltip.style.bottom = item.offsetHeight + "px";
-      }
-    }, "calculatePosTooltip");
-
-    function createTooltips() {
-      tooltipItems.forEach((item) => {
-        let timer, tooltip2, tooltipText;
-        let tooltipIsHtml = item.getAttribute("data-tooltip") == "html" ? true : false;
-        if (item.hasAttribute("title")) {
-          tooltipText = item.getAttribute("title");
-        } else if (item.getAttribute("data-tooltip") != "") {
-          tooltipText = item.getAttribute("data-tooltip");
-        } else {
-          tooltipText = "";
-        }
-        if (tooltipIsHtml) {
-          tooltip2 = item.querySelector(".tooltip");
-        } else {
+        tooltip2 = item.querySelector(".tooltip");
+        if (!tooltip2) {
+          let text2 = "";
+          if (item.hasAttribute("title")) {
+            text2 = item.getAttribute("title");
+            item.removeAttribute("title");
+          } else if (item.getAttribute("data-tooltip") !== "") {
+            text2 = item.getAttribute("data-tooltip");
+          }
           tooltip2 = document.createElement("div");
+          tooltip2.className = "tooltip";
+          tooltip2.textContent = text2;
           item.append(tooltip2);
-          tooltip2.classList.add("tooltip");
-          tooltip2.textContent = tooltipText;
         }
-        calculatePosTooltip(item);
-        item.addEventListener("mouseenter", () => {
-          tooltip2.classList.add("tooltip_active");
-        });
-        item.addEventListener("focusin", () => {
-          tooltip2.classList.add("tooltip_active");
-        });
-        item.addEventListener("mouseleave", () => {
-          timer = setTimeout(() => {
-            tooltip2.classList.remove("tooltip_active");
-          }, 200);
-        });
-        item.addEventListener("focusout", () => {
-          timer = setTimeout(() => {
-            tooltip2.classList.remove("tooltip_active");
-          }, 200);
-        });
-        tooltip2.addEventListener("mouseenter", () => clearTimeout(timer));
-        tooltip2.addEventListener("mouseleave", () => tooltip2.classList.remove("tooltip_active"));
-      });
-    }
-    __name(createTooltips, "createTooltips");
-    createTooltips();
+      }
+      return tooltip2;
+    }, "getTooltip");
+    const calculatePosTooltip = /* @__PURE__ */ __name((item, tooltip2) => {
+      tooltip2.style.left = "";
+      tooltip2.style.right = "";
+      if (getPageSide(item) === "left") {
+        tooltip2.style.left = "0";
+      } else {
+        tooltip2.style.right = "0";
+      }
+      tooltip2.style.bottom = item.offsetHeight + "px";
+    }, "calculatePosTooltip");
+    const showTooltip = /* @__PURE__ */ __name((item) => {
+      const tooltip2 = getTooltip(item);
+      if (!tooltip2) return;
+      clearTimeout(timers.get(item));
+      calculatePosTooltip(item, tooltip2);
+      tooltip2.classList.add("tooltip_active");
+    }, "showTooltip");
+    const hideTooltip = /* @__PURE__ */ __name((item) => {
+      const tooltip2 = item.querySelector(".tooltip");
+      if (!tooltip2) return;
+      const timer = setTimeout(() => {
+        tooltip2.classList.remove("tooltip_active");
+      }, 200);
+      timers.set(item, timer);
+    }, "hideTooltip");
+    const getItemFromEvent = /* @__PURE__ */ __name((e) => {
+      if (!(e.target instanceof Element)) return null;
+      return e.target.closest("[data-tooltip]");
+    }, "getItemFromEvent");
+    document.addEventListener(
+      "mouseenter",
+      (e) => {
+        const item = getItemFromEvent(e);
+        if (!item) return;
+        showTooltip(item);
+      },
+      true
+    );
+    document.addEventListener(
+      "mouseleave",
+      (e) => {
+        const item = getItemFromEvent(e);
+        if (!item) return;
+        hideTooltip(item);
+      },
+      true
+    );
+    document.addEventListener("focusin", (e) => {
+      const item = getItemFromEvent(e);
+      if (!item) return;
+      showTooltip(item);
+    });
+    document.addEventListener("focusout", (e) => {
+      const item = getItemFromEvent(e);
+      if (!item) return;
+      hideTooltip(item);
+    });
+    document.addEventListener("mouseover", (e) => {
+      if (!(e.target instanceof Element)) return;
+      const tooltip2 = e.target.closest(".tooltip");
+      if (!tooltip2) return;
+      const item = tooltip2.closest("[data-tooltip]");
+      if (!item) return;
+      clearTimeout(timers.get(item));
+    });
+    document.addEventListener("mouseout", (e) => {
+      if (!(e.target instanceof Element)) return;
+      const tooltip2 = e.target.closest(".tooltip");
+      if (!tooltip2) return;
+      tooltip2.classList.remove("tooltip_active");
+    });
   }
   __name(tooltip, "tooltip");
 
   // src/assets/js/scripts/ui/animation.js
+  var fadeTokens = /* @__PURE__ */ new WeakMap();
   var fadeIn = /* @__PURE__ */ __name((el, isItem = false, display, timeout = 400) => {
     document.body.classList.add("_fade");
     let elements = isItem ? el : document.querySelectorAll(el);
-    if (elements.length > 0) {
-      elements.forEach((element) => {
-        element.style.opacity = 0;
-        element.style.display = display || "block";
-        element.style.transition = `opacity ${timeout}ms`;
-        setTimeout(() => {
-          element.style.opacity = 1;
-          setTimeout(() => {
-            document.body.classList.remove("_fade");
-          }, timeout);
-        }, 10);
-      });
-    } else {
-      el.style.opacity = 0;
-      el.style.display = display || "block";
-      el.style.transition = `opacity ${timeout}ms`;
+    if (!elements.length) elements = [el];
+    elements.forEach((element) => {
+      const token = /* @__PURE__ */ Symbol();
+      fadeTokens.set(element, token);
+      element.style.transition = "none";
+      element.style.opacity = 0;
+      element.style.display = display || "block";
+      element.style.transition = `opacity ${timeout}ms`;
       setTimeout(() => {
-        el.style.opacity = 1;
+        if (fadeTokens.get(element) !== token) return;
+        element.style.opacity = 1;
         setTimeout(() => {
+          if (fadeTokens.get(element) !== token) return;
           document.body.classList.remove("_fade");
         }, timeout);
       }, 10);
-    }
+    });
   }, "fadeIn");
   var fadeOut = /* @__PURE__ */ __name((el, isItem = false, timeout = 400) => {
     document.body.classList.add("_fade");
     let elements = isItem ? el : document.querySelectorAll(el);
-    if (elements.length > 0) {
-      elements.forEach((element) => {
-        element.style.opacity = 1;
-        element.style.transition = `opacity ${timeout}ms`;
+    if (!elements.length) elements = [el];
+    elements.forEach((element) => {
+      const token = /* @__PURE__ */ Symbol();
+      fadeTokens.set(element, token);
+      element.style.transition = "none";
+      element.style.opacity = 1;
+      element.style.transition = `opacity ${timeout}ms`;
+      setTimeout(() => {
+        if (fadeTokens.get(element) !== token) return;
         element.style.opacity = 0;
         setTimeout(() => {
+          if (fadeTokens.get(element) !== token) return;
           element.style.display = "none";
-          setTimeout(() => {
-            document.body.classList.remove("_fade");
-          }, timeout);
-        }, timeout);
-        setTimeout(() => {
-          element.removeAttribute("style");
-        }, timeout + 400);
-      });
-    } else {
-      el.style.opacity = 1;
-      el.style.transition = `opacity ${timeout}ms`;
-      el.style.opacity = 0;
-      setTimeout(() => {
-        el.style.display = "none";
-        setTimeout(() => {
           document.body.classList.remove("_fade");
         }, timeout);
-      }, timeout);
-      setTimeout(() => {
-        el.removeAttribute("style");
-      }, timeout + 400);
-    }
+        setTimeout(() => {
+          if (fadeTokens.get(element) !== token) return;
+          element.removeAttribute("style");
+        }, timeout + 400);
+      }, 10);
+    });
   }, "fadeOut");
   var _slideUp2 = /* @__PURE__ */ __name((target, duration = 400, showmore = 0) => {
     if (target && !target.classList.contains("_slide")) {
@@ -1064,13 +1092,13 @@
         if (isMobile2()) {
           changeScrollbarPadding(false);
         } else {
-          if (body.classList.contains(bodyOpenModalClass2)) {
+          if (body.classList.contains(bodyOpenModalClass)) {
             changeScrollbarPadding();
           }
         }
         if (isDesktop()) {
           menu.removeAttribute("style");
-          if (!body.classList.contains(bodyOpenModalClass2)) {
+          if (!body.classList.contains(bodyOpenModalClass)) {
             body.classList.remove("no-scroll");
             if (isSafari) {
               changeScrollbarPadding(false);
@@ -1387,7 +1415,7 @@
   var ZoomDetector = _ZoomDetector;
   var zoomDetector = new ZoomDetector();
   window.addEventListener("zoomchange", (e) => {
-    if (haveScroll()) {
+    if (haveScroll() && body.classList.contains(bodyOpenModalClass)) {
       changeScrollbarGutter(false);
     }
   });
@@ -1768,7 +1796,7 @@
           history.pushState("", document.title, (window.location.pathname + window.location.search).replace(getHash(), ""));
         }
         hideScrollbar();
-        body.classList.add(bodyOpenModalClass2);
+        body.classList.add(bodyOpenModalClass);
         if (!window.location.hash.includes(dataModal) && !button.hasAttribute("data-modal-not-hash")) {
           window.location.hash = dataModal;
         }
@@ -1801,7 +1829,7 @@
       setTimeout(() => {
         fadeOut(popup3, true);
         modalButtons.forEach((button) => button.disabled = true);
-        body.classList.remove(bodyOpenModalClass2);
+        body.classList.remove(bodyOpenModalClass);
         setTimeout(() => {
           let modalInfo = document.querySelector(".popup-info");
           if (modalInfo) modalInfo.value = "";

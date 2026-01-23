@@ -2,7 +2,7 @@ import gulp from "gulp";
 const { src, dest, parallel } = gulp;
 import path from "path";
 import fs from "fs";
-import { paths, isDev, isBuild, unCSS, concatLibs, __dirname } from "./settings.js";
+import { paths, isDev, isBuild, isWp, unCSS, concatLibs, __dirname } from "./settings.js";
 import browsersync from "browser-sync";
 import notify from "gulp-notify";
 import gulpif from "gulp-if";
@@ -27,6 +27,7 @@ function translateError(msg) {
     ["Invalid property name", "Неверное имя свойства"],
     ["Unterminated string", "Незавершённая строка"],
     ["Invalid media query", "Неверный медиазапрос"],
+    ["Mixin doesn't accept a content block.", "Mixin не принимает блок контента"],
   ];
 
   let translated = msg;
@@ -104,7 +105,7 @@ export function css() {
 
 export function cssLibs() {
   return src(paths.src.cssLibsFiles)
-    .pipe(gulpif(concatLibs, concat("vendor.css")))
+    .pipe(gulpif(concatLibs || isWp, concat("vendor.css")))
     .pipe(
       gulpif(
         isBuild,

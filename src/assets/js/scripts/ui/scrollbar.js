@@ -1,4 +1,4 @@
-import { body, popup, menu, menuActive, fixedElements } from "../variables";
+import { html, body, bodyOpenModalClass, modals, menu, menuActive, fixedElements } from "../variables";
 import { haveScroll } from "../core/checks";
 import { isSafari } from "./browser";
 
@@ -10,7 +10,7 @@ import { isSafari } from "./browser";
 
 // Скрытие скроллбара
 export function hideScrollbar() {
-  popup.forEach((element) => {
+  modals.forEach((element) => {
     element.style.display = "none";
   });
 

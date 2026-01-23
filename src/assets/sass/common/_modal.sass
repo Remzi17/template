@@ -7,7 +7,7 @@ $close-size: 20
 $close-offset: 16
 $close-color: $gray 
 
-.popup 
+.modal 
 	position: fixed
 	inset: 0
 	z-index: 11
@@ -18,14 +18,15 @@ $close-color: $gray
 					 
 	overflow: hidden
 	background: rgba(0, 0, 0, 0.7)
+	backdrop-filter: blur(8px)
 
 	&_open 
-		.popup__content
-			animation: popup-open 0.4s ease forwards
+		.modal__content
+			animation: modal-open 0.4s ease forwards
 
 	&_close
-		.popup__content
-			animation: popup-close 0.4s ease forwards
+		.modal__content
+			animation: modal-close 0.4s ease forwards
 
 	&__dialog 
 		width: 100%
@@ -54,7 +55,7 @@ $close-color: $gray
 		cursor: default
 		+t
 
-		@keyframes popup-open 
+		@keyframes modal-open 
 			from 
 				opacity: 0
 				translate: 0 -24px
@@ -63,7 +64,7 @@ $close-color: $gray
 				opacity: 1
 				translate: 0 0
 
-		@keyframes popup-close 
+		@keyframes modal-close 
 			from 
 				opacity: 1
 				translate: 0 0
@@ -107,7 +108,7 @@ $close-color: $gray
 					fill: $active
 
 	&-thank 
-		.popup
+		.modal
 			&__content 
 				display: grid
 				+adap('gap', 20, 12)

@@ -1,6 +1,6 @@
 import gulp from "gulp";
 const { src, dest } = gulp;
-import { paths, isBuild, jsBundler, concatLibs } from "./settings.js";
+import { paths, isBuild, isWp, jsBundler, concatLibs } from "./settings.js";
 import browsersync from "browser-sync";
 import esbuild from "esbuild";
 import * as rollupJs from "rollup";
@@ -12,7 +12,7 @@ import beautify from "gulp-beautify";
 
 export function jsLibs() {
   return src(paths.src.jsLibsFiles)
-    .pipe(gulpif(concatLibs, concat("vendor.js")))
+    .pipe(gulpif(concatLibs || isWp, concat("vendor.js")))
     .pipe(gulpif(isBuild, terser()))
     .pipe(dest(paths.build.js))
     .pipe(browsersync.stream());

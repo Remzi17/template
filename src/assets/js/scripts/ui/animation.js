@@ -6,76 +6,62 @@ import { isHidden } from "../core/checks";
 //
 // Анимации
 
+const fadeTokens = new WeakMap();
+
 // Плавное появление
 export const fadeIn = (el, isItem = false, display, timeout = 400) => {
   document.body.classList.add("_fade");
-
   let elements = isItem ? el : document.querySelectorAll(el);
+  if (!elements.length) elements = [el];
+  elements.forEach((element) => {
+    const token = Symbol();
+    fadeTokens.set(element, token);
 
-  if (elements.length > 0) {
-    elements.forEach((element) => {
-      element.style.opacity = 0;
-      element.style.display = display || "block";
-      element.style.transition = `opacity ${timeout}ms`;
-      setTimeout(() => {
-        element.style.opacity = 1;
-        setTimeout(() => {
-          document.body.classList.remove("_fade");
-        }, timeout);
-      }, 10);
-    });
-  } else {
-    el.style.opacity = 0;
-    el.style.display = display || "block";
-    el.style.transition = `opacity ${timeout}ms`;
+    element.style.transition = "none";
+    element.style.opacity = 0;
+    element.style.display = display || "block";
+    element.style.transition = `opacity ${timeout}ms`;
     setTimeout(() => {
-      el.style.opacity = 1;
+      if (fadeTokens.get(element) !== token) return;
+      element.style.opacity = 1;
       setTimeout(() => {
+        if (fadeTokens.get(element) !== token) return;
         document.body.classList.remove("_fade");
       }, timeout);
     }, 10);
-  }
+  });
 };
 
-// Плавное исчезание
+// Плавное исчезновение
 export const fadeOut = (el, isItem = false, timeout = 400) => {
   document.body.classList.add("_fade");
-
   let elements = isItem ? el : document.querySelectorAll(el);
-
-  if (elements.length > 0) {
-    elements.forEach((element) => {
-      element.style.opacity = 1;
-      element.style.transition = `opacity ${timeout}ms`;
+  if (!elements.length) elements = [el];
+  elements.forEach((element) => {
+    const token = Symbol();
+    fadeTokens.set(element, token);
+    element.style.transition = "none";
+    element.style.opacity = 1;
+    element.style.transition = `opacity ${timeout}ms`;
+    setTimeout(() => {
+      if (fadeTokens.get(element) !== token) return;
       element.style.opacity = 0;
       setTimeout(() => {
+        if (fadeTokens.get(element) !== token) return;
         element.style.display = "none";
-        setTimeout(() => {
-          document.body.classList.remove("_fade");
-        }, timeout);
-      }, timeout);
-      setTimeout(() => {
-        element.removeAttribute("style");
-      }, timeout + 400);
-    });
-  } else {
-    el.style.opacity = 1;
-    el.style.transition = `opacity ${timeout}ms`;
-    el.style.opacity = 0;
-    setTimeout(() => {
-      el.style.display = "none";
-      setTimeout(() => {
         document.body.classList.remove("_fade");
       }, timeout);
-    }, timeout);
-    setTimeout(() => {
-      el.removeAttribute("style");
-    }, timeout + 400);
-  }
+
+      setTimeout(() => {
+        if (fadeTokens.get(element) !== token) return;
+        element.removeAttribute("style");
+      }, timeout + 400);
+    }, 10);
+  });
 };
 
 // Плавно скрыть с анимацией слайда
-export const _slideUp = (target, duration = 400, showmore = 0) => {
+export const slideUp = (target, duration = 400, showmore = 0) => {
   if (target && !target.classList.contains("_slide")) {
     target.classList.add("_slide");
     target.style.transitionProperty = "height, margin, padding";
@@ -109,7 +95,7 @@ export const _slideUp = (target, duration = 400, showmore = 0) => {
 };
 
 // Плавно показать с анимацией слайда
-export const _slideDown = (target, duration = 400) => {
+export const slideDown = (target, duration = 400) => {
   if (target && !target.classList.contains("_slide")) {
     target.style.removeProperty("display");
     let display = window.getComputedStyle(target).display;
@@ -137,11 +123,20 @@ export const _slideDown = (target, duration = 400) => {
   }
 };
 
-// Плавно изменить состояние между _slideUp и _slideDown
-export const _slideToggle = (target, duration = 400) => {
+// Плавно изменить состояние между slideUp и slideDown
+export const slideToggle = (target, duration = 400) => {
   if (target && isHidden(target)) {
-    return _slideDown(target, duration);
+    return slideDown(target, duration);
   } else {
-    return _slideUp(target, duration);
+    return slideUp(target, duration);
   }
+};
+
+window.app = window.app || {};
+window.app.animations = {
+  fadeIn,
+  fadeOut,
+  slideUp,
+  slideDown,
+  slideToggle,
 };

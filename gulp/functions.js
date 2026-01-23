@@ -569,8 +569,8 @@ function sitemap(cb) {
         <div class="text-block">
           <ul>
             ${links}
-            <li><a data-modal="popup-call">Заказать звонок</a></li>
-            <li><a data-modal="popup-thank">Спасибо</a></li>
+            <li><a data-modal="modal-call">Заказать звонок</a></li>
+            <li><a data-modal="modal-thank">Спасибо</a></li>
           </ul>
         </div>
       </div>

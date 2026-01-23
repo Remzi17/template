@@ -1,96 +1,106 @@
-window.addEventListener('DOMContentLoaded', () => {
-	maskPhone()
-})
+window.addEventListener("DOMContentLoaded", () => {
+  maskPhone();
+});
 
 function maskPhone() {
-	const phoneInputs = document.querySelectorAll('[type="tel"]')
+  const phoneInputs = document.querySelectorAll('[type="tel"]');
 
-	phoneInputs.forEach(input => {
-		input.setAttribute('data-original-placeholder', input.placeholder)
+  phoneInputs.forEach((input) => {
+    input.setAttribute("data-original-placeholder", input.placeholder);
 
-		let firstFocus = true;
+    input.addEventListener("focus", function () {
+      if (!this.value) {
+        this.value = "+7 (";
+        this.placeholder = "";
+      }
+      setTimeout(() => {
+        this.setSelectionRange(this.value.length, this.value.length);
+      }, 0);
+    });
 
-		input.addEventListener('focus', function () {
-			if (!this.value) {
-				if (firstFocus) {
-					input.blur()
-					firstFocus = false
-				} else {
-					this.value = '+7 ('
-					this.placeholder = ''
-				}
-			}
+    input.addEventListener("blur", function () {
+      if (this.value == "+7 (") {
+        this.value = "";
+        this.placeholder = this.getAttribute("data-original-placeholder");
+      }
+    });
 
-			setTimeout(() => {
-				this.setSelectionRange(this.value.length, this.value.length)
-			}, 0)
-		})
+    input.addEventListener("input", function (event) {
+      const isDelete = event.inputType === "deleteContentBackward";
+      let raw = this.value;
+      const digits = raw.replace(/\D/g, "");
 
-		input.addEventListener('input', function (event) {
-			const isDelete = event.inputType === 'deleteContentBackward'
-			let raw = this.value
-			const digits = raw.replace(/\D/g, '')
+      if (isDelete) {
+        return;
+      }
 
-			if (isDelete) {
-				return
-			}
+      let formatted = formatWithMask(digits);
 
-			let formatted = formatWithMask(digits)
+      this.value = formatted;
 
-			this.value = formatted
+      setTimeout(() => {
+        const pos = this.value.indexOf("_");
+        setCursorPosition(this, pos === -1 ? this.value.length : pos);
+      }, 0);
+    });
 
-			setTimeout(() => {
-				const pos = this.value.indexOf('_')
-				setCursorPosition(this, pos === -1 ? this.value.length : pos)
-			}, 0)
-		})
+    input.addEventListener("change", function () {
+      const digits = this.value.replace(/\D/g, "");
 
-		input.addEventListener('paste', function (e) {
-			e.preventDefault()
-			let pasted = (e.clipboardData || window.clipboardData).getData('text')
-			pasted = pasted.replace(/\D/g, '')
-			this.value = formatWithMask(pasted)
-		})
+      if (digits.length === 0) {
+        this.setCustomValidity("");
+        this.classList.remove("error");
+        return;
+      }
 
-		input.addEventListener('change', function () {
-			const submit = input.closest('form').querySelector('[type="submit"]') || input.closest('form').querySelector('button:not([type="button"])')
+      if (digits.length < 11) {
+        if (this.hasAttribute("required")) {
+          this.setCustomValidity("Телефон должен содержать 11 цифр");
+          this.reportValidity();
+        } else {
+          this.setCustomValidity("");
+        }
 
-			if (!submit) return
-			const validLength = this.value.startsWith('8') ? 17 : 18
-			if (this.value.length < validLength) {
-				this.reportValidity()
-				this.classList.add('error')
-			} else {
-				this.classList.remove('error')
-			}
-		})
-	})
+        this.classList.add("error");
+      } else {
+        this.setCustomValidity("");
+        this.classList.remove("error");
+      }
+    });
 
-	function formatWithMask(digits) {
-		if (!digits) return ''
+    input.addEventListener("paste", function (e) {
+      e.preventDefault();
+      let pasted = (e.clipboardData || window.clipboardData).getData("text");
+      pasted = pasted.replace(/\D/g, "");
+      this.value = formatWithMask(pasted);
+    });
+  });
 
-		if (digits[0] !== '7' && digits[0] !== '8') {
-			digits = '7' + digits
-		}
+  function formatWithMask(digits) {
+    if (!digits) return "";
 
-		const mask = digits[0] === '8' ? '8 (___) ___ __ __' : '+7 (___) ___ __ __'
+    if (digits[0] !== "7" && digits[0] !== "8") {
+      digits = "7" + digits;
+    }
 
-		let i = 0
-		let formatted = ''
+    const mask = digits[0] === "8" ? "8 (___) ___ __ __" : "+7 (___) ___ __ __";
 
-		for (const char of mask) {
-			if (i >= digits.length) break
-			if (char === '_' || /\d/.test(char)) {
-				formatted += digits[i++]
-			} else {
-				formatted += char
-			}
-		}
+    let i = 0;
+    let formatted = "";
 
-		return formatted
-	}
+    for (const char of mask) {
+      if (i >= digits.length) break;
+      if (char === "_" || /\d/.test(char)) {
+        formatted += digits[i++];
+      } else {
+        formatted += char;
+      }
+    }
 
-	function setCursorPosition(el, pos) {
-		el.setSelectionRange(pos, pos)
-	}
+    return formatted;
+  }
+
+  function setCursorPosition(el, pos) {
+    el.setSelectionRange(pos, pos);
+  }
 }

@@ -1414,13 +1414,53 @@
       "date": "07.01.2026",
       "start": 1767815521058,
       "end": 1767815521058
+    },
+    {
+      "date": "18.01.2026",
+      "start": 1768736530257,
+      "end": 1768736530257
+    },
+    {
+      "date": "18.01.2026",
+      "start": 1768736571500,
+      "end": 1768736571500
+    },
+    {
+      "date": "18.01.2026",
+      "start": 1768736646338,
+      "end": 1768736646338
+    },
+    {
+      "date": "18.01.2026",
+      "start": 1768736680478,
+      "end": 1768736680478
+    },
+    {
+      "date": "18.01.2026",
+      "start": 1768740205458,
+      "end": 1768740205458
+    },
+    {
+      "date": "18.01.2026",
+      "start": 1768740220582,
+      "end": 1768740220582
+    },
+    {
+      "date": "21.01.2026",
+      "start": 1768978651233,
+      "end": 1768978651233
+    },
+    {
+      "date": "23.01.2026",
+      "start": 1769154256721,
+      "end": 1769154256721
     }
   ],
   "files": {
     "style.sass": 2,
-    "index.html": 62,
+    "index.html": 73,
     "_footer.sass": 7,
-    "script.js": 14,
+    "script.js": 21,
     "showmore.js": 2,
     "fixedmenu.js": 1,
     "_about.sass": 3,
@@ -1428,22 +1468,33 @@
     "_header.sass": 103,
     "components.sass": 16,
     "head.html": 49,
-    "common.sass": 23,
+    "common.sass": 24,
     "blocks.sass": 2,
     "_default.sass": 2,
     "_mixins.sass": 11,
     "front-page.php": 4,
-    "scrollbar.js": 6,
+    "scrollbar.js": 7,
     "test.html": 1,
     "_checkbox.sass": 7,
-    "validation.js": 1,
+    "validation.js": 66,
     "scroll.js": 1,
-    "popup.js": 3,
+    "popup.js": 4,
     "_notify.sass": 64,
     "spoller.js": 13,
     "_select.sass": 36,
     "select.js": 70,
-    "foot.html": 14
+    "foot.html": 15,
+    "components.js": 4,
+    "tab.js": 1,
+    "variables.js": 1,
+    "helpers.js": 1,
+    "_modal.sass": 1,
+    "popups.html": 1,
+    "modals.html": 2,
+    "modal.js": 31,
+    "crumbs.html": 2,
+    "burger.js": 1,
+    "form.js": 6
   },
   "sizes": [],
   "pages": [],

@@ -1,5 +1,5 @@
 import path from "path";
-import { project_folder } from "./gulp/settings.js";
+import { project_folder, isWp } from "./gulp/settings.js";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 import commonjs from "@rollup/plugin-commonjs";
@@ -10,7 +10,7 @@ const isBuild = process.env.BUILD === "true";
 const baseConfig = (input, outputFile) => ({
   input: input,
   output: {
-    file: path.resolve(project_folder, outputFile),
+    file: outputFile,
     format: "iife",
     sourcemap: true,
   },
@@ -29,4 +29,10 @@ const baseConfig = (input, outputFile) => ({
   // },
 });
 
-export const configs = [baseConfig("src/assets/js/script.js", "assets/js/script.js")];
+console.log(path.resolve(project_folder, "assets/js/script.js"));
+
+// prettier-ignore
+export const configs = [baseConfig(
+  "src/assets/js/script.js", 
+  isWp ? "wp/wp-content/themes/main/assets/js/script.js" : path.resolve(project_folder, "assets/js/script.js")
+)];
