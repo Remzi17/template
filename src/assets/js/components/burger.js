@@ -49,10 +49,10 @@ export function burger() {
 
     function checkHeaderOffset() {
       if (isMobile()) {
-        changeScrollbarPadding(false);
+        // changeScrollbarPadding(false);
       } else {
         if (body.classList.contains(bodyOpenModalClass)) {
-          changeScrollbarPadding();
+          // changeScrollbarPadding();
         }
       }
 
@@ -63,7 +63,7 @@ export function burger() {
           body.classList.remove("no-scroll");
 
           if (isSafari) {
-            changeScrollbarPadding(false);
+            // changeScrollbarPadding(false);
           }
         }
       }

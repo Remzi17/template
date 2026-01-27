@@ -131,6 +131,6 @@ const zoomDetector = new ZoomDetector();
 
 window.addEventListener("zoomchange", (e) => {
   if (haveScroll() && body.classList.contains(bodyOpenModalClass)) {
-    changeScrollbarGutter(false);
+    // changeScrollbarGutter(false);
   }
 });

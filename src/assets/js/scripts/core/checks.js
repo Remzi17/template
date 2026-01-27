@@ -23,13 +23,13 @@ export function checkBurgerAndMenu() {
     }
   }
 
-  if (html.classList.contains("lg-on")) {
-    if (isMobile()) {
-      body.style.paddingRight = "0";
-    } else {
-      body.style.paddingRight = getScrollBarWidth() + "px";
-    }
-  }
+  // if (html.classList.contains("lg-on")) {
+  //   if (isMobile()) {
+  //     body.style.paddingRight = "0";
+  //   } else {
+  //     body.style.paddingRight = getScrollBarWidth() + "px";
+  //   }
+  // }
 }
 
 // Видимость элементов
