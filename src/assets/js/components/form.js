@@ -1,5 +1,5 @@
 import { successSubmitForm } from "../scripts/forms/validation";
-import { validation } from "../scripts/forms/validation";
+import { allForms } from "../scripts/variables";
 
 /* 
 	================================================
@@ -10,8 +10,6 @@ import { validation } from "../scripts/forms/validation";
 */
 
 export function form() {
-  const allForms = document.querySelectorAll("form");
-
   allForms.forEach((form) => {
     if (form.classList.contains("wpcf7-form")) return;
 
@@ -21,30 +19,6 @@ export function form() {
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-
-      // let isValid = true;
-
-      // form.querySelectorAll('input[type="tel"]').forEach((input) => {
-      //   const val = input.value.trim();
-      //   const requiredLength = val.startsWith("+7") ? 17 : val.startsWith("8") ? 16 : Infinity;
-
-      //   if (val.length < requiredLength && val.length > 3) {
-      //     input.setCustomValidity("Телефон должен содержать 11 цифр");
-      //     input.reportValidity();
-      //     isValid = false;
-      //   } else {
-      //     input.setCustomValidity("");
-      //   }
-      // });
-
-      // if (typeof checkRequiredChoice === "function") {
-      //   checkRequiredChoice();
-      // }
-
-      // if (!isValid || !form.checkValidity()) {
-      //   form.reportValidity();
-      //   return;
-      // }
 
       form.classList.add("sending");
 

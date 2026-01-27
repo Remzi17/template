@@ -6,6 +6,8 @@
 	================================================
 */
 
+import { allForms } from "../scripts/variables";
+
 export function select() {
   let allSelects = document.querySelectorAll("select");
   let slimSelectInstances = [];
@@ -26,7 +28,7 @@ export function select() {
           searchHighlight: true,
           allowDeselect: true,
 
-          maxValuesShown: select.hasAttribute("data-count") ? 1 : false,
+          maxValuesShown: select.hasAttribute("data-count") ? 2 : false,
           maxValuesMessage: "Выбрано ({number})",
 
           closeOnSelect: select.hasAttribute("data-not-close") ? false : true,
@@ -109,7 +111,7 @@ export function select() {
     });
 
     // Сброс формы
-    document.querySelectorAll("form").forEach((form) => {
+    allForms.forEach((form) => {
       form.addEventListener("reset", () => {
         requestAnimationFrame(() => {
           slimSelectInstances.forEach(({ instance, select }) => {

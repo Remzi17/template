@@ -7,42 +7,70 @@ import { clearInputs } from "../scripts/forms/validation";
 /* 
   ================================================
 	  
-  Попапы
+  Модалки
 	
   ================================================
 */
 
-let openModal;
-let closeModal;
+// Открытие модалки
+export function openModal(modal, addHashFlag = true, dataTab = null) {
+  if (!modal) return;
+
+  if (getHash() && addHashFlag) {
+    history.pushState("", document.title, (window.location.pathname + window.location.search).replace(getHash(), ""));
+  }
+
+  hideScrollbar();
+
+  body.classList.add(bodyOpenModalClass);
+
+  if (!window.location.hash.includes(modal.id) && addHashFlag) {
+    window.location.hash = modal.id;
+  }
+
+  fadeIn(modal);
+
+  modal.classList.remove("modal_close");
+  modal.classList.add("modal_open");
+
+  if (dataTab) {
+    document.querySelector(`[data-href="#${dataTab}"]`)?.click();
+  }
+}
+
+// Закрытие модалки
+export function closeModal(modal, removeHashFlag = true) {
+  const modalButtons = document.querySelectorAll("[data-modal]");
+
+  if (!modal) return;
+
+  modal.classList.remove("modal_open");
+  modal.classList.add("modal_close");
+
+  modalButtons.forEach((button) => (button.disabled = true));
+  body.classList.remove(bodyOpenModalClass);
+
+  setTimeout(() => {
+    fadeOut(modal);
+
+    if (removeHashFlag && getHash() == modal.id) {
+      history.pushState("", document.title, window.location.pathname + window.location.search);
+    }
+
+    clearInputs();
+
+    setTimeout(() => {
+      const modalInfo = document.querySelector(".modal-info");
+      if (modalInfo) modalInfo.value = "";
+
+      showScrollbar();
+      modalButtons.forEach((button) => (button.disabled = false));
+    }, 400);
+  }, 200);
+}
 
 export function modal() {
-  const modalButtons = document.querySelectorAll("[data-modal]");
   const modalDialogs = document.querySelectorAll(".modal__dialog");
-
-  openModal = function (modal, dataTab = null, addHashFlag = true) {
-    if (!modal) return;
-
-    if (getHash() && addHashFlag) {
-      history.pushState("", document.title, (window.location.pathname + window.location.search).replace(getHash(), ""));
-    }
-
-    hideScrollbar();
-
-    body.classList.add(bodyOpenModalClass);
-
-    if (!window.location.hash.includes(modal.id) && addHashFlag) {
-      window.location.hash = modal.id;
-    }
-
-    fadeIn(modal, true);
-
-    modal.classList.remove("modal_close");
-    modal.classList.add("modal_open");
-
-    if (dataTab) {
-      document.querySelector(`[data-href="#${dataTab}"]`)?.click();
-    }
-  };
 
   document.querySelectorAll("[data-modal]").forEach((button) => {
     button.addEventListener("click", function () {
@@ -51,7 +79,7 @@ export function modal() {
       let modal = document.getElementById(dataModal);
       if (!modal) return;
 
-      openModal(modal, dataTab, !button.hasAttribute("data-modal-not-hash"));
+      openModal(modal, !button.hasAttribute("data-modal-not-hash"), dataTab);
     });
   });
 
@@ -64,42 +92,11 @@ export function modal() {
         setTimeout(() => {
           hideScrollbar();
           modal.classList.add("modal_open");
-          fadeIn(modal, true);
+          fadeIn(modal);
         }, 500);
       }
     }
   });
-
-  //
-  //
-  // Закрытие модалок
-
-  closeModal = function (modal, removeHashFlag = true) {
-    if (!modal) return;
-
-    modal.classList.remove("modal_open");
-    modal.classList.add("modal_close");
-
-    setTimeout(() => {
-      fadeOut(modal, true);
-      modalButtons.forEach((button) => (button.disabled = true));
-      body.classList.remove(bodyOpenModalClass);
-
-      setTimeout(() => {
-        let modalInfo = document.querySelector(".modal-info");
-        if (modalInfo) modalInfo.value = "";
-
-        showScrollbar();
-        modalButtons.forEach((button) => (button.disabled = false));
-      }, 400);
-
-      if (removeHashFlag && getHash() == modal.id) {
-        history.pushState("", document.title, window.location.pathname + window.location.search);
-      }
-
-      clearInputs();
-    }, 200);
-  };
 
   // Закрытие модалки при клике на крестик
   document.querySelectorAll("[data-modal-close]").forEach((element) => {
@@ -146,7 +143,7 @@ export function modal() {
     if (hash && modal) {
       hideScrollbar();
       isAnimating = true;
-      await fadeIn(modal, true);
+      await fadeIn(modal);
 
       modal.classList.remove("modal_close");
       modal.classList.add("modal_open");
@@ -159,18 +156,3 @@ export function modal() {
     }
   });
 }
-
-window.app = window.app || {};
-window.app.modal = {
-  open(modalId, dataTab = null) {
-    const modal = typeof modalId === "string" ? document.getElementById(modalId) : modalId;
-
-    openModal(modal, dataTab);
-  },
-
-  close(modalId) {
-    const modal = modalId ? (typeof modalId === "string" ? document.getElementById(modalId) : modalId) : document.querySelector(".modal_open");
-
-    closeModal(modal);
-  },
-};

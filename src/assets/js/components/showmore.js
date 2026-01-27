@@ -9,347 +9,351 @@ import { debounce } from "../scripts/core/helpers";
 */
 
 export function showMore() {
-	document.querySelectorAll('[data-more-wrapper]').forEach(wrapper => {
-		const button = wrapper.querySelector('[data-more]')
-		if (!button) return
+  document.querySelectorAll("[data-more-wrapper]").forEach((wrapper) => {
+    const button = wrapper.querySelector("[data-more]");
+    if (!button) return;
 
-		const [initialCount, stepCount, selector = '[data-more-item]'] = button.getAttribute('data-more').split(',')
-		const items = Array.from(wrapper.querySelectorAll(selector))
-		const moreOpenText = button.querySelector('[data-more-open]')
-		const moreCloseText = button.querySelector('[data-more-close]')
-		const [mediaBreakpointRaw, mediaBreakpointType = 'max'] = wrapper.dataset.media ? wrapper.dataset.media.split(',') : []
-		const mediaBreakpoint = mediaBreakpointRaw ? parseInt(mediaBreakpointRaw) : null
+    const [initialCount, stepCount, selector = "[data-more-item]"] = button.getAttribute("data-more").split(",");
+    const items = Array.from(wrapper.querySelectorAll(selector));
+    const moreOpenText = button.querySelector("[data-more-open]");
+    const moreCloseText = button.querySelector("[data-more-close]");
+    const [mediaBreakpointRaw, mediaBreakpointType = "max"] = wrapper.dataset.media ? wrapper.dataset.media.split(",") : [];
+    const mediaBreakpoint = mediaBreakpointRaw ? parseInt(mediaBreakpointRaw) : null;
 
-		let visibleCount = parseInt(initialCount)
-		let mediaQuery = null
+    let visibleCount = parseInt(initialCount);
+    let mediaQuery = null;
 
-		const isLinesMode = stepCount === 'lines'
-		let isToggleActive = false;
-		let linesTarget = wrapper.querySelector('[data-lines]');
-		let linesSpeed = 400;
-		let hiddenElements = []
+    const isLinesMode = stepCount === "lines";
+    let isToggleActive = false;
+    let linesSpeed = 400;
+    let hiddenElements = [];
 
-		if (!linesTarget.dataset.original) {
-			linesTarget.dataset.original = linesTarget.innerHTML;
-		}
+    let linesTarget = null;
 
-		const applyTransition = element => {
-			element.style.transition = 'max-height 0.3s ease'
-			element.style.overflow = 'hidden'
-		}
+    if (isLinesMode) {
+      linesTarget = wrapper.querySelector("[data-lines]");
+    }
 
-		function animateHeight(element, targetHeight, duration = linesSpeed) {
-			const startHeight = element.offsetHeight;
-			const heightDiff = targetHeight - startHeight;
-			const startTime = performance.now();
+    if (linesTarget && !linesTarget.dataset.original) {
+      linesTarget.dataset.original = linesTarget.innerHTML;
+    }
 
-			element.style.overflow = 'hidden';
+    const applyTransition = (element) => {
+      element.style.transition = "max-height 0.3s ease";
+      element.style.overflow = "hidden";
+    };
 
-			function step(currentTime) {
-				const elapsed = currentTime - startTime;
-				const progress = Math.min(elapsed / duration, 1);
+    function animateHeight(element, targetHeight, duration = linesSpeed) {
+      const startHeight = element.offsetHeight;
+      const heightDiff = targetHeight - startHeight;
+      const startTime = performance.now();
 
-				const easeProgress = 1 - Math.pow(1 - progress, 3);
+      element.style.overflow = "hidden";
 
-				element.style.height = startHeight + heightDiff * easeProgress + 'px';
+      function step(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeProgress = 1 - Math.pow(1 - progress, 3);
 
-				if (progress < 1) {
-					requestAnimationFrame(step);
-				} else {
-					element.style.height = targetHeight + 'px';
-				}
-			}
+        element.style.height = startHeight + heightDiff * easeProgress + "px";
 
-			requestAnimationFrame(step);
-		}
+        if (progress < 1) {
+          requestAnimationFrame(step);
+        } else {
+          element.style.height = targetHeight + "px";
+        }
+      }
 
-		const toggleLinesMode = () => {
-			if (!linesTarget) return;
+      requestAnimationFrame(step);
+    }
 
-			const isExpanded = linesTarget.classList.toggle('active');
+    const toggleLinesMode = () => {
+      if (!linesTarget) return;
 
-			if (isExpanded) {
-				hiddenElements.forEach(span => {
-					span.classList.add('show');
+      const isExpanded = linesTarget.classList.toggle("active");
 
-					setTimeout(() => {
-						span.classList.remove('hidd', 'show');
+      if (isExpanded) {
+        hiddenElements.forEach((span) => {
+          span.classList.add("show");
 
-						const children = Array.from(span.childNodes);
-						span.replaceWith(...children);
-					}, linesSpeed);
-				});
+          setTimeout(() => {
+            span.classList.remove("hidd", "show");
 
-				hiddenElements = [];
+            const children = Array.from(span.childNodes);
+            span.replaceWith(...children);
+          }, linesSpeed);
+        });
 
-			} else {
-				animateHeight(linesTarget, linesTarget.getAttribute('data-default-height'), linesSpeed);
-				setTimeout(() => {
-					hiddenElements = limitLines(linesTarget, initialCount);
-				}, linesSpeed);
+        hiddenElements = [];
+      } else {
+        animateHeight(linesTarget, linesTarget.getAttribute("data-default-height"), linesSpeed);
+        setTimeout(() => {
+          hiddenElements = limitLines(linesTarget, initialCount);
+        }, linesSpeed);
 
-				setTimeout(() => {
-					linesTarget.removeAttribute('style')
-				}, linesSpeed + 50);
-			}
+        setTimeout(() => {
+          linesTarget.removeAttribute("style");
+        }, linesSpeed + 50);
+      }
 
-			if (moreOpenText) moreOpenText.style.display = isExpanded ? 'none' : '';
-			if (moreCloseText) moreCloseText.style.display = isExpanded ? '' : 'none';
+      if (moreOpenText) moreOpenText.style.display = isExpanded ? "none" : "";
+      if (moreCloseText) moreCloseText.style.display = isExpanded ? "" : "none";
 
-			if (isExpanded) {
-				wrapper.classList.add('active');
-				button.classList.add('active');
-			} else {
-				wrapper.classList.remove('active');
-				button.classList.remove('active');
-			}
-		};
+      if (isExpanded) {
+        wrapper.classList.add("active");
+        button.classList.add("active");
+      } else {
+        wrapper.classList.remove("active");
+        button.classList.remove("active");
+      }
+    };
 
-		const resetInitialState = () => {
-			visibleCount = parseInt(initialCount)
+    const resetInitialState = () => {
+      visibleCount = parseInt(initialCount);
 
-			if (isLinesMode && linesTarget) {
-				hiddenElements.forEach(span => {
-					const children = Array.from(span.childNodes)
-					span.replaceWith(...children)
-				})
+      if (isLinesMode && linesTarget) {
+        hiddenElements.forEach((span) => {
+          const children = Array.from(span.childNodes);
+          span.replaceWith(...children);
+        });
 
-				hiddenElements = limitLines(linesTarget, initialCount)
+        hiddenElements = limitLines(linesTarget, initialCount);
 
-				linesTarget.classList.remove('active')
-				wrapper.classList.remove('active')
-				button.classList.remove('active')
-			} else {
-				items.forEach((item, index) => {
-					applyTransition(item)
-					if (index >= visibleCount) item.style.maxHeight = '0px'
-					else item.style.maxHeight = `${item.scrollHeight}px`
-				})
+        linesTarget.classList.remove("active");
+        wrapper.classList.remove("active");
+        button.classList.remove("active");
+      } else {
+        items.forEach((item, index) => {
+          applyTransition(item);
+          if (index >= visibleCount) item.style.maxHeight = "0px";
+          else item.style.maxHeight = `${item.scrollHeight}px`;
+        });
 
-				button.style.display = visibleCount >= items.length ? 'none' : ''
-			}
+        button.style.display = visibleCount >= items.length ? "none" : "";
+      }
 
-			if (moreOpenText) moreOpenText.style.display = ''
-			if (moreCloseText) moreCloseText.style.display = 'none'
-		}
+      if (moreOpenText) moreOpenText.style.display = "";
+      if (moreCloseText) moreCloseText.style.display = "none";
+    };
 
-		const showAllItems = () => {
-			if (!isLinesMode) {
-				items.forEach(item => item.style.maxHeight = `${item.scrollHeight}px`)
-			}
-			wrapper.classList.add('active')
-			button.classList.add('active')
-		}
+    const showAllItems = () => {
+      if (!isLinesMode) {
+        items.forEach((item) => (item.style.maxHeight = `${item.scrollHeight}px`));
+      }
+      wrapper.classList.add("active");
+      button.classList.add("active");
+    };
 
-		const buttonHandler = () => {
-			if (isLinesMode) {
-				toggleLinesMode()
-				return
-			}
+    const buttonHandler = () => {
+      if (isLinesMode) {
+        toggleLinesMode();
+        return;
+      }
 
-			if (stepCount === 'all') {
-				showAllItems()
-				button.remove()
-				return
-			}
+      if (stepCount === "all") {
+        showAllItems();
+        button.remove();
+        return;
+      }
 
-			if (stepCount === 'toggle') {
-				if (!isToggleActive) {
-					showAllItems()
-					isToggleActive = true
-					if (moreOpenText) moreOpenText.style.display = 'none'
-					if (moreCloseText) moreCloseText.style.display = ''
-				} else {
-					isToggleActive = false
+      if (stepCount === "toggle") {
+        if (!isToggleActive) {
+          showAllItems();
+          isToggleActive = true;
+          if (moreOpenText) moreOpenText.style.display = "none";
+          if (moreCloseText) moreCloseText.style.display = "";
+        } else {
+          isToggleActive = false;
 
-					items.forEach((item, index) => {
-						if (index < visibleCount) {
-							item.style.maxHeight = `${item.scrollHeight}px`
-						} else {
-							item.style.maxHeight = '0px'
-						}
-					})
+          items.forEach((item, index) => {
+            if (index < visibleCount) {
+              item.style.maxHeight = `${item.scrollHeight}px`;
+            } else {
+              item.style.maxHeight = "0px";
+            }
+          });
 
-					if (moreOpenText) moreOpenText.style.display = ''
-					if (moreCloseText) moreCloseText.style.display = 'none'
-					wrapper.classList.remove('active')
-					button.classList.remove('active')
-				}
-				return
-			}
+          if (moreOpenText) moreOpenText.style.display = "";
+          if (moreCloseText) moreCloseText.style.display = "none";
+          wrapper.classList.remove("active");
+          button.classList.remove("active");
+        }
+        return;
+      }
 
-			const step = parseInt(stepCount)
-			visibleCount += step
+      const step = parseInt(stepCount);
+      visibleCount += step;
 
-			items.forEach((item, index) => {
-				if (index < visibleCount) item.style.maxHeight = `${item.scrollHeight}px`
-			})
+      items.forEach((item, index) => {
+        if (index < visibleCount) item.style.maxHeight = `${item.scrollHeight}px`;
+      });
 
-			if (visibleCount >= items.length) {
-				button.style.display = 'none'
-				wrapper.classList.add('active')
-				button.classList.add('active')
-			}
-		}
+      if (visibleCount >= items.length) {
+        button.style.display = "none";
+        wrapper.classList.add("active");
+        button.classList.add("active");
+      }
+    };
 
-		const handleMediaQuery = e => {
-			if (!e.matches) {
-				showAllItems()
-			} else {
-				hiddenElements.forEach(span => {
-					const children = Array.from(span.childNodes)
-					span.replaceWith(...children)
-				})
-				hiddenElements = []
-				resetInitialState()
-				button.addEventListener('click', buttonHandler)
-			}
-		}
+    const handleMediaQuery = (e) => {
+      if (!e.matches) {
+        showAllItems();
 
-		const initialize = () => {
-			resetInitialState()
-			button.addEventListener('click', buttonHandler)
+        button.removeEventListener("click", buttonHandler);
+        button.style.display = "none";
+      } else {
+        hiddenElements.forEach((span) => {
+          const children = Array.from(span.childNodes);
+          span.replaceWith(...children);
+        });
+        hiddenElements = [];
 
-			if (isLinesMode && linesTarget) {
-				hiddenElements.forEach(span => {
-					const children = Array.from(span.childNodes)
-					span.replaceWith(...children)
-				})
-				hiddenElements = []
+        resetInitialState();
 
-				const fullHeight = linesTarget.scrollHeight
+        button.style.display = "";
+        button.addEventListener("click", buttonHandler);
+      }
+    };
 
-				hiddenElements = limitLines(linesTarget, initialCount)
-				const limitedHeight = linesTarget.scrollHeight
+    const initialize = () => {
+      resetInitialState();
 
-				if (fullHeight <= limitedHeight) {
-					button.remove()
-				}
+      button.addEventListener("click", buttonHandler);
 
-				linesTarget.setAttribute('data-default-height', limitedHeight)
-			}
+      if (isLinesMode && linesTarget) {
+        hiddenElements.forEach((span) => {
+          const children = Array.from(span.childNodes);
+          span.replaceWith(...children);
+        });
+        hiddenElements = [];
 
-		}
+        const fullHeight = linesTarget.scrollHeight;
+        hiddenElements = limitLines(linesTarget, initialCount);
+        const limitedHeight = linesTarget.scrollHeight;
 
-		if (mediaBreakpoint) {
-			const queryType = mediaBreakpointType === 'min' ? 'min-width' : 'max-width'
-			mediaQuery = window.matchMedia(`(${queryType}: ${mediaBreakpoint}px)`)
-			mediaQuery.addEventListener('change', handleMediaQuery)
-			handleMediaQuery(mediaQuery)
-		} else {
-			initialize()
-		}
+        if (fullHeight <= limitedHeight) {
+          button.remove();
+        }
 
+        linesTarget.setAttribute("data-default-height", limitedHeight);
+      }
+    };
 
-		const recalcLines = () => {
-			if (!isLinesMode || !linesTarget) return
+    if (mediaBreakpoint) {
+      const queryType = mediaBreakpointType === "min" ? "min-width" : "max-width";
+      mediaQuery = window.matchMedia(`(${queryType}: ${mediaBreakpoint}px)`);
+      mediaQuery.addEventListener("change", handleMediaQuery);
+      handleMediaQuery(mediaQuery);
+    } else {
+      initialize();
+    }
 
-			linesTarget.innerHTML = linesTarget.dataset.original
-			hiddenElements = limitLines(linesTarget, initialCount)
+    const recalcLines = () => {
+      if (!isLinesMode || !linesTarget) return;
 
-			if (button) {
-				button.style.display = hiddenElements.length ? '' : 'none'
-			}
+      linesTarget.innerHTML = linesTarget.dataset.original;
+      hiddenElements = limitLines(linesTarget, initialCount);
 
-			linesTarget.classList.remove('active')
-			wrapper.classList.remove('active')
-			button.classList.remove('active')
-			if (moreOpenText) moreOpenText.style.display = ''
-			if (moreCloseText) moreCloseText.style.display = 'none'
-		}
+      if (button) {
+        button.style.display = hiddenElements.length ? "" : "none";
+      }
 
-		window.addEventListener('resize', debounce(recalcLines, 100));
+      linesTarget.classList.remove("active");
+      wrapper.classList.remove("active");
+      button.classList.remove("active");
+      if (moreOpenText) moreOpenText.style.display = "";
+      if (moreCloseText) moreCloseText.style.display = "none";
+    };
 
-		recalcLines();
+    window.addEventListener("resize", debounce(recalcLines, 100));
 
-	})
+    recalcLines();
+  });
 }
 
 function limitLines(element, maxLines) {
-	let totalLines = 0;
-	const hiddenSpans = [];
+  let totalLines = 0;
+  const hiddenSpans = [];
 
-	function processTextNode(node, parent) {
-		if (!node.textContent.trim()) return;
+  function processTextNode(node, parent) {
+    if (!node.textContent.trim()) return;
 
-		const range = document.createRange();
-		range.selectNodeContents(parent);
-		const rects = range.getClientRects();
+    const range = document.createRange();
+    range.selectNodeContents(parent);
+    const rects = range.getClientRects();
 
-		if (rects.length === 0) return;
+    if (rects.length === 0) return;
 
-		if (totalLines >= maxLines) {
-			const span = document.createElement('span');
-			span.className = 'hidd';
-			parent.insertBefore(span, node);
-			span.appendChild(node);
-			hiddenSpans.push(span);
-			return;
-		}
+    if (totalLines >= maxLines) {
+      const span = document.createElement("span");
+      span.className = "hidd";
+      parent.insertBefore(span, node);
+      span.appendChild(node);
+      hiddenSpans.push(span);
+      return;
+    }
 
-		if (totalLines + rects.length > maxLines) {
-			const tempRange = document.createRange();
-			tempRange.setStart(node, 0);
+    if (totalLines + rects.length > maxLines) {
+      const tempRange = document.createRange();
+      tempRange.setStart(node, 0);
 
-			let found = false;
-			let charIndex = 0;
-			let lastGoodIndex = 0;
+      let found = false;
+      let charIndex = 0;
+      let lastGoodIndex = 0;
 
-			while (!found && charIndex < node.textContent.length) {
-				tempRange.setEnd(node, charIndex + 1);
-				const tempRects = tempRange.getClientRects();
+      while (!found && charIndex < node.textContent.length) {
+        tempRange.setEnd(node, charIndex + 1);
+        const tempRects = tempRange.getClientRects();
 
-				if (tempRects.length > 0) {
-					if (tempRects[tempRects.length - 1].bottom > rects[maxLines - totalLines - 1].bottom) {
-						found = true;
-					} else {
-						lastGoodIndex = charIndex + 1;
-					}
-				}
+        if (tempRects.length > 0) {
+          if (tempRects[tempRects.length - 1].bottom > rects[maxLines - totalLines - 1].bottom) {
+            found = true;
+          } else {
+            lastGoodIndex = charIndex + 1;
+          }
+        }
 
-				charIndex++;
-			}
+        charIndex++;
+      }
 
-			if (found) {
-				const visibleText = node.textContent.substring(0, lastGoodIndex);
-				const hiddenText = node.textContent.substring(lastGoodIndex);
+      if (found) {
+        const visibleText = node.textContent.substring(0, lastGoodIndex);
+        const hiddenText = node.textContent.substring(lastGoodIndex);
 
-				const hiddenNode = document.createTextNode(hiddenText);
-				const span = document.createElement('span');
-				span.className = 'hidd';
-				span.appendChild(hiddenNode);
+        const hiddenNode = document.createTextNode(hiddenText);
+        const span = document.createElement("span");
+        span.className = "hidd";
+        span.appendChild(hiddenNode);
 
-				node.textContent = visibleText;
+        node.textContent = visibleText;
 
-				parent.insertBefore(span, node.nextSibling);
-				hiddenSpans.push(span);
+        parent.insertBefore(span, node.nextSibling);
+        hiddenSpans.push(span);
 
-				totalLines = maxLines;
-			} else {
-				totalLines += rects.length;
-			}
-		} else {
-			totalLines += rects.length;
-		}
-	}
+        totalLines = maxLines;
+      } else {
+        totalLines += rects.length;
+      }
+    } else {
+      totalLines += rects.length;
+    }
+  }
 
-	function walkNodes(node) {
-		if (node.nodeType === Node.TEXT_NODE) {
-			processTextNode(node, node.parentNode);
-		}
-		else if (node.nodeType === Node.ELEMENT_NODE && totalLines < maxLines) {
-			Array.from(node.childNodes).forEach(walkNodes);
-		}
-		else if (node.nodeType === Node.ELEMENT_NODE) {
-			const span = document.createElement('span');
-			span.className = 'hidd';
-			node.parentNode.insertBefore(span, node);
-			span.appendChild(node);
-			hiddenSpans.push(span);
-		}
-	}
+  function walkNodes(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      processTextNode(node, node.parentNode);
+    } else if (node.nodeType === Node.ELEMENT_NODE && totalLines < maxLines) {
+      Array.from(node.childNodes).forEach(walkNodes);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const span = document.createElement("span");
+      span.className = "hidd";
+      node.parentNode.insertBefore(span, node);
+      span.appendChild(node);
+      hiddenSpans.push(span);
+    }
+  }
 
-	Array.from(element.childNodes).forEach(walkNodes);
+  Array.from(element.childNodes).forEach(walkNodes);
 
-	return hiddenSpans;
+  return hiddenSpans;
 }
