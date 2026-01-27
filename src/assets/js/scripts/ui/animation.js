@@ -9,21 +9,26 @@ import { isHidden } from "../core/checks";
 const fadeTokens = new WeakMap();
 
 // Плавное появление
-export const fadeIn = (el, isItem = false, display, timeout = 400) => {
+export const fadeIn = (el, display = "block", timeout = 400) => {
   document.body.classList.add("_fade");
-  let elements = isItem ? el : document.querySelectorAll(el);
-  if (!elements.length) elements = [el];
+
+  const elements = el instanceof Element ? [el] : document.querySelectorAll(el);
+
+  if (!elements.length) return;
+
   elements.forEach((element) => {
     const token = Symbol();
     fadeTokens.set(element, token);
 
     element.style.transition = "none";
     element.style.opacity = 0;
-    element.style.display = display || "block";
+    element.style.display = display;
     element.style.transition = `opacity ${timeout}ms`;
+
     setTimeout(() => {
       if (fadeTokens.get(element) !== token) return;
       element.style.opacity = 1;
+
       setTimeout(() => {
         if (fadeTokens.get(element) !== token) return;
         document.body.classList.remove("_fade");
@@ -33,19 +38,25 @@ export const fadeIn = (el, isItem = false, display, timeout = 400) => {
 };
 
 // Плавное исчезновение
-export const fadeOut = (el, isItem = false, timeout = 400) => {
+export const fadeOut = (el, timeout = 400) => {
   document.body.classList.add("_fade");
-  let elements = isItem ? el : document.querySelectorAll(el);
-  if (!elements.length) elements = [el];
+
+  const elements = el instanceof Element ? [el] : document.querySelectorAll(el);
+
+  if (!elements.length) return;
+
   elements.forEach((element) => {
     const token = Symbol();
     fadeTokens.set(element, token);
+
     element.style.transition = "none";
     element.style.opacity = 1;
     element.style.transition = `opacity ${timeout}ms`;
+
     setTimeout(() => {
       if (fadeTokens.get(element) !== token) return;
       element.style.opacity = 0;
+
       setTimeout(() => {
         if (fadeTokens.get(element) !== token) return;
         element.style.display = "none";
@@ -130,13 +141,4 @@ export const slideToggle = (target, duration = 400) => {
   } else {
     return slideUp(target, duration);
   }
-};
-
-window.app = window.app || {};
-window.app.animations = {
-  fadeIn,
-  fadeOut,
-  slideUp,
-  slideDown,
-  slideToggle,
 };

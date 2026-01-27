@@ -84,6 +84,7 @@ export let getFiles = {
     // 'work'
   ],
   components: [
+    // 'context',
     // 'checkbox',
     // 'crumbs',
     // 'gradient',
@@ -133,6 +134,7 @@ export let getFiles = {
   ],
   jsScripts: [
     "burger",
+    // "context",
     // 'fixedMenu',
     // 'form',
     // 'gallery',

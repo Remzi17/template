@@ -12,19 +12,25 @@ import { clearInputs } from "../scripts/forms/validation";
   ================================================
 */
 
+let modalStack = [];
+
 // Открытие модалки
-export function openModal(modal, addHashFlag = true, dataTab = null) {
+export function openModal(modal, addHashFlag = true, dataTab = null, stack = false) {
   if (!modal) return;
 
-  if (getHash() && addHashFlag) {
-    history.pushState("", document.title, (window.location.pathname + window.location.search).replace(getHash(), ""));
+  if (!stack) {
+    // Если не стековая, то закрыть все остальные модалки
+    document.querySelectorAll(".modal_open").forEach((m) => closeModal(m, false));
+    modalStack = [];
+    body.classList.add(bodyOpenModalClass);
   }
+
+  // Добавление в стек
+  modalStack.push(modal);
 
   hideScrollbar();
 
-  body.classList.add(bodyOpenModalClass);
-
-  if (!window.location.hash.includes(modal.id) && addHashFlag) {
+  if (addHashFlag && !window.location.hash.includes(modal.id)) {
     window.location.hash = modal.id;
   }
 
@@ -38,23 +44,26 @@ export function openModal(modal, addHashFlag = true, dataTab = null) {
   }
 }
 
-// Закрытие модалки
 export function closeModal(modal, removeHashFlag = true) {
-  const modalButtons = document.querySelectorAll("[data-modal]");
-
   if (!modal) return;
 
   modal.classList.remove("modal_open");
   modal.classList.add("modal_close");
 
-  modalButtons.forEach((button) => (button.disabled = true));
-  body.classList.remove(bodyOpenModalClass);
+  // Убираем из стека
+  modalStack = modalStack.filter((m) => m !== modal);
 
   setTimeout(() => {
     fadeOut(modal);
 
     if (removeHashFlag && getHash() == modal.id) {
-      history.pushState("", document.title, window.location.pathname + window.location.search);
+      if (modalStack.length) {
+        window.location.hash = modalStack[modalStack.length - 1].id;
+      } else {
+        history.pushState("", document.title, window.location.pathname + window.location.search);
+        body.classList.remove(bodyOpenModalClass);
+        showScrollbar();
+      }
     }
 
     clearInputs();
@@ -62,9 +71,6 @@ export function closeModal(modal, removeHashFlag = true) {
     setTimeout(() => {
       const modalInfo = document.querySelector(".modal-info");
       if (modalInfo) modalInfo.value = "";
-
-      showScrollbar();
-      modalButtons.forEach((button) => (button.disabled = false));
     }, 400);
   }, 200);
 }
@@ -75,11 +81,12 @@ export function modal() {
   document.querySelectorAll("[data-modal]").forEach((button) => {
     button.addEventListener("click", function () {
       let [dataModal, dataTab] = button.getAttribute("data-modal").split("#");
+      const stack = button.hasAttribute("data-modal-stack");
 
       let modal = document.getElementById(dataModal);
       if (!modal) return;
 
-      openModal(modal, !button.hasAttribute("data-modal-not-hash"), dataTab);
+      openModal(modal, !button.hasAttribute("data-modal-not-hash"), dataTab, stack);
     });
   });
 
@@ -115,7 +122,9 @@ export function modal() {
   // Закрытие модалки при клике ESC
   window.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && document.querySelectorAll(".lg-show").length === 0) {
-      closeModal(document.querySelector(".modal_open"));
+      if (modalStack.length) {
+        closeModal(modalStack[modalStack.length - 1]);
+      }
     }
   });
 

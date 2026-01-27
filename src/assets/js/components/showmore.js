@@ -32,6 +32,13 @@ export function showMore() {
 
     if (isLinesMode) {
       linesTarget = wrapper.querySelector("[data-lines]");
+      if (linesTarget && !linesTarget.dataset.original) {
+        linesTarget.dataset.original = linesTarget.innerHTML;
+      }
+    }
+
+    if (isLinesMode && linesTarget) {
+      hiddenElements = limitLines(linesTarget, initialCount);
     }
 
     if (linesTarget && !linesTarget.dataset.original) {
@@ -74,38 +81,50 @@ export function showMore() {
 
       if (isExpanded) {
         hiddenElements.forEach((span) => {
-          span.classList.add("show");
+          const height = span.scrollHeight;
+          const duration = Math.max(200, height * 0.5);
+
+          span.style.transition = `max-height ${duration}ms ease, opacity ${duration / 2}ms ease`;
+          span.style.maxHeight = `${height}px`;
+          span.style.opacity = 1;
 
           setTimeout(() => {
-            span.classList.remove("hidd", "show");
-
+            span.classList.remove("hidd");
+            span.removeAttribute("style");
             const children = Array.from(span.childNodes);
             span.replaceWith(...children);
-          }, linesSpeed);
+          }, duration);
         });
 
         hiddenElements = [];
       } else {
-        animateHeight(linesTarget, linesTarget.getAttribute("data-default-height"), linesSpeed);
-        setTimeout(() => {
-          hiddenElements = limitLines(linesTarget, initialCount);
-        }, linesSpeed);
+        const spansToHide = limitLines(linesTarget, initialCount);
+        hiddenElements = spansToHide;
 
-        setTimeout(() => {
-          linesTarget.removeAttribute("style");
-        }, linesSpeed + 50);
+        hiddenElements.forEach((span) => {
+          const height = span.scrollHeight;
+          const duration = Math.max(200, height * 0.5);
+
+          span.style.maxHeight = `${height}px`;
+          span.style.opacity = 1;
+
+          requestAnimationFrame(() => {
+            span.style.transition = `max-height ${duration}ms ease, opacity ${duration / 2}ms ease`;
+            span.style.maxHeight = "0px";
+            span.style.opacity = 0;
+          });
+
+          setTimeout(() => {
+            span.removeAttribute("style");
+          }, duration);
+        });
       }
 
       if (moreOpenText) moreOpenText.style.display = isExpanded ? "none" : "";
       if (moreCloseText) moreCloseText.style.display = isExpanded ? "" : "none";
 
-      if (isExpanded) {
-        wrapper.classList.add("active");
-        button.classList.add("active");
-      } else {
-        wrapper.classList.remove("active");
-        button.classList.remove("active");
-      }
+      wrapper.classList.toggle("active", isExpanded);
+      button.classList.toggle("active", isExpanded);
     };
 
     const resetInitialState = () => {
@@ -251,12 +270,23 @@ export function showMore() {
     const recalcLines = () => {
       if (!isLinesMode || !linesTarget) return;
 
+      if (mediaBreakpoint) {
+        const queryType = mediaBreakpointType === "min" ? "min-width" : "max-width";
+        const mq = window.matchMedia(`(${queryType}: ${mediaBreakpoint}px)`);
+        if (!mq.matches) {
+          linesTarget.innerHTML = linesTarget.dataset.original;
+          hiddenElements = [];
+          button.style.display = "none";
+          wrapper.classList.add("active");
+          button.classList.remove("active");
+          return;
+        }
+      }
+
       linesTarget.innerHTML = linesTarget.dataset.original;
       hiddenElements = limitLines(linesTarget, initialCount);
 
-      if (button) {
-        button.style.display = hiddenElements.length ? "" : "none";
-      }
+      button.style.display = hiddenElements.length ? "" : "none";
 
       linesTarget.classList.remove("active");
       wrapper.classList.remove("active");
