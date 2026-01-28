@@ -506,36 +506,36 @@ gulp.task("create", gulp.series(concat, create));
 //
 // Создание карты сайта
 
-function sitemap(cb) {
-  const pageTitles = {
-    index: "Главная",
-    about: "О нас",
-    blog: "Блог",
-    brands: "Бренды",
-    catalog: "Каталог",
-    category: "Категории",
-    compare: "Сравнение",
-    contact: "Контакты",
-    faq: "Вопрос-ответ",
-    feedback: "Отзывы",
-    license: "Лицензии",
-    news: "Новости",
-    production: "Продукция",
-    project: "Проекты",
-    "single-project": "Проект",
-    services: "Услуги",
-    search: "Поиск",
-    "search-empty": "Поиск - ничего не найдено",
-    "single-category": "Категория",
-    "single-product": "Товар",
-    "single-services": "Услуга",
-    "single-news": "Статья",
-    text: "Текстовая",
-    vacancy: "Вакансии",
-    video: "Видео",
-    wishlist: "Избранное",
-  };
+const pageTitles = {
+  index: "Главная",
+  about: "О нас",
+  blog: "Блог",
+  brands: "Бренды",
+  catalog: "Каталог",
+  category: "Категории",
+  compare: "Сравнение",
+  contact: "Контакты",
+  faq: "Вопрос-ответ",
+  feedback: "Отзывы",
+  license: "Лицензии",
+  news: "Новости",
+  production: "Продукция",
+  project: "Проекты",
+  "single-project": "Проект",
+  services: "Услуги",
+  search: "Поиск",
+  "search-empty": "Поиск - ничего не найдено",
+  "single-category": "Категория",
+  "single-product": "Товар",
+  "single-services": "Услуга",
+  "single-news": "Статья",
+  text: "Текстовая",
+  vacancy: "Вакансии",
+  video: "Видео",
+  wishlist: "Избранное",
+};
 
+function sitemap(cb) {
   const htmlFiles = fs
     .readdirSync(paths.src.htmlFiles)
     .filter((file) => file.endsWith(".html") && file !== "sitemap.html")
@@ -592,6 +592,111 @@ function sitemap(cb) {
 
 gulp.task("sitemap", sitemap);
 
+export const devNav = () => {
+  const pages = [];
+
+  return through2.obj(
+    function transform(file, _, cb) {
+      if (file.isNull() || path.extname(file.path) !== ".html") {
+        cb(null, file);
+        return;
+      }
+
+      const name = path.basename(file.path, ".html");
+
+      pages.push({
+        name,
+        file,
+      });
+
+      cb(null, file);
+    },
+
+    function flush(cb) {
+      pages.forEach(({ name, file }) => {
+        const links = pages
+          .map(({ name: pageName }) => {
+            const title = pageTitles[pageName] || pageName;
+            const active = pageName === name ? " is-active" : "";
+
+            return `<a href="${pageName}.html" class="${active.trim()}">${title}</a>`;
+          })
+          .join("\n");
+
+        const html = dedent(`
+          <!-- DEV NAV START -->
+          <style>
+            .dev-nav {
+              position: fixed;
+              inset: 20px auto auto 0;
+              z-index: 9999
+            }
+            .dev-nav__toggle {
+              position: relative;
+              width: 100px;
+              height: 80px;
+              cursor: pointer;
+            }
+            .dev-nav__toggle:before {
+              content: '';
+              position: absolute;
+              left: 0;
+              top: 0;
+              z-index: 3;
+              background: #111;
+              width: 12px;
+              height: 100%;
+              border-top-right-radius: 4px;
+              border-bottom-right-radius: 4px;
+              cursor: pointer;
+            }
+            .dev-nav__menu {
+              position: absolute;
+              top: 0;
+              left: 6px;
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              background: #111;
+              border-top-right-radius: 4px;
+              border-bottom-right-radius: 4px;
+              translate: -110% 0 ;
+              transition: translate .25s ease;
+            }
+            .dev-nav__menu a{
+              padding: 8px 12px;
+              color: #fff;
+              font-size: 14px;
+              white-space: nowrap;
+              text-decoration: none;
+              opacity: .75;
+            } 
+            .dev-nav__menu a.is-active{
+              opacity: 1;
+              font-weight: 600
+            }
+            .dev-nav:hover .dev-nav__menu{
+              translate: 0 0;
+            }
+          </style>
+
+          <div class="dev-nav">
+            <div class="dev-nav__toggle"></div>
+            <nav class="dev-nav__menu">
+              ${links}
+            </nav>
+          </div>
+          <!-- DEV NAV END -->
+        `);
+
+        file.contents = Buffer.from(file.contents.toString().replace("</body>", `${html}\n</body>`));
+      });
+
+      cb();
+    }
+  );
+};
+
 //
 //
 //
@@ -637,6 +742,7 @@ export const cleanScripts = () => {
             const hasDynamic = () => hasNode((node) => node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "data-da"));
             const hasNotify = () => hasNode((node) => node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "data-notify"));
             const hasGallery = () => hasNode((node) => node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "data-gallery"));
+            const hasViewer = () => hasNode((node) => node.attrs && Object.prototype.hasOwnProperty.call(node.attrs, "data-viewer"));
             const hasSwiper = () => hasNode((node) => node.attrs && node.attrs.class && node.attrs.class.includes("swiper"));
             const hasWow = () => hasNode((node) => node.attrs && node.attrs.class && node.attrs.class.includes("wow"));
             const hasInputDate = () => hasNode((node) => node.tag === "input" && node.attrs && node.attrs.class && node.attrs.class.includes("input-date"));
@@ -649,6 +755,9 @@ export const cleanScripts = () => {
 
             removeIfNot({ tag: "script", attrs: { src: /lg/ } }, hasGallery);
             removeIfNot({ tag: "link", attrs: { href: /lg/ } }, hasGallery);
+
+            removeIfNot({ tag: "script", attrs: { src: /viewer/ } }, hasViewer);
+            removeIfNot({ tag: "link", attrs: { href: /viewer/ } }, hasViewer);
 
             removeIfNot({ tag: "script", attrs: { src: /swiper/ } }, hasSwiper);
             removeIfNot({ tag: "link", attrs: { href: /swiper/ } }, hasSwiper);

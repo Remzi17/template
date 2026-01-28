@@ -2,8 +2,8 @@ import gulp from "gulp";
 const { src, dest } = gulp;
 import path from "path";
 import fs from "fs";
-import { paths, isWp, isBuild } from "./settings.js";
-import { dedent } from "./functions.js";
+import { paths, isWp, isDev, isBuild } from "./settings.js";
+import { dedent, devNav } from "./functions.js";
 import fileinclude from "gulp-file-include";
 import notify from "gulp-notify";
 import gulpif from "gulp-if";
@@ -74,6 +74,10 @@ export function html() {
 
           const imgSrc = srcMatch[1];
 
+          // только относительные ссылки
+          const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(imgSrc);
+          if (isAbsolute) return;
+
           const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
           if (!picMatch) return;
 
@@ -95,7 +99,6 @@ export function html() {
           const availableExts = [".jpg", ".jpeg", ".png"];
 
           let foundPath = null;
-
           for (const e of availableExts) {
             const fullPath = path.join(searchDir, base + e);
             if (fs.existsSync(fullPath)) {
@@ -118,6 +121,9 @@ export function html() {
               if (!srcMatch) return imgTag;
 
               const imgSrc = srcMatch[1];
+
+              const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(imgSrc);
+              if (isAbsolute) return imgTag; // абсолютные оставляем без изменений
 
               const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
               const picAttr = !!picMatch;
@@ -166,7 +172,6 @@ export function html() {
                 const mobileSources = picWidths
                   .map((w) => {
                     const media = `(max-width: ${w}px)`;
-
                     return dedent(`
                       <source type="image/avif" srcset="${path.join(dir, `${base}-${w}.avif`)}" media="${media}">
                       <source srcset="${path.join(dir, `${base}-${w}.webp`)}" media="${media}">
@@ -208,6 +213,7 @@ export function html() {
           .catch(cb);
       })
     )
+    .pipe(isDev ? devNav() : through.obj())
     .pipe(
       gulpif(
         isBuild,

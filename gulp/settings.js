@@ -111,6 +111,7 @@ export let getFiles = {
     // 'lg-video',
     // 'select',
     // 'swiper',
+    // 'viewer',
   ],
   jsLibs: [
     // "a_jquery",
@@ -130,6 +131,8 @@ export let getFiles = {
     // 'select',
     // 'swiper',
     // 'timer',
+    // 'timer',
+    // 'viewer',
     // 'wow',
   ],
   jsScripts: [

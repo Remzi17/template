@@ -19,6 +19,7 @@
     "chalk": "^5.6.2",
     "del": "^5.1.0",
     "dotenv": "^17.2.3",
+    "esbuild": "^0.27.2",
     "execa": "^9.5.2",
     "fancy-log": "^2.0.0",
     "glob": "^10.4.5",
@@ -65,7 +66,6 @@
   "dependencies": {
     "baseline-browser-mapping": "^2.9.11",
     "caniuse-lite": "^1.0.30001761",
-    "esbuild": "^0.27.2",
     "posthtml": "^0.16.7",
     "sass": "1.65"
   }

@@ -1,5 +1,6 @@
 import { slider } from "./components/slider";
 import { gallery } from "./components/gallery";
+import { viewer } from "./components/viewer";
 import { rating } from "./components/rating";
 import { fixedMenu } from "./components/fixedMenu";
 import { tooltip } from "./components/tooltip";
@@ -20,6 +21,7 @@ import { showMore } from "./components/showMore";
 
 slider();
 gallery();
+viewer();
 rating();
 fixedMenu();
 tooltip();
