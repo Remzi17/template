@@ -3,6 +3,8 @@ const { series, parallel } = gulp;
 import del from "del";
 import browsersync from "browser-sync";
 import { paths, isDev, isWp } from "./gulp/settings.js";
+import fs from "fs";
+import path from "path";
 
 import { html } from "./gulp/html.js";
 import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gulp/css.js";
@@ -95,6 +97,29 @@ function browserSync(done) {
       server: {
         baseDir: paths.build.html,
       },
+      middleware: [
+        (req, res, next) => {
+          if (req.url === "/__stats") {
+            res.setHeader("Content-Type", "text/html");
+            res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/index.html")));
+            return;
+          }
+
+          if (req.url === "/__stats/data") {
+            res.setHeader("Content-Type", "application/json");
+            res.end(fs.readFileSync(path.resolve("statistics.json")));
+            return;
+          }
+
+          if (req.url === "/statistics/dashboard/dashboard.js") {
+            res.setHeader("Content-Type", "application/javascript");
+            res.end(fs.readFileSync(path.resolve("gulp/statistics/dashboard/dashboard.js")));
+            return;
+          }
+
+          next();
+        },
+      ],
       notify: false,
       open: true,
     });

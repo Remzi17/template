@@ -3,6 +3,7 @@ const { src, dest } = gulp;
 import path from "path";
 import fs from "fs";
 import { paths, isWp, isBuild } from "./settings.js";
+import { dedent } from "./functions.js";
 import fileinclude from "gulp-file-include";
 import notify from "gulp-notify";
 import gulpif from "gulp-if";
@@ -11,31 +12,34 @@ import resize from "gulp-image-resize";
 import rename from "gulp-rename";
 import through from "through2";
 
+const defaultMobileMedia = 575;
 const mobileCache = new Set();
 
-function createMobileVersion(originalPath, width = 575) {
+function createMobileVersion(originalPath, width = defaultMobileMedia) {
   const cacheKey = `${originalPath}_${width}`;
   if (mobileCache.has(cacheKey)) return Promise.resolve();
 
   const ext = path.extname(originalPath);
   const dir = path.dirname(originalPath);
   const base = path.basename(originalPath, ext);
-  const mobilePath = path.join(dir, `${base}_mobile${ext}`);
+  const mobilePath = path.join(dir, `${base}-${width}${ext}`);
 
   if (!fs.existsSync(mobilePath)) {
     mobileCache.add(cacheKey);
+
     return src(originalPath)
       .pipe(resize({ width }))
-      .pipe(rename(`${base}_mobile${ext}`))
+      .pipe(rename(`${base}-${width}${ext}`))
       .pipe(dest(dir));
-  } else {
-    mobileCache.add(cacheKey);
-    return Promise.resolve();
   }
+
+  mobileCache.add(cacheKey);
+  return Promise.resolve();
 }
 
 export function html() {
   if (isWp) return Promise.resolve();
+
   return src(paths.src.html)
     .pipe(
       fileinclude({
@@ -44,7 +48,14 @@ export function html() {
         context: { isDev: !isBuild },
       })
     )
-    .on("error", notify.onError({ title: "HTML error", message: "<%= error.message %>", sound: false }))
+    .on(
+      "error",
+      notify.onError({
+        title: "HTML error",
+        message: "<%= error.message %>",
+        sound: false,
+      })
+    )
     .pipe(
       through.obj(function (file, enc, cb) {
         if (file._processed) return cb(null, file);
@@ -57,22 +68,25 @@ export function html() {
         const imgTags = content.match(imgRegex) || [];
         const processQueue = [];
 
-        imgTags.forEach((imgTag, index) => {
+        imgTags.forEach((imgTag) => {
           const srcMatch = imgTag.match(/\bsrc="([^"]+\.(?:webp|png|jpg|jpeg))"/i);
-          if (!srcMatch) {
-            return;
-          }
+          if (!srcMatch) return;
 
           const imgSrc = srcMatch[1];
 
           const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
-          const picAttr = !!picMatch;
-          let picWidth = 575;
+          if (!picMatch) return;
 
-          if (picMatch && picMatch[1]) {
-            const w = parseInt(picMatch[1], 10);
-            if (!isNaN(w)) picWidth = w;
+          let picWidths = [defaultMobileMedia];
+
+          if (picMatch[1]) {
+            picWidths = picMatch[1]
+              .split(",")
+              .map((v) => parseInt(v.trim(), 10))
+              .filter((v) => !isNaN(v));
           }
+
+          picWidths.sort((a, b) => b - a);
 
           const ext = path.extname(imgSrc);
           const base = path.basename(imgSrc, ext);
@@ -81,6 +95,7 @@ export function html() {
           const availableExts = [".jpg", ".jpeg", ".png"];
 
           let foundPath = null;
+
           for (const e of availableExts) {
             const fullPath = path.join(searchDir, base + e);
             if (fs.existsSync(fullPath)) {
@@ -89,9 +104,11 @@ export function html() {
             }
           }
 
-          if (picAttr && foundPath) {
-            processQueue.push(createMobileVersion(foundPath, picWidth));
-          }
+          if (!foundPath) return;
+
+          picWidths.forEach((width) => {
+            processQueue.push(createMobileVersion(foundPath, width));
+          });
         });
 
         Promise.allSettled(processQueue)
@@ -101,16 +118,21 @@ export function html() {
               if (!srcMatch) return imgTag;
 
               const imgSrc = srcMatch[1];
+
               const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
               const picAttr = !!picMatch;
-              let picWidth = 575;
+
+              let picWidths = [defaultMobileMedia];
 
               if (picMatch && picMatch[1]) {
-                const w = parseInt(picMatch[1], 10);
-                if (!isNaN(w)) picWidth = w;
+                picWidths = picMatch[1]
+                  .split(",")
+                  .map((v) => parseInt(v.trim(), 10))
+                  .filter((v) => !isNaN(v));
               }
 
-              const mobileMedia = `(max-width: ${picWidth}px)`;
+              picWidths.sort((a, b) => b - a);
+
               const ext = path.extname(imgSrc);
               const base = path.basename(imgSrc, ext);
               const dir = path.dirname(imgSrc);
@@ -121,8 +143,8 @@ export function html() {
               };
 
               const classAttr = getAttr("class");
-              const width = getAttr("width");
-              const height = getAttr("height");
+              const widthAttr = getAttr("width");
+              const heightAttr = getAttr("height");
               const alt = getAttr("alt") || "";
               const loading = getAttr("loading") || "lazy";
               const decoding = getAttr("decoding") || "async";
@@ -141,14 +163,24 @@ export function html() {
                 .trim();
 
               if (picAttr) {
+                const mobileSources = picWidths
+                  .map((w) => {
+                    const media = `(max-width: ${w}px)`;
+
+                    return dedent(`
+                      <source type="image/avif" srcset="${path.join(dir, `${base}-${w}.avif`)}" media="${media}">
+                      <source srcset="${path.join(dir, `${base}-${w}.webp`)}" media="${media}">
+                    `);
+                  })
+                  .join("");
+
                 return dedent(`
                   <picture${classAttr ? ` class="${classAttr}"` : ""}>
-                    <source type="image/avif" srcset="${path.join(dir, base)}.avif">
-                    <source type="image/avif" srcset="${path.join(dir, base)}_mobile.avif" media="${mobileMedia}">
-                    <source srcset="${path.join(dir, base)}_mobile.webp" media="${mobileMedia}">
-                    <img src="${path.join(dir, base)}.webp"${cleanAttrs ? " " + cleanAttrs : ""}
-                      ${width ? ` width="${width}"` : ""}
-                      ${height ? ` height="${height}"` : ""}
+                    <source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">
+                    ${mobileSources}
+                    <img src="${path.join(dir, `${base}.webp`)}"${cleanAttrs ? " " + cleanAttrs : ""}
+                      ${widthAttr ? ` width="${widthAttr}"` : ""}
+                      ${heightAttr ? ` height="${heightAttr}"` : ""}
                       alt="${alt}"
                       loading="${loading}"
                       decoding="${decoding}">
@@ -158,11 +190,11 @@ export function html() {
 
               return dedent(`
                 <picture${classAttr ? ` class="${classAttr}"` : ""}>
-                  <source type="image/avif" srcset="${path.join(dir, base)}.avif">
-                  <source type="image/webp" srcset="${path.join(dir, base)}.webp">
-                  <img src="${path.join(dir, base)}.webp"${cleanAttrs ? " " + cleanAttrs : ""}
-                    ${width ? ` width="${width}"` : ""}
-                    ${height ? ` height="${height}"` : ""}
+                  <source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">
+                  <source type="image/webp" srcset="${path.join(dir, `${base}.webp`)}">
+                  <img src="${path.join(dir, `${base}.webp`)}"${cleanAttrs ? " " + cleanAttrs : ""}
+                    ${widthAttr ? ` width="${widthAttr}"` : ""}
+                    ${heightAttr ? ` height="${heightAttr}"` : ""}
                     alt="${alt}"
                     loading="${loading}"
                     decoding="${decoding}">

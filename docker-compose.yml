@@ -10,7 +10,7 @@ services:
       - ./.env
 
     volumes:
-      - ./wp:/var/www/html # монтируем всю папку wp, а не только wp-content
+      - ./wp:/var/www/html
     depends_on:
       - db
 

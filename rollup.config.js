@@ -29,8 +29,6 @@ const baseConfig = (input, outputFile) => ({
   // },
 });
 
-console.log(path.resolve(project_folder, "assets/js/script.js"));
-
 // prettier-ignore
 export const configs = [baseConfig(
   "src/assets/js/script.js", 
