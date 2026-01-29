@@ -75,7 +75,7 @@ function watchFiles() {
   gulp.watch(paths.watch.cssLibs, series(cssLibs, reload));
   gulp.watch(paths.watch.jsLibs, series(jsLibs, reload));
 
-  gulp.watch(paths.watch.icons, series(svg, reload));
+  gulp.watch(paths.watch.icons, series(svg, reload)); 
   gulp.watch(paths.watch.img, series(images, reload));
   gulp.watch(paths.watch.fontcss, series(fontcss, reload));
 }

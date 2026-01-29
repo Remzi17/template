@@ -207,6 +207,17 @@ export function html() {
               `);
             });
 
+            const manifestPath = path.join(paths.build.svgSprite, "sprite-manifest.json");
+
+            if (fs.existsSync(manifestPath)) {
+              const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+
+              Object.keys(manifest).forEach((key) => {
+                const hashed = manifest[key];
+                content = content.replaceAll(key, hashed);
+              });
+            }
+
             file.contents = Buffer.from(content);
             cb(null, file);
           })
