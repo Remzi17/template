@@ -313,7 +313,7 @@ export const concat = () => {
   // concatLibs === true
   // =========================
   if (concatLibs) {
-    head = head.replace(headRe, (_, indent) => [`${indent}<!-- Библиотеки -->`, `${indent}<link rel="preload" href="assets/css/vendor.css" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">`, ``, `${indent}<!-- Общие стили -->`].join("\n"));
+    head = head.replace(headRe, (_, indent) => [`${indent}<!-- Библиотеки -->`, `${indent}<link rel="preload" href="assets/css/vendor.css" as="style" onload="this.rel='stylesheet'">`, ``, `${indent}<!-- Общие стили -->`].join("\n"));
 
     foot = foot.replace(footRe, (_, indent) => [`${indent}<!-- Библиотеки -->`, `${indent}<script src="assets/js/vendor.js" defer></script>`, ``, `${indent}<!-- Общие скрипты -->`].join("\n"));
 
@@ -329,7 +329,7 @@ export const concat = () => {
   head = head.replace(headRe, (_, indent) => {
     const styles = globSync(paths.src.cssLibsFiles)
       .reverse()
-      .map((file) => `${indent}<link rel="preload" href="assets/css/${path.basename(file)}" as="style" onload="this.rel='stylesheet'; this.media='all'; this.onload=null;">`)
+      .map((file) => `${indent}<link rel="preload" href="assets/css/${path.basename(file)}" as="style" onload="this.rel='stylesheet'">`)
       .join("\n");
 
     return [`${indent}<!-- Библиотеки -->`, styles, ``, `${indent}<!-- Общие стили -->`].join("\n");

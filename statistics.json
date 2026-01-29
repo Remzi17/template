@@ -1743,7 +1743,7 @@
   ],
   "files": {
     "style.sass": 2,
-    "index.html": 212,
+    "index.html": 219,
     "_footer.sass": 7,
     "script.js": 21,
     "showmore.js": 2,
@@ -1752,7 +1752,7 @@
     "_news.sass": 1,
     "_header.sass": 121,
     "components.sass": 19,
-    "head.html": 52,
+    "head.html": 58,
     "common.sass": 24,
     "blocks.sass": 2,
     "_default.sass": 22,

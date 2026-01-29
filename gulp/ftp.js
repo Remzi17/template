@@ -99,7 +99,6 @@ function deployRunner(globs) {
   if (!buildOnly()) return Promise.resolve();
 
   const run = (conn) => gulp.src(globs, { base: currentDeploy.base, buffer: false }).pipe(conn.dest(getLink()));
-
   const fastConn = createFastConn();
 
   return new Promise((resolve, reject) => {
