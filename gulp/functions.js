@@ -3,7 +3,7 @@ const { src, dest } = gulp;
 import path from "path";
 import fs from "fs";
 import yargs from "yargs";
-import { paths, source_folder, project_folder, variables, concatLibs, getFiles, replaceScripts } from "./settings.js";
+import { paths, source_folder, project_folder, concatLibs, getFiles } from "./settings.js";
 import { hideBin } from "yargs/helpers";
 import resize from "gulp-image-resize";
 import rename from "gulp-rename";
@@ -299,6 +299,7 @@ gulp.task("fonts", fonts);
 //
 //
 // Объединение библиотек
+
 export const concat = () => {
   const headPath = "src/assets/html/head.html";
   const footPath = "src/assets/html/foot.html";
@@ -309,9 +310,6 @@ export const concat = () => {
   const headRe = /(^[ \t]*)<!-- Библиотеки -->[\s\S]*?\n\1<!-- Общие стили -->/m;
   const footRe = /(^[ \t]*)<!-- Библиотеки -->[\s\S]*?\n\1<!-- Общие скрипты -->/m;
 
-  // =========================
-  // concatLibs === true
-  // =========================
   if (concatLibs) {
     head = head.replace(headRe, (_, indent) => [`${indent}<!-- Библиотеки -->`, `${indent}<link rel="preload" href="assets/css/vendor.css" as="style" onload="this.rel='stylesheet'">`, ``, `${indent}<!-- Общие стили -->`].join("\n"));
 
@@ -322,23 +320,28 @@ export const concat = () => {
     return Promise.resolve();
   }
 
-  // =========================
-  // concatLibs === false
-  // =========================
-
   head = head.replace(headRe, (_, indent) => {
     const styles = globSync(paths.src.cssLibsFiles)
       .reverse()
-      .map((file) => `${indent}<link rel="preload" href="assets/css/${path.basename(file)}" as="style" onload="this.rel='stylesheet'">`)
+      .map((file) => {
+        const base = path.basename(file);
+        const fileName = !concatLibs && base === "vendor.css" ? "swiper.css" : base;
+
+        return `${indent}<link rel="preload" href="assets/css/${fileName}" as="style" onload="this.rel='stylesheet'">`;
+      })
       .join("\n");
 
     return [`${indent}<!-- Библиотеки -->`, styles, ``, `${indent}<!-- Общие стили -->`].join("\n");
   });
-
   foot = foot.replace(footRe, (_, indent) => {
     const scripts = globSync(paths.src.jsLibsFiles)
       .reverse()
-      .map((file) => `${indent}<script src="assets/js/${path.basename(file)}" defer></script>`)
+      .map((file) => {
+        const base = path.basename(file);
+        const fileName = !concatLibs && base === "vendor.js" ? "swiper.js" : base;
+
+        return `${indent}<script src="assets/js/${fileName}" defer></script>`;
+      })
       .join("\n");
 
     return [`${indent}<!-- Библиотеки -->`, scripts, ``, `${indent}<!-- Общие скрипты -->`].join("\n");
@@ -403,99 +406,181 @@ export function dedent(str) {
 
 const create = () => {
   /* ---------------- HTML ---------------- */
-  const htmlTpl = dedent(`
-    @@include('assets/html/head.html', {
-    "class": ""
-    })
-    @@include("assets/html/crumbs.html", {
-    "list": [{
-    "title":"Контакты",
-    "link":"#"
-    }]
-    })
+  // const htmlTpl = dedent(`
+  //   @@include('assets/html/head.html', {
+  //   "class": ""
+  //   })
+  //   @@include("assets/html/crumbs.html", {
+  //   "list": [{
+  //   "title":"Контакты",
+  //   "link":"#"
+  //   }]
+  //   })
 
-    @@include('assets/html/foot.html')
-  `);
+  //   @@include('assets/html/foot.html')
+  // `);
 
-  getFiles.html.sort().forEach((name) => {
-    const file = `${paths.src.htmlFiles}${name}.html`;
-    if (!fs.existsSync(file)) {
-      fs.writeFileSync(file, htmlTpl);
-    }
-  });
+  // getFiles.html.sort().forEach((name) => {
+  //   const file = `${paths.src.htmlFiles}${name}.html`;
+  //   if (!fs.existsSync(file)) {
+  //     fs.writeFileSync(file, htmlTpl);
+  //   }
+  // });
 
   /* ---------------- SASS: components ---------------- */
 
-  const componentsImports = getFiles.components.sort().map((name) => `@import "components/_${name}"`);
+  // const componentsImports = getFiles.components.sort().map((name) => `@import "components/_${name}"`);
 
-  appendImportsToBottom(`${source_folder}/assets/sass/components.sass`, componentsImports);
+  // appendImportsToBottom(`${source_folder}/assets/sass/components.sass`, componentsImports);
 
-  cleanDir(paths.src.sassComponents, getFiles.components, ["burger"]);
+  // cleanDir(paths.src.sassComponents, getFiles.components, ["burger"]);
 
   /* ---------------- SASS: blocks ---------------- */
 
-  const skip = new Set(["style", "fonts", "all", "components"]);
+  // const skip = new Set(["style", "fonts", "all", "components"]);
 
-  const blocksImports = getFiles.sass
-    .filter((name) => !skip.has(name))
-    .sort()
-    .map((name) => `@import "_${name}"`);
+  // const blocksImports = getFiles.sass
+  //   .filter((name) => !skip.has(name))
+  //   .sort()
+  //   .map((name) => `@import "_${name}"`);
 
-  appendImportsToBottom(`${source_folder}/assets/sass/blocks.sass`, blocksImports);
+  // appendImportsToBottom(`${source_folder}/assets/sass/blocks.sass`, blocksImports);
 
   /* ---------------- SASS files ---------------- */
 
-  getFiles.sass.forEach((name) => {
-    const file = `${paths.src.sass}_${name}.sass`;
-    if (!fs.existsSync(file)) {
-      fs.writeFileSync(file, `//.${name}\n`);
-    }
-  });
+  // getFiles.sass.forEach((name) => {
+  //   const file = `${paths.src.sass}_${name}.sass`;
+  //   if (!fs.existsSync(file)) {
+  //     fs.writeFileSync(file, `//.${name}\n`);
+  //   }
+  // });
 
   /* ---------------- JS components ---------------- */
 
-  if (replaceScripts) {
-    const js = getFiles.jsScripts;
-    const imports = js.map((name) => `import { ${name} } from './components/${name}'`).join("\n");
-    const calls = js.map((name) => `${name}()`).join("\n");
+  // if (replaceScripts) {
+  //   const js = getFiles.jsScripts;
+  //   const imports = js.map((name) => `import { ${name} } from './components/${name}'`).join("\n");
+  //   const calls = js.map((name) => `${name}()`).join("\n");
 
-    fs.writeFileSync(`${source_folder}/assets/js/components.js`, `${imports}\n\n${calls}\n`);
+  //   fs.writeFileSync(`${source_folder}/assets/js/components.js`, `${imports}\n\n${calls}\n`);
 
-    cleanDir(paths.src.jsComponents, js, ["variable"]);
-  }
+  //   cleanDir(paths.src.jsComponents, js, ["variable"]);
+  // }
 
   /* ---------------- JS libs ---------------- */
 
-  cleanDir(paths.src.jsLibs, getFiles.jsLibs);
+  // const VENDOR_PATH = path.join(paths.src.jsLibs, "vendor.js");
+  // const SWIPER_BLOCK =
+  //   `\n` +
+  //   dedent(`
+  //   import Swiper from "swiper";
+  //   import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
+  //   Swiper.use([Navigation, Pagination, Autoplay, EffectFade]);
+  //   window.Swiper = Swiper;
+  // `);
+
+  // let lines = [];
+
+  // getFiles.jsLibs.forEach((lib) => {
+  //   if (lib === "swiper") {
+  //     lines.push(SWIPER_BLOCK);
+  //   } else {
+  //     lines.push(`import "./${lib}.js";`);
+  //   }
+  // });
+
+  // const SWIPER_COMMENT =
+  //   `\n` +
+  //   dedent(`
+  //   /*
+  //   // Autoplay; 					// автопрокрутка
+  //   // EffectFade; 				// эффект fade
+  //   // Keyboard; 					// управление клавишами
+  //   // Navigation; 				// стрелки Next/Prev
+  //   // Pagination; 				// bullets, fraction, progressbar
+  //   // Controller; 				// связывание нескольких слайдеров
+  //   // FreeMode; 					// свободное пролистывание
+  //   // Grid; 							// сетка слайдов
+  //   // Lazy; 							// lazy-load изображений
+  //   // Mousewheel; 				// управление колесиком мыши
+  //   // PaginationDynamic; // динамические bullets
+  //   // Scrollbar; 				// scroll bar
+  //   // Thumbs; 						// миниатюры (thumbnails)
+  //   // A11y; 							// accessibility (a11y)
+  //   // EffectCube; 				// 3D-куб
+  //   // EffectFlip; 				// 3D-flip
+  //   // EffectCoverflow; 	// эффект coverflow
+  //   // History; 					// управление браузерной историей
+  //   // HashNavigation; 		// навигация по hash
+  //   // Manipulation; 			// add/remove slides dynamically
+  //   // Parallax; 					// parallax эффект
+  //   // Virtual; 					// виртуальные слайды
+  //   // Zoom; 							// zoom
+  //   */
+  // `);
+  // lines.push(SWIPER_COMMENT);
+
+  // fs.writeFileSync(VENDOR_PATH, lines.join("\n"));
 
   /* ---------------- CSS libs ---------------- */
 
-  cleanDir(paths.src.cssLibs, getFiles.cssLibs);
+  const VENDOR_PATH = path.join(paths.src.cssLibs, "vendor.css");
+
+  let lines = [];
+
+  const SWIPER_BLOCK =
+    `\n` +
+    dedent(`
+    @import "swiper/swiper.css";
+    @import "swiper/modules/navigation.css";
+    @import "swiper/modules/pagination.css";
+
+    /* 
+    @import "swiper/modules/free-mode.css";
+    @import "swiper/modules/grid.css";
+    @import "swiper/modules/parallax.css";
+    @import "swiper/modules/scrollbar.css";
+    @import "swiper/modules/thumbs.css"; 
+    @import "swiper/modules/zoom.css";  
+    */
+  `);
+
+  getFiles.cssLibs.forEach((lib) => {
+    if (lib !== "swiper") {
+      lines.push(`@import "${lib}.css";`);
+    }
+  });
+
+  lines.push(SWIPER_BLOCK);
+
+  const content = lines.join("\n");
+
+  fs.writeFileSync(VENDOR_PATH, content);
 
   /* ---------------- CSS variables ---------------- */
 
-  const v = variables;
+  // const v = variables;
 
-  fs.writeFileSync(
-    paths.src.cssvariables,
-    dedent(`
-      $active: ${v.active}
-      $gray: ${v.gray}
-      $text: ${v.text}
-      $bg: ${v.bg}
-      $border-radius: ${v.borderRadius}
+  // fs.writeFileSync(
+  //   paths.src.cssvariables,
+  //   dedent(`
+  //     $active: ${v.active}
+  //     $gray: ${v.gray}
+  //     $text: ${v.text}
+  //     $bg: ${v.bg}
+  //     $border-radius: ${v.borderRadius}
 
-      $minWidth: ${v.minWidth}
-      $maxWidth: ${v.maxWidth}
-      $containerWidth: ${v.containerWidth}
-      $container: ${v.container}
-      $firstBreakpoint: ${v.firstBreakpoint}
-      $section_gap: ${v.section_gap}
-      $burgerMedia: ${v.burgerMedia}
+  //     $minWidth: ${v.minWidth}
+  //     $maxWidth: ${v.maxWidth}
+  //     $containerWidth: ${v.containerWidth}
+  //     $container: ${v.container}
+  //     $firstBreakpoint: ${v.firstBreakpoint}
+  //     $section_gap: ${v.section_gap}
+  //     $burgerMedia: ${v.burgerMedia}
 
-      $font: '${v.font}'
-    `)
-  );
+  //     $font: '${v.font}'
+  //   `)
+  // );
 };
 
 gulp.task("create", gulp.series(concat, create));

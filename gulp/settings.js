@@ -1,7 +1,7 @@
 export let replaceScripts = true;
 export let template = "rem";
-export let concatLibs = false;
-export let jsBundler = "esbuild"; // rollup или esbuild
+export let concatLibs = true;
+export let jsBundler = "rollup"; // rollup или esbuild
 export let unCSS = false;
 export let isDeploy = true;
 export let isWp = false;
@@ -109,27 +109,26 @@ export let getFiles = {
     // 'lg-thumbnail',
     // 'lg-zoom',
     // 'lg-video',
-    // 'select',
-    // 'swiper',
-    // 'viewer',
+    // "select",
+    // "swiper",
+    // "viewer",
   ],
   jsLibs: [
     // "a_jquery",
     "dynamic",
     // 'date',
 
-    // 'lg',
-    // 'lg-medium-zoom',
-    // 'lg-thumbnail',
-    // 'lg-zoom',
+    // "lg",
+    // "lg-thumbnail",
+    // "lg-zoom",
 
-    // 'lg-video',
+    // "lg-video",
 
-    "mask",
+    // "mask",
     // 'range',
     // 'notify',
     // 'select',
-    // 'swiper',
+    // "swiper",
     // 'timer',
     // 'timer',
     // 'viewer',
@@ -193,9 +192,8 @@ export let paths = {
     jsLibs: source_folder + "/assets/libs/js/",
     jsLibsFiles: source_folder + "/assets/libs/js/*.js",
     img: [source_folder + "/assets/img/**/*.{jpg,jpeg,png,svg,gif,json,ico,webp,mp4,mp3,m4a,pdf}", "!" + source_folder + "/assets/img/resize/**/*.*"],
-    fonts: source_folder + "/assets/fonts/*.{woff,woff2}",
+    fonts: source_folder + "/assets/fonts/",
     fontcss: source_folder + "/assets/css/fonts.css",
-    fontsDir: source_folder + "/assets/fonts/",
   },
   watch: {
     html: source_folder + "/**/*.html",

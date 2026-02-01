@@ -2,10 +2,9 @@ import gulp from "gulp";
 const { src, dest, parallel } = gulp;
 import path from "path";
 import fs from "fs";
-import { paths, isDev, isBuild, isWp, unCSS, concatLibs, __dirname } from "./settings.js";
+import { paths, isDev, concatLibs, __dirname } from "./settings.js";
 import browsersync from "browser-sync";
 import notify from "gulp-notify";
-import gulpif from "gulp-if";
 import concat from "gulp-concat";
 import group_media from "gulp-group-css-media-queries";
 import autoprefixer from "gulp-autoprefixer";
@@ -13,6 +12,8 @@ import csso from "gulp-csso";
 import uncss from "gulp-uncss";
 import gulpSass from "gulp-sass";
 import * as dartSass from "sass";
+import postcss from "gulp-postcss";
+import postcssImport from "postcss-import";
 
 const sass = gulpSass(dartSass);
 
@@ -104,31 +105,43 @@ export function css() {
 }
 
 export function cssLibs() {
-  return src(paths.src.cssLibsFiles)
-    .pipe(gulpif(concatLibs || isWp, concat("vendor.css")))
-    .pipe(
-      gulpif(
-        isBuild,
+  const postcssPlugins = [
+    postcssImport({
+      path: ["node_modules"],
+    }),
+  ];
+
+  if (concatLibs) {
+    return src(paths.src.cssLibs + "vendor.css")
+      .pipe(postcss(postcssPlugins))
+      .pipe(
         csso({
           restructure: false,
           forceMediaMerge: false,
           comments: false,
-          usage: {
-            keyframes: false,
-          },
+          usage: { keyframes: false },
         })
       )
-    )
+      .pipe(concat("vendor.css"))
+      .pipe(dest(paths.build.css))
+      .pipe(browsersync.stream());
+  }
+
+  src([paths.src.cssLibs + "*.css", "!" + paths.src.cssLibs + "vendor.css"])
     .pipe(dest(paths.build.css))
+    .pipe(browsersync.stream());
+
+  return src(paths.src.cssLibs + "vendor.css")
+    .pipe(postcss(postcssPlugins))
     .pipe(
-      gulpif(
-        unCSS,
-        uncss({
-          html: [paths.src.unusedHtml],
-          ignore: [/.*lg.*/, /.*select.*/, ".swiper", ".swiper-wrapper", ".swiper-slide", ".swiper-pagination", ".swiper-initialized", ".swiper-pagination-bullet", ".swiper-pagination-bullet-active", ".swiper-horizontal", ".fadeInUp", ".fadeInLeft", ".fadeInRight", ".fadeInDown", ".animated"],
-        })
-      )
+      csso({
+        restructure: false,
+        forceMediaMerge: false,
+        comments: false,
+        usage: { keyframes: false },
+      })
     )
+    .pipe(concat("swiper.css"))
     .pipe(dest(paths.build.css))
     .pipe(browsersync.stream());
 }

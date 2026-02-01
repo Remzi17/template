@@ -69,21 +69,21 @@ export function html() {
         const processQueue = [];
 
         imgTags.forEach((imgTag) => {
-          const srcMatch = imgTag.match(/\bsrc="([^"]+\.(?:webp|png|jpg|jpeg))"/i);
+          const srcMatch = imgTag.match(/\bsrc="([^"]+\.(?:avif|webp|png|jpg|jpeg))"/i);
           if (!srcMatch) return;
 
           const imgSrc = srcMatch[1];
-
-          // только относительные ссылки
           const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(imgSrc);
           if (isAbsolute) return;
 
+          const ext = path.extname(imgSrc).toLowerCase();
+          const base = path.basename(imgSrc, ext);
+          const dir = path.dirname(imgSrc);
+          const isRaster = ext === ".jpg" || ext === ".jpeg" || ext === ".png";
           const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
-          if (!picMatch) return;
-
           let picWidths = [defaultMobileMedia];
 
-          if (picMatch[1]) {
+          if (picMatch && picMatch[1]) {
             picWidths = picMatch[1]
               .split(",")
               .map((v) => parseInt(v.trim(), 10))
@@ -92,13 +92,9 @@ export function html() {
 
           picWidths.sort((a, b) => b - a);
 
-          const ext = path.extname(imgSrc);
-          const base = path.basename(imgSrc, ext);
-          const dir = path.dirname(imgSrc);
           const searchDir = path.join("src", dir);
-          const availableExts = [".jpg", ".jpeg", ".png"];
-
           let foundPath = null;
+          const availableExts = [".jpg", ".jpeg", ".png"];
           for (const e of availableExts) {
             const fullPath = path.join(searchDir, base + e);
             if (fs.existsSync(fullPath)) {
@@ -106,42 +102,42 @@ export function html() {
               break;
             }
           }
-
-          if (!foundPath) return;
+          if (isRaster && !foundPath) return;
 
           picWidths.forEach((width) => {
-            processQueue.push(createMobileVersion(foundPath, width));
+            if (foundPath) processQueue.push(createMobileVersion(foundPath, width));
           });
         });
 
         Promise.allSettled(processQueue)
           .then(() => {
             content = content.replace(imgRegex, (imgTag) => {
-              const srcMatch = imgTag.match(/\bsrc="([^"]+\.(?:webp|png|jpg|jpeg))"/i);
+              const srcMatch = imgTag.match(/\bsrc="([^"]+\.(?:avif|webp|png|jpg|jpeg))"/i);
               if (!srcMatch) return imgTag;
 
               const imgSrc = srcMatch[1];
-
               const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(imgSrc);
-              if (isAbsolute) return imgTag; // абсолютные оставляем без изменений
+              if (isAbsolute) return imgTag;
 
-              const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
+              const ext = path.extname(imgSrc).toLowerCase();
+              const base = path.basename(imgSrc, ext);
+              const dir = path.dirname(imgSrc);
+
+              const isRaster = ext === ".jpg" || ext === ".jpeg" || ext === ".png";
+              const isAvif = ext === ".avif";
+              const isWebp = ext === ".webp";
+
+              const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/);
               const picAttr = !!picMatch;
 
               let picWidths = [defaultMobileMedia];
-
               if (picMatch && picMatch[1]) {
                 picWidths = picMatch[1]
                   .split(",")
                   .map((v) => parseInt(v.trim(), 10))
                   .filter((v) => !isNaN(v));
               }
-
               picWidths.sort((a, b) => b - a);
-
-              const ext = path.extname(imgSrc);
-              const base = path.basename(imgSrc, ext);
-              const dir = path.dirname(imgSrc);
 
               const getAttr = (name) => {
                 const m = imgTag.match(new RegExp(`\\b${name}="([^"]*)"`, "i"));
@@ -152,7 +148,8 @@ export function html() {
               const widthAttr = getAttr("width");
               const heightAttr = getAttr("height");
               const alt = getAttr("alt") || "";
-              const loading = getAttr("loading") || "lazy";
+              const loading = getAttr("loading");
+              const loadingAttr = loading ? ` loading="${loading}"` : "";
               const decoding = getAttr("decoding") || "async";
 
               const cleanAttrs = imgTag
@@ -168,53 +165,48 @@ export function html() {
                 .replace(/\spic(?:="[^"]*")?/gi, "")
                 .trim();
 
-              if (picAttr) {
-                const mobileSources = picWidths
-                  .map((w) => {
-                    const media = `(max-width: ${w}px)`;
-                    return dedent(`
-                      <source type="image/avif" srcset="${path.join(dir, `${base}-${w}.avif`)}" media="${media}">
-                      <source srcset="${path.join(dir, `${base}-${w}.webp`)}" media="${media}">
-                    `);
-                  })
-                  .join("");
+              const sources = [];
 
-                return dedent(`
+              if (picAttr) {
+                picWidths.forEach((w) => {
+                  const media = `(max-width: ${w}px)`;
+                  if (isRaster) {
+                    sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}-${w}.avif`)}" media="${media}">`);
+                    sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}-${w}.webp`)}" media="${media}">`);
+                  }
+                  if (isAvif) sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}-${w}.avif`)}" media="${media}">`);
+                  if (isWebp) sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}-${w}.webp`)}" media="${media}">`);
+                });
+              } else {
+                if (isRaster) {
+                  sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">`);
+                  sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}.webp`)}">`);
+                }
+                if (isAvif) sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">`);
+                if (isWebp) sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}.webp`)}">`);
+              }
+
+              const imgFinal = isAvif ? `${base}.avif` : `${base}.webp`;
+              let finalHtml = "";
+              if (sources.length === 1 && sources[0].includes(imgFinal)) {
+                finalHtml = `<picture${classAttr ? ` class="${classAttr}"` : ""}><img src="${path.join(dir, imgFinal)}"${cleanAttrs ? " " + cleanAttrs : ""}${widthAttr ? ` width="${widthAttr}"` : ""}${heightAttr ? ` height="${heightAttr}"` : ""} alt="${alt}"${loadingAttr} decoding="${decoding}"></picture>`;
+              } else {
+                finalHtml = dedent(`
                   <picture${classAttr ? ` class="${classAttr}"` : ""}>
-                    <source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">
-                    ${mobileSources}
-                    <img src="${path.join(dir, `${base}.webp`)}"${cleanAttrs ? " " + cleanAttrs : ""}
-                      ${widthAttr ? ` width="${widthAttr}"` : ""}
-                      ${heightAttr ? ` height="${heightAttr}"` : ""}
-                      alt="${alt}"
-                      loading="${loading}"
-                      decoding="${decoding}">
+                    ${sources.join("\n")}
+                    <img src="${path.join(dir, imgFinal)}"${cleanAttrs ? " " + cleanAttrs : ""}${widthAttr ? ` width="${widthAttr}"` : ""}${heightAttr ? ` height="${heightAttr}"` : ""} alt="${alt}" ${loadingAttr} decoding="${decoding}">
                   </picture>
                 `);
               }
 
-              return dedent(`
-                <picture${classAttr ? ` class="${classAttr}"` : ""}>
-                  <source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">
-                  <source type="image/webp" srcset="${path.join(dir, `${base}.webp`)}">
-                  <img src="${path.join(dir, `${base}.webp`)}"${cleanAttrs ? " " + cleanAttrs : ""}
-                    ${widthAttr ? ` width="${widthAttr}"` : ""}
-                    ${heightAttr ? ` height="${heightAttr}"` : ""}
-                    alt="${alt}"
-                    loading="${loading}"
-                    decoding="${decoding}">
-                </picture>
-              `);
+              return finalHtml;
             });
 
             const manifestPath = path.join(paths.build.svgSprite, "sprite-manifest.json");
-
             if (fs.existsSync(manifestPath)) {
               const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
-
               Object.keys(manifest).forEach((key) => {
-                const hashed = manifest[key];
-                content = content.replaceAll(key, hashed);
+                content = content.replaceAll(key, manifest[key]);
               });
             }
 

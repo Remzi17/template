@@ -11,7 +11,7 @@ import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gu
 import { jsLibs, js } from "./gulp/js.js";
 import { images } from "./gulp/images.js";
 import { svg } from "./gulp/svg.js";
-import { fonts, fontcss } from "./gulp/fonts.js";
+import { fontsCopy, fontsConvert, fontcss } from "./gulp/fonts.js";
 import { deployHtml, deployCss, deployJs } from "./gulp/ftp.js";
 
 import { temp } from "./gulp/functions.js";
@@ -77,7 +77,7 @@ function watchFiles() {
 
   gulp.watch(paths.watch.icons, series(svg, reload)); 
   gulp.watch(paths.watch.img, series(images, reload));
-  gulp.watch(paths.watch.fontcss, series(fontcss, reload));
+  gulp.watch(paths.watch.fontcss, series(fontsCopy, fontsConvert, reload));
 }
 
 function browserSync(done) {
@@ -136,7 +136,7 @@ const dev = series(
   },
   temp,
   clean,
-  parallel(html, js, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fonts, fontcss),
+  parallel(html, js, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fontsCopy, fontsConvert, fontcss),
   (done) => {
     buildEndTimer();
     done();
@@ -152,7 +152,7 @@ const build = series(
   temp,
   clean,
   js,
-  parallel(html, css, cssLibs, jsLibs, svg, images, fonts, fontcss),
+  parallel(html, css, cssLibs, jsLibs, svg, images, fontsCopy, fontsConvert, fontcss),
   (done) => {
     buildEndTimer();
     done();

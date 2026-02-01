@@ -1,21 +1,65 @@
 import gulp from "gulp";
 const { src, dest } = gulp;
-import { paths, isBuild, isWp, jsBundler, concatLibs } from "./settings.js";
+import fs from "fs";
 import browsersync from "browser-sync";
+import { paths, isBuild, jsBundler, concatLibs } from "./settings.js";
 import esbuild from "esbuild";
 import * as rollupJs from "rollup";
 import { configs } from "../rollup.config.js";
-import concat from "gulp-concat";
-import gulpif from "gulp-if";
-import terser from "gulp-terser";
 import beautify from "gulp-beautify";
 
-export function jsLibs() {
-  return src(paths.src.jsLibsFiles)
-    .pipe(gulpif(concatLibs || isWp, concat("vendor.js")))
-    .pipe(gulpif(isBuild, terser()))
-    .pipe(dest(paths.build.js))
-    .pipe(browsersync.stream());
+export async function jsLibs() {
+  const vendorPath = paths.src.jsLibs + "vendor.js";
+  const outputFile = paths.build.js + (concatLibs ? "vendor.js" : "swiper.js");
+
+  let vendorContent = fs.readFileSync(vendorPath, "utf-8");
+  let tempVendorPath = vendorPath;
+
+  if (!concatLibs) {
+    const importRegex = /import\s+["']\.\/(.+?)\.js["'];/g;
+    vendorContent = vendorContent.replace(importRegex, (match, p1) => {
+      return p1 === "swiper" ? match : "";
+    });
+
+    tempVendorPath = paths.src.jsLibs + "_vendor_swiper.js";
+    fs.writeFileSync(tempVendorPath, vendorContent);
+  }
+
+  await esbuild.build({
+    entryPoints: [tempVendorPath],
+    bundle: true,
+    format: "iife",
+    outfile: outputFile,
+    sourcemap: false,
+    minify: isBuild,
+    target: "es2018",
+    legalComments: "none",
+    logLevel: "silent",
+  });
+
+  if (!concatLibs && fs.existsSync(tempVendorPath)) fs.unlinkSync(tempVendorPath);
+
+  if (!concatLibs) {
+    const importRegex = /import\s+["']\.\/(.+?)\.js["'];/g;
+    const imports = [];
+    let match;
+    while ((match = importRegex.exec(fs.readFileSync(vendorPath, "utf-8"))) !== null) {
+      const file = match[1];
+      if (file !== "swiper") imports.push(file + ".js");
+    }
+
+    if (imports.length) {
+      await new Promise((resolve) => {
+        gulp
+          .src(imports.map((f) => paths.src.jsLibs + f))
+          .pipe(gulp.dest(paths.build.js))
+          .pipe(browsersync.stream())
+          .on("end", resolve);
+      });
+    }
+  } else {
+    browsersync.reload();
+  }
 }
 
 export async function js() {

@@ -11,7 +11,7 @@ export function viewer() {
   if (!galleries.length) return;
 
   galleries.forEach((gallery) => {
-    if (gallery.classList.contains("gallery_init")) return;
+    if (gallery.classList.contains("viewer_init")) return;
 
     let items = [];
     let galleryItems = gallery.querySelectorAll("[data-viewer-item], a");
@@ -55,14 +55,34 @@ export function viewer() {
         autofit: true,
         fullscreen: true,
         download: true,
-        play: true,
-        autoslide: 5,
+        play: false,
+        // autoslide: 5,
         progress: true,
         close: true,
         page: true,
       });
+
+      let spotlightClosing = false;
+
+      document.addEventListener(
+        "pointerdown",
+        (e) => {
+          const pane = e.target.closest(".spl-pane");
+          const img = e.target.closest("img");
+
+          if (!pane || img) return;
+
+          if (spotlightClosing) {
+            return;
+          }
+
+          spotlightClosing = true;
+          Spotlight.close();
+        },
+        true
+      );
     });
 
-    gallery.classList.add("gallery_init");
+    gallery.classList.add("viewer_init");
   });
 }

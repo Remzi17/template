@@ -447,16 +447,14 @@
     Z();
   }
   function bb(isButton) {
-    // zoom in
-    var factor = isButton ? 1.25 : 1.1; // кнопки крупнее, колесико мелкое
+    var factor = isButton ? 1.25 : 1.05;
     var a = v * factor;
     if (a > 5) a = 5;
     Eb(a);
   }
 
   function cb(isButton) {
-    // zoom out
-    var factor = isButton ? 0.8 : 0.9; // кнопки крупнее
+    var factor = isButton ? 0.8 : 0.95;
     var a = v * factor;
     if (a < 0.2) a = 0.2;
     Eb(a);
@@ -468,6 +466,7 @@
     qb();
     setTimeout(() => g(N, "transition", ""), 200);
   }
+
   function eb() {
     var a = K,
       b = document.createElement("a"),
