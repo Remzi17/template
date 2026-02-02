@@ -2449,18 +2449,58 @@
       "date": "01.02.2026",
       "start": 1769977008441,
       "end": 1769977008441
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770032330782,
+      "end": 1770032330782
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770032357689,
+      "end": 1770032357689
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770039426842,
+      "end": 1770039426842
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770039593126,
+      "end": 1770039593126
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770039712079,
+      "end": 1770039712079
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770039835741,
+      "end": 1770039835741
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770040092412,
+      "end": 1770040092412
+    },
+    {
+      "date": "02.02.2026",
+      "start": 1770040102873,
+      "end": 1770040102873
     }
   ],
   "files": {
     "style.sass": 2,
-    "index.html": 266,
+    "index.html": 271,
     "_footer.sass": 7,
     "script.js": 24,
     "showmore.js": 2,
     "fixedmenu.js": 1,
     "_about.sass": 3,
     "_news.sass": 1,
-    "_header.sass": 131,
+    "_header.sass": 137,
     "components.sass": 19,
     "head.html": 88,
     "common.sass": 24,
@@ -2500,7 +2540,7 @@
     "_form.sass": 15,
     "_switch.sass": 1,
     "gallery.js": 22,
-    "viewer.js": 33,
+    "viewer.js": 40,
     "callback.html": 3,
     "_callback.sass": 4,
     "news-wrapper.html": 10,

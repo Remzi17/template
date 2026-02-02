@@ -147,16 +147,19 @@ export function cssLibs() {
 }
 
 export function deadCss(done) {
-  const cssPath = path.join(paths.build.css, "style.css");
-  const htmlFiles = fs.readdirSync(paths.build.html).filter((f) => f.endsWith(".html"));
+  const cssPaths = isDev ? [path.join(paths.build.css, "common.css"), path.join(paths.build.css, "components.css"), path.join(paths.build.css, "blocks.css")] : [path.join(paths.build.css, "style.css")];
 
-  if (!fs.existsSync(cssPath)) {
-    console.log("❌ CSS файл не найден:", cssPath);
+  const htmlFiles = fs.readdirSync(paths.build.html).filter((f) => f.endsWith(".html"));
+  const missingFiles = cssPaths.filter((file) => !fs.existsSync(file));
+
+  if (missingFiles.length) {
+    console.log("❌ CSS файлы не найдены:");
+    missingFiles.forEach((f) => console.log("  " + f));
     done();
     return;
   }
 
-  const cssContent = fs.readFileSync(cssPath, "utf-8");
+  const cssContent = cssPaths.map((file) => fs.readFileSync(file, "utf-8")).join("\n");
 
   function extractClasses(cssContent) {
     return [...new Set(Array.from(cssContent.matchAll(/\.([_a-zA-Z][_a-zA-Z0-9-]*)/g)).map((m) => m[1]))];

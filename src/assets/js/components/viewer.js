@@ -49,7 +49,7 @@ export function viewer() {
 
       Spotlight.show(items, {
         index: index + 1,
-        animation: "slide,fade",
+        animation: "slide,fade,scale",
         control: "page,zoom,autofit,fullscreen,download,play,close",
         zoom: true,
         autofit: true,

@@ -5,6 +5,7 @@ export let jsBundler = "rollup"; // rollup или esbuild
 export let unCSS = false;
 export let isDeploy = true;
 export let isWp = false;
+export let showNavbar = true;
 
 export let variables = {
   font: "Montserrat",
