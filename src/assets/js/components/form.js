@@ -2,16 +2,20 @@ import { successSubmitForm } from "../scripts/forms/validation";
 import { allForms } from "../scripts/variables";
 
 /* 
-	================================================
+  ================================================
 	  
-	Отправка форм
+  Отправка форм
 	
-	================================================
+  ================================================
 */
 
 export function form() {
   allForms.forEach((form) => {
-    if (form.classList.contains("wpcf7-form")) return;
+    const action = (form.getAttribute("action") || "").trim();
+
+    if (form.classList.contains("wpcf7-form") || (action !== "" && action !== "mail.php" && action !== "/mail.php")) {
+      return;
+    }
 
     if (!form.hasAttribute("enctype")) {
       form.setAttribute("enctype", "multipart/form-data");

@@ -80,6 +80,16 @@ function watchFiles() {
   gulp.watch(paths.watch.fontcss, series(fontsCopy, fontsConvert, reload));
 }
 
+gulp
+  .watch("./wp/wp-content/themes/main/**/*.php", {
+    usePolling: true,
+    interval: 200,
+  })
+  .on("change", (filePath) => {
+    trackFile(filePath);
+    browsersync.reload();
+  });
+
 function browserSync(done) {
   if (isWp) {
     browsersync.init({
