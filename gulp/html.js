@@ -76,10 +76,10 @@ export function html() {
           const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(imgSrc);
           if (isAbsolute) return;
 
-          const ext = path.extname(imgSrc).toLowerCase();
-          const base = path.basename(imgSrc, ext);
+          const extFromHtml = path.extname(imgSrc).toLowerCase();
+          const base = path.basename(imgSrc, extFromHtml);
           const dir = path.dirname(imgSrc);
-          const isRaster = ext === ".jpg" || ext === ".jpeg" || ext === ".png";
+
           const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/i);
           let picWidths = [defaultMobileMedia];
 
@@ -94,38 +94,43 @@ export function html() {
 
           const searchDir = path.join("src", dir);
           let foundPath = null;
+          let originalExt = "";
+          let isRaster = false;
+
           const availableExts = [".jpg", ".jpeg", ".png"];
           for (const e of availableExts) {
             const fullPath = path.join(searchDir, base + e);
             if (fs.existsSync(fullPath)) {
               foundPath = fullPath;
+              originalExt = e;
+              isRaster = true;
               break;
             }
           }
-          if (isRaster && !foundPath) return;
 
-          picWidths.forEach((width) => {
-            if (foundPath) processQueue.push(createMobileVersion(foundPath, width));
-          });
+          if (foundPath) {
+            picWidths.forEach((width) => {
+              processQueue.push(createMobileVersion(foundPath, width));
+            });
+          }
         });
 
         Promise.allSettled(processQueue)
           .then(() => {
             content = content.replace(imgRegex, (imgTag) => {
               const srcMatch = imgTag.match(/\bsrc="([^"]+\.(?:avif|webp|png|jpg|jpeg))"/i);
-              if (!srcMatch) return imgTag;
+              const dataSrcMatch = imgTag.match(/\bdata-src="([^"]+\.(?:avif|webp|png|jpg|jpeg))"/i);
+              if (!srcMatch && !dataSrcMatch) return imgTag;
 
-              const imgSrc = srcMatch[1];
+              const imgSrc = dataSrcMatch ? dataSrcMatch[1] : srcMatch ? srcMatch[1] : null;
+              const useDataAttr = !!dataSrcMatch;
+
               const isAbsolute = /^(?:[a-z]+:)?\/\//i.test(imgSrc);
               if (isAbsolute) return imgTag;
 
-              const ext = path.extname(imgSrc).toLowerCase();
-              const base = path.basename(imgSrc, ext);
+              const extFromHtml = path.extname(imgSrc).toLowerCase();
+              const base = path.basename(imgSrc, extFromHtml);
               const dir = path.dirname(imgSrc);
-
-              const isRaster = ext === ".jpg" || ext === ".jpeg" || ext === ".png";
-              const isAvif = ext === ".avif";
-              const isWebp = ext === ".webp";
 
               const picMatch = imgTag.match(/\spic(?:="([^"]*)")?/);
               const picAttr = !!picMatch;
@@ -151,58 +156,87 @@ export function html() {
               const loading = getAttr("loading");
               const loadingAttr = loading ? ` loading="${loading}"` : "";
               const decoding = getAttr("decoding") || "async";
+              const fetchpriority = getAttr("fetchpriority");
+              const fetchpriorityAttr = fetchpriority ? ` fetchpriority="${fetchpriority}"` : "";
 
-              const cleanAttrs = imgTag
-                .replace(/^<img/i, "")
-                .replace(/\/?>$/, "")
-                .replace(/\bsrc="[^"]*"/gi, "")
-                .replace(/\bclass="[^"]*"/gi, "")
-                .replace(/\bwidth="[^"]*"/gi, "")
-                .replace(/\bheight="[^"]*"/gi, "")
-                .replace(/\balt="[^"]*"/gi, "")
-                .replace(/\bloading="[^"]*"/gi, "")
-                .replace(/\bdecoding="[^"]*"/gi, "")
-                .replace(/\spic(?:="[^"]*")?/gi, "")
-                .trim();
+              const searchDir = path.join("src", dir);
+              let foundPath = null;
+              let isRaster = false;
+
+              const availableExts = [".jpg", ".jpeg", ".png"];
+              for (const e of availableExts) {
+                const fullPath = path.join(searchDir, base + e);
+                if (fs.existsSync(fullPath)) {
+                  foundPath = fullPath;
+                  isRaster = true;
+                  break;
+                }
+              }
+
+              if (!isRaster || !foundPath) return imgTag;
+
+              const placeholder = "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==";
 
               const sources = [];
 
               if (picAttr) {
                 picWidths.forEach((w) => {
                   const media = `(max-width: ${w}px)`;
-                  if (isRaster) {
-                    sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}-${w}.avif`)}" media="${media}">`);
-                    sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}-${w}.webp`)}" media="${media}">`);
+
+                  if (isBuild) {
+                    if (useDataAttr) {
+                      sources.push(`<source srcset="${placeholder}" data-srcset="${path.join(dir, `${base}-${w}.avif`)}" type="image/avif" media="${media}">`);
+                    } else {
+                      sources.push(`<source srcset="${path.join(dir, `${base}-${w}.avif`)}" type="image/avif" media="${media}">`);
+                    }
                   }
-                  if (isAvif) sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}-${w}.avif`)}" media="${media}">`);
-                  if (isWebp) sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}-${w}.webp`)}" media="${media}">`);
+
+                  if (useDataAttr) {
+                    sources.push(`<source srcset="${placeholder}" data-srcset="${path.join(dir, `${base}-${w}.webp`)}" type="image/webp" media="${media}">`);
+                  } else {
+                    sources.push(`<source srcset="${path.join(dir, `${base}-${w}.webp`)}" type="image/webp" media="${media}">`);
+                  }
                 });
               } else {
-                if (isRaster) {
-                  sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">`);
-                  sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}.webp`)}">`);
+                if (isBuild) {
+                  if (useDataAttr) {
+                    sources.push(`<source srcset="${placeholder}" data-srcset="${path.join(dir, `${base}.avif`)}" type="image/avif">`);
+                  } else {
+                    sources.push(`<source srcset="${path.join(dir, `${base}.avif`)}" type="image/avif">`);
+                  }
                 }
-                if (isAvif) sources.push(`<source type="image/avif" srcset="${path.join(dir, `${base}.avif`)}">`);
-                if (isWebp) sources.push(`<source type="image/webp" srcset="${path.join(dir, `${base}.webp`)}">`);
+
+                if (useDataAttr) {
+                  sources.push(`<source srcset="${placeholder}" data-srcset="${path.join(dir, `${base}.webp`)}" type="image/webp">`);
+                } else {
+                  sources.push(`<source srcset="${path.join(dir, `${base}.webp`)}" type="image/webp">`);
+                }
               }
 
-              const imgFinal = isAvif ? `${base}.avif` : `${base}.webp`;
-              let finalHtml = "";
-              if (sources.length === 1 && sources[0].includes(imgFinal)) {
-                finalHtml = `<picture${classAttr ? ` class="${classAttr}"` : ""}><img src="${path.join(dir, imgFinal)}"${cleanAttrs ? " " + cleanAttrs : ""}${widthAttr ? ` width="${widthAttr}"` : ""}${heightAttr ? ` height="${heightAttr}"` : ""} alt="${alt}"${loadingAttr} decoding="${decoding}"></picture>`;
+              let imgFinal = `${base}.webp`;
+              if (extFromHtml === ".avif") imgFinal = `${base}.avif`;
+              if (extFromHtml === ".webp") imgFinal = `${base}.webp`;
+
+              let imgHtml;
+
+              if (useDataAttr) {
+                imgHtml = `<img src="${placeholder}" data-src="${path.join(dir, imgFinal)}"${classAttr ? ` class="${classAttr}"` : ""}${widthAttr ? ` width="${widthAttr}"` : ""}${heightAttr ? ` height="${heightAttr}"` : ""} alt="${alt}"${loadingAttr} decoding="${decoding}" ${fetchpriorityAttr}>`;
               } else {
-                finalHtml = dedent(`
-                  <picture${classAttr ? ` class="${classAttr}"` : ""}>
-                    ${sources.join("\n")}
-                    <img src="${path.join(dir, imgFinal)}"${cleanAttrs ? " " + cleanAttrs : ""}${widthAttr ? ` width="${widthAttr}"` : ""}${heightAttr ? ` height="${heightAttr}"` : ""} alt="${alt}" ${loadingAttr} decoding="${decoding}">
-                  </picture>
-                `);
+                imgHtml = `<img src="${path.join(dir, imgFinal)}"${classAttr ? ` class="${classAttr}"` : ""}${widthAttr ? ` width="${widthAttr}"` : ""}${heightAttr ? ` height="${heightAttr}"` : ""} alt="${alt}"${loadingAttr} decoding="${decoding}" ${fetchpriorityAttr}>`;
               }
+
+              const finalHtml = dedent(`
+              <picture>
+                ${sources.join("\n    ")} 
+                ${imgHtml}
+              </picture>
+            `);
 
               return finalHtml;
             });
 
             const manifestPath = path.join(paths.build.svgSprite, "sprite-manifest.json");
+
             if (fs.existsSync(manifestPath)) {
               const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
               Object.keys(manifest).forEach((key) => {

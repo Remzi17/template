@@ -41,11 +41,11 @@ $close-color: $gray
 	&__content
 		position: relative
 		
+		width: min(100%, $max-width)
 		+adap('padding-block', $padding-y, 20)
 		+adap('padding-inline', $padding-x, 16)
 									
 		+scrollbar(90vh, $scrollBarWidth: 4, $padding: 5) 
-		width: $max-width
 		
 		background: #fff
 		border-radius: $brs

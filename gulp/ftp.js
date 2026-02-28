@@ -58,25 +58,25 @@ export const deployPaths = {
 const currentDeploy = isWp ? deployPaths.wp : deployPaths.normal;
 
 const createFastConn = () => {
-  ftp.create({
+  return ftp.create({
     host: current.ftp.host,
     user: current.ftp.user,
     password: current.ftp.password,
-    parallel: 10,
-    passive: false,
-    keepalive: 10000,
+    parallel: 2,
+    passive: true,
+    // keepalive: 10000,
     log,
   });
 };
 
 const createSafeConn = () => {
-  ftp.create({
+  return ftp.create({
     host: current.ftp.host,
     user: current.ftp.user,
     password: current.ftp.password,
     parallel: 1,
     passive: true,
-    keepalive: 10000,
+    // keepalive: 10000,
     log,
   });
 };
@@ -98,30 +98,9 @@ export function getLink() {
 function deployRunner(globs) {
   if (!buildOnly()) return Promise.resolve();
 
-  const run = (conn) => gulp.src(globs, { base: currentDeploy.base, buffer: false }).pipe(conn.dest(getLink()));
-  const fastConn = createFastConn();
+  const conn = createFastConn();
 
-  return new Promise((resolve, reject) => {
-    const stream = run(fastConn);
-
-    stream.on("error", (err) => {
-      if (err.code === "ECONNRESET") {
-        log.warn("VPN режим, повторная попытка через безопасное соединение с паузой");
-        setTimeout(() => {
-          run(createSafeConn())
-            .on("finish", resolve)
-            .on("error", (e) => {
-              log.error("FTP ошибка после повторной попытки:", e.message);
-              reject(e);
-            });
-        }, 2000);
-      } else {
-        reject(err);
-      }
-    });
-
-    stream.on("finish", resolve);
-  });
+  return gulp.src(globs, { base: currentDeploy.base, buffer: false }).pipe(conn.dest(getLink()));
 }
 
 // prettier-ignore

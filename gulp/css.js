@@ -2,7 +2,7 @@ import gulp from "gulp";
 const { src, dest, parallel } = gulp;
 import path from "path";
 import fs from "fs";
-import { paths, isDev, concatLibs, __dirname } from "./settings.js";
+import { paths, isDev, isBuild, concatLibs, __dirname } from "./settings.js";
 import browsersync from "browser-sync";
 import notify from "gulp-notify";
 import concat from "gulp-concat";
@@ -86,7 +86,7 @@ export function cssBlocks() {
 }
 
 export function css() {
-  return src([paths.src.sass + "common.sass", paths.src.sass + "components.sass", paths.src.sass + "blocks.sass"])
+  return src([paths.src.sass + "components.sass", paths.src.sass + "common.sass", paths.src.sass + "blocks.sass"])
     .pipe(sass({ outputStyle: "expanded" }).on("error", handleError("SASS")))
     .pipe(
       autoprefixer({

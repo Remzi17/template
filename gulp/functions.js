@@ -3,7 +3,7 @@ const { src, dest } = gulp;
 import path from "path";
 import fs from "fs";
 import yargs from "yargs";
-import { paths, source_folder, project_folder, concatLibs, getFiles, showNavbar } from "./settings.js";
+import { paths, source_folder, project_folder, concatLibs, getFiles, showNavbar, variables } from "./settings.js";
 import { hideBin } from "yargs/helpers";
 import resize from "gulp-image-resize";
 import rename from "gulp-rename";
@@ -227,10 +227,10 @@ const fonts = () => {
     fs.writeFile(paths.src.fontcss, "", (err) => {
       if (err) return reject(err);
 
-      fs.readdir(paths.src.fontsDir, (err, items) => {
+      fs.readdir(paths.src.fonts, (err, items) => {
         if (err) return reject(err);
 
-        const fonts = items.filter((item) => item.endsWith(".woff2"));
+        const fonts = items.filter((item) => /\.(woff2|woff|ttf|otf)$/i.test(item));
 
         if (!fonts.length) return resolve();
 
@@ -277,11 +277,11 @@ const fonts = () => {
                   src: url('../fonts/${fontname}.woff2');
                   font-weight: ${weight};
                   font-style: normal;
-                  font-display: block;
+                  font-display: optional;
                 }
               `);
 
-              fs.appendFile(paths.src.fontcss, fontFace, (err) => (err ? rej(err) : res()));
+              fs.appendFile(paths.src.fontcss, fontFace + "\n\n", (err) => (err ? rej(err) : res()));
             });
           })
         )
@@ -449,7 +449,7 @@ const create = () => {
   /* ---------------- SASS files ---------------- */
 
   getFiles.sass.forEach((name) => {
-    const file = `${paths.src.sass}_${name}.sass`;
+    const file = `${paths.src.sass}blocks/_${name}.sass`;
     if (!fs.existsSync(file)) {
       fs.writeFileSync(file, `//.${name}\n`);
     }
@@ -457,15 +457,11 @@ const create = () => {
 
   /* ---------------- JS components ---------------- */
 
-  if (replaceScripts) {
-    const js = getFiles.jsScripts;
-    const imports = js.map((name) => `import { ${name} } from './components/${name}'`).join("\n");
-    const calls = js.map((name) => `${name}()`).join("\n");
+  const js = getFiles.jsScripts;
+  const imports = js.map((name) => `import { ${name} } from './components/${name}'`).join("\n");
+  const calls = js.map((name) => `${name}()`).join("\n");
 
-    fs.writeFileSync(`${source_folder}/assets/js/components.js`, `${imports}\n\n${calls}\n`);
-
-    cleanDir(paths.src.jsComponents, js, ["variable"]);
-  }
+  fs.writeFileSync(`${source_folder}/assets/js/components.js`, `${imports}\n\n${calls}\n`);
 
   /* ---------------- JS libs ---------------- */
 
@@ -533,7 +529,6 @@ const create = () => {
     dedent(`
     @import "swiper/swiper.css";
     @import "swiper/modules/navigation.css";
-    @import "swiper/modules/pagination.css";
 
     /* 
     @import "swiper/modules/free-mode.css";

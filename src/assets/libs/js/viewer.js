@@ -393,37 +393,91 @@
     ra = !1;
     var b = a.touches;
     b && (b = b[0]) && (a = b);
-    sa = oa * v <= u;
+    // sa = oa * v <= u;
     la = a.pageX;
     ma = a.pageY;
     m(L);
   }
   function kb(a) {
     ca(a);
+
     if (qa) {
       if (ra) {
-        if (sa && ra) {
-          var b = (a = r < -(u / 7) && (z < B || G)) || (r > u / 7 && (1 < z || G));
-          if (a || b) yb(z - 1, !0, (r / u) * 100), (a && gb()) || (b && fb());
+        if (ra && v === 1) {
+          var threshold = u / 120;
+          var nextSlide = r < -threshold && (z < B || G);
+          var prevSlide = r > threshold && (1 < z || G);
+
+          if (nextSlide || prevSlide) {
+            yb(z - 1, !0, (r / u) * 100);
+
+            if (nextSlide) {
+              gb();
+            } else if (prevSlide) {
+              fb();
+            }
+          }
+
           r = 0;
           Z();
         }
+
+        if (v > 1) {
+          m(L, !0);
+          qa = !1;
+          return;
+        }
+
         m(L, !0);
-      } else Db();
+      } else {
+        Db();
+      }
+
       qa = !1;
     }
   }
   function jb(a) {
     ca(a);
+
     if (qa) {
-      var b = a.touches;
-      b && (b = b[0]) && (a = b);
-      b = (oa * v - u) / 2;
-      r -= la - (la = a.pageX);
-      sa || (r > b ? (r = b) : r < -b && (r = -b), pa * v > na && ((b = (pa * v - na) / 2), (t -= ma - (ma = a.pageY)), t > b ? (t = b) : t < -b && (t = -b)));
+      var touch = a.touches;
+      touch && (touch = touch[0]) && (a = touch);
+
+      var currentX = a.pageX;
+      var currentY = a.pageY;
+
+      var deltaX = currentX - la;
+      var deltaY = currentY - ma;
+
+      la = currentX;
+      ma = currentY;
+
+      var overflowX = oa * v - u;
+      var overflowY = pa * v - na;
+
+      if (v === 1) {
+        r += deltaX;
+      } else {
+        if (overflowX > 0) {
+          r += deltaX;
+          var limitX = overflowX / 2;
+          if (r > limitX) r = limitX;
+          if (r < -limitX) r = -limitX;
+        }
+
+        if (overflowY > 0) {
+          t += deltaY;
+          var limitY = overflowY / 2;
+          if (t > limitY) t = limitY;
+          if (t < -limitY) t = -limitY;
+        }
+      }
+
       ra = !0;
       Z(r, t);
-    } else X();
+    } else {
+      X();
+    }
   }
   function ab(a) {
     var b = wb();

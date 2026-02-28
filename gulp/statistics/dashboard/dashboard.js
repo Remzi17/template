@@ -1,147 +1,108 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const filesCanvas = document.getElementById("filesChart");
-  const sessionsCanvas = document.getElementById("sessionsChart");
+document.addEventListener("DOMContentLoaded", async () => {
+  const res = await fetch("/__stats/data");
+  const data = await res.json();
 
-  if (!filesCanvas || !sessionsCanvas) {
-    console.error("Не найден canvas для графика");
-    return;
-  }
-  fetch("/__stats/data")
-    .then((r) => r.json())
-    .then((data) => {
-      // === Файлы ===
-      new Chart(filesCanvas, {
-        type: "bar",
-        data: {
-          labels: Object.keys(data.files),
-          datasets: [
-            {
-              label: "Изменения файлов",
-              data: Object.values(data.files),
-              backgroundColor: "rgba(54, 162, 235, 0.6)",
-            },
-          ],
+  // ====== ОБЩИЕ МЕТРИКИ ======
+  const totalTime = data.sessions.reduce((a, s) => a + ((s.end || Date.now()) - s.start), 0) / 60000;
+
+  const avgSession = totalTime / (data.sessions.length || 1);
+
+  document.getElementById("totalTime").innerText = totalTime.toFixed(0) + " мин";
+
+  document.getElementById("avgSession").innerText = avgSession.toFixed(0) + " мин";
+
+  document.getElementById("buildAvg").innerText = (data.builds.reduce((a, b) => a + b.time, 0) / (data.builds.length || 1)).toFixed(0) + " мс";
+
+  // ====== ТОП ФАЙЛОВ ======
+
+  const sortedFiles = Object.entries(data.files).sort((a, b) => b[1] - a[1]);
+
+  const ctx = document.getElementById("filesChart");
+
+  const chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: sortedFiles.map((f) => f[0]),
+      datasets: [
+        {
+          label: "Изменения",
+          data: sortedFiles.map((f) => f[1]),
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              display: true,
-              labels: {
-                font: {
-                  size: 20,
-                  weight: "bold",
-                },
-              },
-            },
-          },
-          scales: {
-            x: {
-              ticks: {
-                font: {
-                  size: 14,
-                  weight: "bold",
-                },
-              },
-            },
-            y: {
-              beginAtZero: true,
-              ticks: {
-                font: {
-                  size: 18,
-                  weight: "bold",
-                },
-              },
-            },
-          },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: {
+          min: 0,
+          max: 7,
         },
-      });
-
-      // === Сессии ===
-      const sessionByDate = {};
-      data.sessions.forEach((s) => {
-        const date = s.date;
-        const duration = s.end - s.start;
-        sessionByDate[date] = (sessionByDate[date] || 0) + duration;
-      });
-
-      // Краткая запись без года
-      const sessionByDateShort = Object.fromEntries(
-        Object.entries(sessionByDate).map(([date, ms]) => {
-          const [day, month] = date.split(".");
-          return [`${day}.${month}`, ms];
-        })
-      );
-
-      new Chart(sessionsCanvas, {
-        type: "line",
-        data: {
-          labels: Object.keys(sessionByDateShort),
-          datasets: [
-            {
-              label: "Время работы (мин)",
-              data: Object.values(sessionByDate).map((ms) => ms / 60000),
-              borderColor: "rgba(255, 99, 132, 0.8)",
-              backgroundColor: "rgba(255, 99, 132, 0.3)",
-              fill: true,
-              tension: 0.3,
-              pointRadius: 16,
-              pointHoverRadius: 16,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: {
-              display: true,
-              labels: {
-                font: {
-                  size: 20,
-                  weight: "bold",
-                },
-              },
-            },
-            tooltip: {
-              callbacks: {
-                label(ctx) {
-                  const minutes = ctx.parsed.y;
-                  const h = Math.floor(minutes / 60);
-                  const m = Math.round(minutes % 60);
-
-                  if (h && m) return ` ${h} ч ${m} мин`;
-                  if (h) return ` ${h} ч`;
-                  return ` ${m} мин`;
-                },
-              },
-            },
+      },
+      plugins: {
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: "x",
           },
-          scales: {
-            x: {
-              ticks: {
-                font: {
-                  size: 14,
-                  weight: "bold",
-                },
-              },
+          zoom: {
+            wheel: {
+              enabled: true,
+              speed: 0.00000000000001,
             },
-            y: {
-              beginAtZero: true,
-              ticks: {
-                stepSize: 60,
-                font: {
-                  size: 18,
-                  weight: "bold",
-                },
-                callback(value) {
-                  if (value === 0) return "0";
-                  return `${Math.floor(value / 60)} ч`;
-                },
-              },
+            pinch: {
+              enabled: true,
             },
+            mode: "x",
           },
         },
-      });
-    })
-    .catch((err) => console.error("Ошибка при загрузке статистики:", err));
+      },
+    },
+  });
+
+  // ====== СЕССИИ ПО ДНЯМ ======
+
+  const sessionByDate = {};
+
+  data.sessions.forEach((s) => {
+    const duration = (s.end || Date.now()) - s.start;
+    sessionByDate[s.date] = (sessionByDate[s.date] || 0) + duration;
+  });
+
+  new Chart(document.getElementById("sessionsChart"), {
+    type: "line",
+    data: {
+      labels: Object.keys(sessionByDate),
+      datasets: [
+        {
+          label: "Минуты",
+          data: Object.values(sessionByDate).map((ms) => ms / 60000),
+          fill: true,
+          tension: 0.3,
+        },
+      ],
+    },
+  });
+
+  // ====== ВРЕМЯ СБОРКИ ======
+
+  const buildLabels = data.builds.map((b, i) => {
+    return `${b.date}`;
+  });
+
+  const buildTimes = data.builds.map((b) => b.time);
+
+  new Chart(document.getElementById("buildChart"), {
+    type: "line",
+    data: {
+      labels: buildLabels,
+      datasets: [
+        {
+          label: "Время сборки (мс)",
+          data: buildTimes,
+          tension: 0.3,
+          pointRadius: 6,
+        },
+      ],
+    },
+  });
 });

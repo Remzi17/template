@@ -4,58 +4,64 @@ import { performance } from "perf_hooks";
 
 const FILE = path.resolve("statistics.json");
 
-let sessionTimer = null;
+let cache = null;
+let writeTimer = null;
 let buildStart = 0;
 
-function read() {
+// ---------- INIT ----------
+
+function load() {
+  if (cache) return cache;
+
   if (!fs.existsSync(FILE)) {
-    return {
-      sessions: [],
-      files: {},
-      builds: [],
-    };
+    cache = { sessions: [], files: {}, builds: [] };
+    return cache;
   }
+
   try {
-    return JSON.parse(fs.readFileSync(FILE, "utf-8"));
-  } catch (e) {
-    return { sessions: [], files: {}, builds: [] };
+    cache = JSON.parse(fs.readFileSync(FILE, "utf-8"));
+  } catch {
+    cache = { sessions: [], files: {}, builds: [] };
   }
+
+  return cache;
 }
 
-let writeTimer = null;
-
-function write(data) {
+function save() {
   if (writeTimer) clearTimeout(writeTimer);
-  writeTimer = setTimeout(() => {
-    fs.writeFileSync(FILE, JSON.stringify(data, null, 2));
-  }, 50);
-}
 
-function format(ms) {
-  const m = Math.floor(ms / 60000);
-  const h = Math.floor(m / 60);
-  const mm = m % 60;
-  return h ? `${h} ч ${mm} мин` : `${mm} мин`;
+  writeTimer = setTimeout(() => {
+    fs.writeFileSync(FILE, JSON.stringify(cache, null, 2));
+  }, 200);
 }
 
 function today() {
-  return new Date().toLocaleDateString("ru-RU");
+  const d = new Date();
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  return `${day}.${month}`;
 }
 
+// ---------- SESSION ----------
+
 export function startSession() {
-  const data = read();
-  const session = { date: today(), start: Date.now(), end: Date.now() };
-  data.sessions.push(session);
-  write(data);
+  const data = load();
+  data.sessions.push({
+    date: today(),
+    start: Date.now(),
+    end: null,
+  });
+  save();
 }
 
 export function endSession() {
-  if (sessionTimer) clearInterval(sessionTimer);
-  const data = read();
+  const data = load();
   const s = data.sessions.at(-1);
-  if (s) s.end = Date.now();
-  write(data);
+  if (s && !s.end) s.end = Date.now();
+  save();
 }
+
+// ---------- FILE TRACKING ----------
 
 export function trackFile(filePath) {
   if (!filePath) return;
@@ -63,46 +69,24 @@ export function trackFile(filePath) {
   const name = path.basename(filePath);
   if (name.startsWith("__") || name.startsWith(".") || name.endsWith(".map")) return;
 
-  const data = read();
+  const data = load();
   data.files[name] = (data.files[name] || 0) + 1;
-
-  write(data);
+  save();
 }
+
+// ---------- BUILD TIMER ----------
 
 export function buildStartTimer() {
   buildStart = performance.now();
 }
 
 export function buildEndTimer() {
-  const data = read();
-  data.builds.push({ time: Math.round(performance.now() - buildStart) });
-  write(data);
-}
-
-function calc(data) {
-  const total = data.sessions.reduce((a, s) => a + (s.end - s.start), 0);
-
-  const perDay = {};
-  data.sessions.forEach((s) => {
-    perDay[s.date] = (perDay[s.date] || 0) + (s.end - s.start);
+  const data = load();
+  data.builds.push({
+    time: Math.round(performance.now() - buildStart),
+    date: today(),
   });
-
-  const topDay = Object.entries(perDay).sort((a, b) => b[1] - a[1])[0];
-
-  const buildsAvg = data.builds.reduce((a, b) => a + b.time, 0) / (data.builds.length || 1);
-
-  const files = Object.entries(data.files)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 10);
-
-  return {
-    total,
-    sessions: data.sessions.length,
-    avgSession: total / (data.sessions.length || 1),
-    topDay,
-    files,
-    buildsAvg,
-  };
+  save();
 }
 
 export function showStats(filter = "all") {

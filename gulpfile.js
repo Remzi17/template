@@ -2,7 +2,7 @@ import gulp from "gulp";
 const { series, parallel } = gulp;
 import del from "del";
 import browsersync from "browser-sync";
-import { paths, isDev, isWp } from "./gulp/settings.js";
+import { paths, isDev, isWp, normalize } from "./gulp/settings.js";
 import fs from "fs";
 import path from "path";
 
@@ -11,15 +11,16 @@ import { css, cssLibs, cssBlocks, cssComponents, cssCommon, deadCss } from "./gu
 import { jsLibs, js } from "./gulp/js.js";
 import { images } from "./gulp/images.js";
 import { svg } from "./gulp/svg.js";
-import { fontsCopy, fontsConvert, fontcss } from "./gulp/fonts.js";
+import { normalizeFonts, fontsBuild, fontcss } from "./gulp/fonts.js";
 import { deployHtml, deployCss, deployJs } from "./gulp/ftp.js";
 
 import { temp } from "./gulp/functions.js";
 import "./gulp/wp.js";
 import { syncEnvAndDocker } from "./gulp/wp.js";
-import { startSession, endSession, trackFile, buildStartTimer, buildEndTimer, showStats } from "./gulp/statistics/statistics.js";
 
-startSession();
+import { trackFile, buildStartTimer } from "./gulp/statistics/statistics.js";
+import "./gulp/statistics/statistics-config.js";
+import { startBuild, endBuild } from "./gulp/statistics/statistics-config.js";
 
 // prettier-ignore
 function watchFiles() {
@@ -39,14 +40,14 @@ function watchFiles() {
   ];
 
   const partials = [
-    paths.src.sass + "blocks/**/*.sass", 
-    paths.src.sass + "components/**/*.sass", 
-    paths.src.sass + "common/**/*.sass"
-   ];
+    paths.src.sass + "blocks/**/*.{sass,scss}",
+    paths.src.sass + "components/**/*.{sass,scss}",
+    paths.src.sass + "common/**/*.{sass,scss}"
+  ];
 
   const sharedSass = [
-    paths.src.sass + "all/**/*.sass", 
-    paths.src.sass + "_*.sass"
+    paths.src.sass + "all/**/*.{sass,scss}",
+    paths.src.sass + "_*.{sass,scss}"  
   ];
 
   if (isDev) {
@@ -77,18 +78,18 @@ function watchFiles() {
 
   gulp.watch(paths.watch.icons, series(svg, reload)); 
   gulp.watch(paths.watch.img, series(images, reload));
-  gulp.watch(paths.watch.fontcss, series(fontsCopy, fontsConvert, reload));
-}
-
-gulp
-  .watch("./wp/wp-content/themes/main/**/*.php", {
+  gulp.watch(
+    normalize(path.join(paths.src.fonts, "**/*.{otf,ttf,woff,woff2}")),
+    series(normalizeFonts, fontsBuild, fontcss)
+  );
+  gulp.watch("./wp/wp-content/themes/main/**/*.php", {
     usePolling: true,
     interval: 200,
-  })
-  .on("change", (filePath) => {
+  }).on("change", (filePath) => {
     trackFile(filePath);
     browsersync.reload();
   });
+}
 
 function browserSync(done) {
   if (isWp) {
@@ -138,19 +139,15 @@ function browserSync(done) {
   done();
 }
 
+// prettier-ignore
 const dev = series(
-  syncEnvAndDocker,
-  (done) => {
-    buildStartTimer();
-    done();
-  },
-  temp,
-  clean,
-  parallel(html, js, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, svg, images, fontsCopy, fontsConvert, fontcss),
-  (done) => {
-    buildEndTimer();
-    done();
-  }
+  syncEnvAndDocker, 
+  startBuild, 
+  temp, 
+  clean, 
+  svg, 
+  parallel(html, js, cssCommon, cssComponents, cssBlocks, cssLibs, jsLibs, images, series(normalizeFonts, fontsBuild, fontcss)), 
+  endBuild
 );
 
 const build = series(
@@ -162,50 +159,12 @@ const build = series(
   temp,
   clean,
   js,
-  parallel(html, css, cssLibs, jsLibs, svg, images, fontsCopy, fontsConvert, fontcss),
-  (done) => {
-    buildEndTimer();
-    done();
-  }
+  svg,
+  parallel(html, css, cssLibs, jsLibs, images, series(normalizeFonts, fontsBuild, fontcss)),
+  endBuild
 );
 
 export const watch = parallel(isDev ? dev : build, watchFiles, browserSync);
-
-//
-//
-//
-//
-// Статистика
-
-export const stats = (done) => {
-  showStats("all");
-  done();
-};
-
-export const statsTime = (done) => {
-  showStats("time");
-  done();
-};
-
-export const statsFiles = (done) => {
-  showStats("files");
-  done();
-};
-
-export const statsBuild = (done) => {
-  showStats("build");
-  done();
-};
-
-process.on("SIGINT", () => {
-  endSession();
-  process.exit();
-});
-
-process.on("SIGTERM", () => {
-  endSession();
-  process.exit();
-});
 
 //
 //
@@ -228,5 +187,5 @@ function clean() {
 //
 // Экспорты
 
-export { html, css, cssLibs, deadCss, js, jsLibs, svg, images, fontcss, deployHtml, deployCss, deployJs, build };
+export { html, css, cssLibs, deadCss, js, jsLibs, svg, images, deployHtml, deployCss, deployJs, build };
 export default watch;

@@ -166,6 +166,12 @@ button, a
 	cursor: pointer
 	color: inherit
 
+	&:focus-visible
+		outline: 3px solid $active
+		outline-offset: 8px
+		border-radius: $border-radius
+		z-index: 20
+
 li
 	padding: 0
 	color: inherit
@@ -182,13 +188,6 @@ a
 strong, a, button, li
 	font: inherit
 
-button, a
-	&:focus-visible
-		outline: 3px solid var(--active)
-		outline-offset: 8px
-		border-radius: $border-radius
-		z-index: 20
-
 input, textarea
 	border: none
 	background: none
@@ -196,7 +195,6 @@ input, textarea
 	color: inherit
 	font-family: $font
 	appearance: none
-	+t
 
 	&::placeholder
 		font: inherit
@@ -204,7 +202,7 @@ input, textarea
 
 input, textarea, [role="combobox"]
 	&:focus-visible
-		outline: 1px solid var(--active)
+		outline: 1px solid $active
 
 textarea
 	resize: none
@@ -294,14 +292,12 @@ sup
 
 .hover-translate
 	transition: translate .4s
-	cursor: pointer
 
 	+hov
 		translate: 0 -3px
 
 .hover-scale
 	+t
-	cursor: pointer
 
 	[class*="-img"]
 		overflow: hidden

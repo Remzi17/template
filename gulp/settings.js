@@ -5,7 +5,7 @@ export let jsBundler = "rollup"; // rollup или esbuild
 export let unCSS = false;
 export let isDeploy = true;
 export let isWp = false;
-export let showNavbar = true;
+export let showNavbar = false;
 
 export let variables = {
   font: "Montserrat",
@@ -57,26 +57,21 @@ export let getFiles = {
     // 'certificate',
     // 'company',
     // 'contact',
-    // 'consultation',
-    // 'discount',
     // 'document',
     // 'faq',
     // 'features',
     // 'feedback',
     // 'gallery',
     // 'info',
-    // 'history',
     // 'manager',
     // 'news',
     // 'offer',
     // 'partner',
     // 'popular',
     // 'price',
-    // 'problem',
     // 'product',
     // 'project',
     // 'portfolio',
-    // 'questions',
     // 'step',
     // 'service',
     // 'services',
@@ -131,7 +126,6 @@ export let getFiles = {
     // 'select',
     // "swiper",
     // 'timer',
-    // 'timer',
     // 'viewer',
     // 'wow',
   ],
@@ -155,11 +149,14 @@ export let getFiles = {
     // 'tooltip',
     // 'text',
     // 'video',
+    // "viewer",
   ],
 };
 
 import path from "path";
 import { fileURLToPath } from "url";
+
+export const normalize = (p) => path.normalize(p).replace(/\\/g, "/");
 
 export const __filename = fileURLToPath(import.meta.url);
 export const __dirname = path.dirname(__filename);
@@ -167,47 +164,47 @@ export const project_folder = path.basename(path.dirname(__dirname));
 export const source_folder = "src";
 export let paths = {
   build: {
-    html: project_folder + "/",
-    css: project_folder + "/assets/css/",
-    js: project_folder + "/assets/js/",
-    img: project_folder + "/assets/img/",
-    fonts: project_folder + "/assets/fonts/",
-    svgSprite: project_folder + "/assets/img/",
-    srcHtml: source_folder + "/assets/",
-    srcCss: source_folder + "/assets/css/",
-    srcJs: source_folder + "/assets/js/",
+    html: normalize(path.join(project_folder, "/")),
+    css: normalize(path.join(project_folder, "assets", "css")) + "/",
+    js: normalize(path.join(project_folder, "assets", "js")) + "/",
+    img: normalize(path.join(project_folder, "assets", "img")) + "/",
+    fonts: normalize(path.join(project_folder, "assets", "fonts")) + "/",
+    svgSprite: normalize(path.join(project_folder, "assets", "img")) + "/",
+    srcHtml: normalize(path.join(source_folder, "assets")) + "/",
+    srcCss: normalize(path.join(source_folder, "assets", "css")) + "/",
+    srcJs: normalize(path.join(source_folder, "assets", "js")) + "/",
   },
   src: {
-    unusedHtml: source_folder + "/**/*.html",
-    htmlFiles: source_folder + "/",
-    html: [source_folder + "/*.html", "!" + source_folder + "/_*.html"],
-    css: [source_folder + "/assets/sass/common.sass", source_folder + "/assets/sass/components.sass", source_folder + "/assets/sass/blocks.sass"],
-    cssLibs: source_folder + "/assets/libs/css/",
-    cssLibsFiles: source_folder + "/assets/libs/css/*.css",
-    cssvariables: source_folder + "/assets/sass/all/_variables.sass",
-    sass: source_folder + "/assets/sass/",
-    sassComponents: source_folder + "/assets/sass/components/",
-    js: source_folder + "/assets/js/*.js",
-    jsComponents: source_folder + "/assets/js/components/",
-    mainJs: source_folder + "/assets/js/script.js",
-    jsLibs: source_folder + "/assets/libs/js/",
-    jsLibsFiles: source_folder + "/assets/libs/js/*.js",
-    img: [source_folder + "/assets/img/**/*.{jpg,jpeg,png,svg,gif,json,ico,webp,mp4,mp3,m4a,pdf}", "!" + source_folder + "/assets/img/resize/**/*.*"],
-    fonts: source_folder + "/assets/fonts/",
-    fontcss: source_folder + "/assets/css/fonts.css",
+    unusedHtml: normalize(path.join(source_folder, "**", "*.html")),
+    htmlFiles: normalize(path.join(source_folder, "/")),
+    html: [normalize(path.join(source_folder, "*.html")), "!" + normalize(path.join(source_folder, "_*.html"))],
+    css: [normalize(path.join(source_folder, "assets", "sass", "common.sass")), normalize(path.join(source_folder, "assets", "sass", "components.sass")), normalize(path.join(source_folder, "assets", "sass", "blocks.sass"))],
+    cssLibs: normalize(path.join(source_folder, "assets", "libs", "css")) + "/",
+    cssLibsFiles: normalize(path.join(source_folder, "assets", "libs", "css", "*.css")),
+    cssvariables: normalize(path.join(source_folder, "assets", "sass", "all", "_variables.sass")),
+    sass: normalize(path.join(source_folder, "assets", "sass")) + "/",
+    sassComponents: normalize(path.join(source_folder, "assets", "sass", "components")) + "/",
+    js: normalize(path.join(source_folder, "assets", "js", "*.js")),
+    jsComponents: normalize(path.join(source_folder, "assets", "js", "components")) + "/",
+    mainJs: normalize(path.join(source_folder, "assets", "js", "script.js")),
+    jsLibs: normalize(path.join(source_folder, "assets", "libs", "js")) + "/",
+    jsLibsFiles: normalize(path.join(source_folder, "assets", "libs", "js", "*.js")),
+    img: [normalize(path.join(source_folder, "assets", "img", "**", "*.{jpg,jpeg,png,svg,gif,json,ico,webp,mp4,mp3,m4a,pdf}")), "!" + normalize(path.join(source_folder, "assets", "img", "resize", "**", "*.*"))],
+    fonts: normalize(path.join(source_folder, "assets", "fonts")) + "/",
+    fontcss: normalize(path.join(source_folder, "assets", "css", "fonts.css")),
   },
   watch: {
-    html: source_folder + "/**/*.html",
-    css: source_folder + "/assets/sass/**/*",
-    cssLibs: source_folder + "/assets/libs/css/*.css",
-    js: source_folder + "/assets/js/**/*.js",
-    jsLibs: source_folder + "/assets/libs/js/*.js",
-    img: source_folder + "/assets/img/**/*.{jpg,jpeg,png,svg,gif,json,ico,webp,mp4,mp3,m4a,pdf}",
-    fonts: source_folder + "/assets/fonts/*.{woff,woff2}",
-    fontcss: source_folder + "/assets/css/fonts.css",
-    icons: source_folder + "/assets/icons/*.svg",
+    html: normalize(path.join(source_folder, "**", "*.html")),
+    css: normalize(path.join(source_folder, "assets", "sass", "**", "*")),
+    cssLibs: normalize(path.join(source_folder, "assets", "libs", "css", "*.css")),
+    js: normalize(path.join(source_folder, "assets", "js", "**", "*.js")),
+    jsLibs: normalize(path.join(source_folder, "assets", "libs", "js", "*.js")),
+    img: normalize(path.join(source_folder, "assets", "img", "**", "*.{jpg,jpeg,png,svg,gif,json,ico,webp,mp4,mp3,m4a,pdf}")),
+    fonts: normalize(path.join(source_folder, "assets", "fonts", "*.{woff,woff2}")),
+    fontcss: normalize(path.join(source_folder, "assets", "css", "fonts.css")),
+    icons: normalize(path.join(source_folder, "assets", "icons", "*.svg")),
   },
-  clean: "./" + project_folder + "/",
+  clean: normalize(path.join("./", project_folder)) + "/",
 };
 
 import dotenv from "dotenv";

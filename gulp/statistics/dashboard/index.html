@@ -1,57 +1,62 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 
 <head>
-	<meta charset="UTF-8">
-	<title>📊 Статистика проекта</title>
+	<meta charset="UTF-8" />
+	<title>Project Statistics</title>
 	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+	<script src="/statistics/dashboard/dashboard.js"></script>
+
 	<style>
 		body {
 			font-family: sans-serif;
-			padding: 20px;
-			background: #f4f4f4;
-			overflow-x: clip;
+			padding: 40px;
 		}
 
-		h1 {
-			margin-bottom: 20px;
+		.stats {
+			display: flex;
+			gap: min(calc(20px + 20px), calc(20px + 20 * ((100vw - 375px) / 1545)));
+			flex-wrap: wrap;
+			margin-bottom: 40px;
+			font-size: 20px;
 		}
 
-		.charts-container {
+		.items {
 			display: grid;
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
 			gap: 20px;
 		}
-
-		.chart-wrapper {
-			width: 100%;
-			max-width: 33vw;
-		}
-
-		canvas {
-			width: 100% !important;
-			background: #fff;
-			border: 1px solid #ccc;
-			padding: 12px;
-		}
-	</style>
 	</style>
 </head>
 
 <body>
+
 	<h1>📊 Статистика проекта</h1>
 
-	<div class="charts-container">
-		<div class="chart-wrapper">
+	<div class="stats">
+		<div>⏱ Общее время: <strong id="totalTime"></strong></div>
+		<div>📏 Средняя сессия: <strong id="avgSession"></strong></div>
+		<div>⚡ Средняя сборка: <strong id="buildAvg"></strong></div>
+	</div>
+
+	<div class="items">
+		<div class="item">
+			<h2>🔥 ТОП файлов</h2>
 			<canvas id="filesChart"></canvas>
 		</div>
-		<div class="chart-wrapper">
+		<div class="item">
+			<h2>📅 Работа по дням</h2>
 			<canvas id="sessionsChart"></canvas>
+		</div>
+		<div class="item">
+			<h2>🚀 Средняя скорость сборки</h2>
+			<canvas id="buildChart"></canvas>
 		</div>
 	</div>
 
 
-	<script src="/statistics/dashboard/dashboard.js"></script>
+
 </body>
 
 </html>

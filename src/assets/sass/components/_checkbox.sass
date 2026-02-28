@@ -12,8 +12,8 @@ $checkbox-border-radius: 2px
 .checkbox 
 	position: relative
 	display: flex
-	align-items: center 
-	+adap('gap', 16, 8) 
+	align-items: flex-start 
+	+adap('gap', 16, 8)  
 
 	user-select: none
 	cursor: pointer
@@ -67,8 +67,12 @@ $checkbox-border-radius: 2px
 			outline: none 
 			
 			&:before 
+				background: light($active, 85%)
 				border-color: $active
 						
+	&__text 
+		text-box: trim-start cap text
+
 	&-text 
 		position: relative
 
