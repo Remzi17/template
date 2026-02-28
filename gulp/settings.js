@@ -46,9 +46,9 @@ export let getFiles = {
     // "text",
   ],
   sass: [
-    // 'about',
-    // 'advantages',
-    // 'banner',
+    "about",
+    "advantages",
+    "banner",
     // 'brands',
     // 'card',
     // 'catalog',
@@ -80,10 +80,10 @@ export let getFiles = {
     // 'work'
   ],
   components: [
-    // 'context',
-    // 'checkbox',
-    // 'crumbs',
-    // 'gradient',
+    "context",
+    "checkbox",
+    "crumbs",
+    "gradient",
     // 'map',
     // 'pagination',
     // 'range',

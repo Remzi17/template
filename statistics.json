@@ -59,6 +59,101 @@
       "date": "28.02",
       "start": 1772269649866,
       "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272319734,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272353141,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272358872,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272390950,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272405135,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272449502,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272471650,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272474944,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272478306,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272542134,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272546205,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272549675,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272552717,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272625397,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272627918,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272774431,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272778852,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272787214,
+      "end": null
+    },
+    {
+      "date": "28.02",
+      "start": 1772272854411,
+      "end": null
     }
   ],
   "files": {
@@ -71,9 +166,9 @@
     "_about.sass": 3,
     "_news.sass": 1,
     "_header.sass": 137,
-    "components.sass": 19,
+    "components.sass": 20,
     "head.html": 90,
-    "common.sass": 24,
+    "common.sass": 32,
     "blocks.sass": 2,
     "_default.sass": 38,
     "_mixins.sass": 11,
@@ -115,7 +210,8 @@
     "_callback.sass": 4,
     "news-wrapper.html": 10,
     "footer.html": 2,
-    "_interface.sass": 3
+    "_interface.sass": 3,
+    "variables.sass": 1
   },
   "builds": [
     {
@@ -156,6 +252,10 @@
     },
     {
       "time": 1552,
+      "date": "28.02"
+    },
+    {
+      "time": 1635,
       "date": "28.02"
     }
   ],

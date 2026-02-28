@@ -365,7 +365,7 @@ const cleanDir = (dir, allowed, ignore = []) => {
   const allowedSet = new Set(allowed);
 
   fs.readdirSync(dir).forEach((file) => {
-    const name = file.split(".")[0].replace(/^_/, "");
+    const name = file.split(".")[0];
     if (!allowedSet.has(name) && !ignore.includes(name)) {
       fs.unlinkSync(path.join(dir, file));
     }
@@ -376,20 +376,18 @@ const appendImportsToBottom = (filePath, imports) => {
   if (!fs.existsSync(filePath)) return;
 
   const content = fs.readFileSync(filePath, "utf8");
+  const lines = content.split("\n").map((l) => l.trim());
 
-  const lines = content.split("\n");
+  const existing = new Set(lines.filter((l) => l.startsWith("@import")).map((l) => l.replace(/@import\s+["'](.+?)["']/, "$1")));
 
-  // оставляем всё до первого динамического @import
-  const cleaned = [];
-  for (const line of lines) {
-    if (/^@import\s+["'](_|components\/_)/.test(line.trim())) break;
-    cleaned.push(line);
-  }
+  const toAdd = imports.filter((imp) => {
+    const name = imp.replace(/@import\s+["'](.+?)["']/, "$1");
+    return !existing.has(name);
+  });
 
-  const base = cleaned.join("\n").trimEnd();
+  if (!toAdd.length) return;
 
-  const result = imports.length ? `${base}\n\n${imports.join("\n")}\n` : `${base}\n`;
-
+  const result = content.trimEnd() + "\n\n" + toAdd.join("\n") + "\n";
   fs.writeFileSync(filePath, result);
 };
 
@@ -417,6 +415,8 @@ const create = () => {
     }]
     })
 
+
+
     @@include('assets/html/foot.html')
   `);
 
@@ -429,27 +429,30 @@ const create = () => {
 
   /* ---------------- SASS: components ---------------- */
 
-  const componentsImports = getFiles.components.sort().map((name) => `@import "components/_${name}"`);
+  // prettier-ignore
+  const componentsImports = getFiles.components
+  .sort()
+  .map((name) => `@import "components/${name}"`);
 
   appendImportsToBottom(`${source_folder}/assets/sass/components.sass`, componentsImports);
 
-  cleanDir(paths.src.sassComponents, getFiles.components, ["burger"]);
+  // cleanDir(paths.src.sassComponents, getFiles.components, ["burger"]);
 
   /* ---------------- SASS: blocks ---------------- */
 
   const skip = new Set(["style", "fonts", "all", "components"]);
 
   const blocksImports = getFiles.sass
-    .filter((name) => !skip.has(name))
+    // .filter((name) => !skip.has(name))
     .sort()
-    .map((name) => `@import "_${name}"`);
+    .map((name) => `@import "${name}"`);
 
   appendImportsToBottom(`${source_folder}/assets/sass/blocks.sass`, blocksImports);
 
   /* ---------------- SASS files ---------------- */
 
   getFiles.sass.forEach((name) => {
-    const file = `${paths.src.sass}blocks/_${name}.sass`;
+    const file = `${paths.src.sass}blocks/${name}.sass`;
     if (!fs.existsSync(file)) {
       fs.writeFileSync(file, `//.${name}\n`);
     }

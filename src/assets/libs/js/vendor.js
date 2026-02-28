@@ -1,17 +1,4 @@
-import "./jquery.js";
 import "./dynamic.js";
-import "./lg.js";
-import "./lg-thumbnail.js";
-import "./lg-zoom.js";
-import "./mask.js";
-import "./select.js";
-import "./viewer.js";
-import "./wow.js";
-
-import Swiper from "swiper";
-import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
-Swiper.use([Navigation, Pagination, Autoplay, EffectFade]);
-window.Swiper = Swiper;
 
 /*
 // Autoplay; 					// автопрокрутка

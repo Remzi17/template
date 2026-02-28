@@ -1,41 +1,5 @@
-import { slider } from "./components/slider";
-import { gallery } from "./components/gallery";
-import { viewer } from "./components/viewer";
-import { rating } from "./components/rating";
-import { fixedMenu } from "./components/fixedMenu";
-import { tooltip } from "./components/tooltip";
-import { form } from "./components/form";
-import { map } from "./components/map";
-import { burger } from "./components/burger";
-import { numbers } from "./components/numbers";
-import { video } from "./components/video";
-import { scroll } from "./components/scroll";
-import { range } from "./components/range";
-import { select } from "./components/select";
-import { text } from "./components/text";
-import { modal } from "./components/modal";
-import { spoller } from "./components/spoller";
-import { tab } from "./components/tab";
-import { subMenu } from "./components/subMenu";
-import { showMore } from "./components/showMore";
+import { burger } from './components/burger'
+import { modal } from './components/modal'
 
-slider();
-gallery();
-viewer();
-rating();
-fixedMenu();
-tooltip();
-form();
-map();
-burger();
-numbers();
-video();
-scroll();
-range();
-select();
-text();
-modal();
-spoller();
-tab();
-subMenu();
-showMore();
+burger()
+modal()
